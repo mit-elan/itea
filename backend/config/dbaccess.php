@@ -8,7 +8,7 @@ function getDatabaseConnection() {
     $host = "localhost";
     $user = "webProjektUser";
     $password = "webProjekt";
-    $database = "webProjekt";
+    $database = "webProjekt26";
 
     $db = new mysqli($host, $user, $password, $database);
 
