@@ -1,0 +1,28 @@
+/* ── TeaShop Global Styles ─────────────────────────────────── */
+/* Sprint 0: Grundlayout – wird pro Sprint erweitert           */
+
+:root {
+    --tea-green:  #4a7c59;
+    --tea-light:  #e8f5e9;
+    --tea-dark:   #2c3e2d;
+    --tea-accent: #8bc34a;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f9fafb;
+}
+
+/* Navbar */
+.navbar { background-color: var(--tea-dark) !important; }
+.navbar-brand { font-size: 1.4rem; }
+
+/* Warenkorb-Badge (Sprint 1) */
+#cartWidget .badge { background-color: var(--tea-accent); }
+
+/* Produktkarten (Sprint 1) */
+.product-card { transition: transform .2s; }
+.product-card:hover { transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+
+/* Drag & Drop Warenkorb-Ziel (Sprint 1) */
+#cartDropTarget.drag-over { border: 2px dashed var(--tea-accent); background: var(--tea-light); }

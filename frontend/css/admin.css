@@ -1,0 +1,4 @@
+/* ── TeaShop Admin Styles ──────────────────────────────────── */
+.admin-sidebar { background: var(--tea-dark); min-height: 100vh; }
+.admin-sidebar a { color: #ccc; }
+.admin-sidebar a:hover { color: #fff; }
