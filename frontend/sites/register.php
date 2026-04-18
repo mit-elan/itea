@@ -1,5 +1,6 @@
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
+<script src="/itea/frontend/js/auth.js"></script>
 
 <main class="container py-5">
     <div class="row justify-content-center">
@@ -8,9 +9,9 @@
                 <div class="card-body p-4">
                     <h1 class="h3 mb-4">Register</h1>
 
-                    <form class="row g-3">
+                    <form id="register-form" class="row g-3">
                         <div class="col-md-2">
-                            <label for="salutation" class="form-label">Salutation</label>
+                            <label for="salutation" class="form-label">Salutation*</label>
                             <select class="form-select" id="salutation">
                                 <option>Ms.</option>
                                 <option>Mr.</option>
@@ -19,54 +20,58 @@
                         </div>
 
                         <div class="col-md-5">
-                            <label for="first-name" class="form-label">First name</label>
-                            <input type="text" class="form-control" id="first-name">
+                            <label for="first-name" class="form-label">First name*</label>
+                            <input type="text" class="form-control" id="first-name" required>
                         </div>
 
                         <div class="col-md-5">
-                            <label for="last-name" class="form-label">Last name</label>
-                            <input type="text" class="form-control" id="last-name">
+                            <label for="last-name" class="form-label">Last name*</label>
+                            <input type="text" class="form-control" id="last-name" required>
                         </div>
 
                         <div class="col-12">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="address">
+                            <label for="address" class="form-label">Address*</label>
+                            <input type="text" class="form-control" id="address" required>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="zip" class="form-label">ZIP</label>
-                            <input type="text" class="form-control" id="zip">
+                            <label for="zip" class="form-label">ZIP*</label>
+                            <input type="text" class="form-control" id="zip" required>
                         </div>
 
                         <div class="col-md-8">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city">
+                            <label for="city" class="form-label">City*</label>
+                            <input type="text" class="form-control" id="city" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email">
+                            <label for="email" class="form-label">Email*</label>
+                            <input type="email" class="form-control" id="email" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username">
+                            <label for="username" class="form-label">Username*</label>
+                            <input type="text" class="form-control" id="username" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password">
+                            <label for="password" class="form-label">Password*</label>
+                            <input type="password" class="form-control" id="password" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="password-repeat" class="form-label">Repeat password</label>
-                            <input type="password" class="form-control" id="password-repeat">
+                            <label for="password-repeat" class="form-label">Repeat password*</label>
+                            <input type="password" class="form-control" id="password-repeat" required>
                         </div>
 
                         <div class="col-12">
                             <label for="payment-info" class="form-label">Payment information</label>
                             <input type="text" class="form-control" id="payment-info" placeholder="Will later be split into proper fields">
                         </div>
+                        <div class="alert alert-danger" role="alert" id="password-error" style="display:none"></div>
+                        <div class="alert alert-danger" role="alert" id="field-error" style="display:none"></div>
+                        <div class="alert alert-danger" role="alert" id="database-error" style="display:none"></div>
+
 
                         <div class="col-12">
                             <button type="submit" class="btn btn-success">Create account</button>
