@@ -1,4 +1,4 @@
-# 🍵 TeaShop – Webshop Projekt
+# iTEA – Webshop Projekt
 
 ## Technologie-Stack
 - **Frontend:** HTML, CSS (Bootstrap 5), TypeScript (→ kompiliert zu JS), jQuery, AJAX
