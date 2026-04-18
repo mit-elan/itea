@@ -20,31 +20,16 @@ USE teashop;
 SOURCE database.sql;
 ```
 
-### 2. DB-Verbindung konfigurieren
-Datei: `backend/config/dbaccess.php`
-```php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'teashop');
-```
-
-### 3. TypeScript kompilieren
+### 2. TypeScript kompilieren
 ```bash
 npm install -g typescript
 tsc --watch
 ```
 Die kompilierten JS-Dateien landen automatisch in `frontend/js/`.
 
-### 4. Projekt starten
+### 3. Projekt starten
 Projektordner in XAMPP `htdocs/` ablegen und im Browser öffnen:
 `http://localhost/teashop/frontend/`
-
-## Admin-Zugang (manuell in DB anlegen)
-```sql
-INSERT INTO users (username, email, password, role) 
-VALUES ('admin', 'admin@teashop.at', SHA2('admin123', 256), 'admin');
-```
 
 ## Sprint-Übersicht
 - **Sprint 0:** Projektstruktur, Repository, Systemarchitektur, DB-Setup, Grundlayout
