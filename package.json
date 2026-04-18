@@ -1,0 +1,25 @@
+{
+  "name": "itea",
+  "version": "1.0.0",
+  "description": "- **Frontend:** HTML, CSS (Bootstrap 5), TypeScript (→ kompiliert zu JS), jQuery, AJAX - **Backend:** PHP (OOP), MySQL - **Architektur:** Strikte FE/BE-Trennung, JSON-basierte Kommunikation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mit-elan/itea.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mit-elan/itea/issues"
+  },
+  "homepage": "https://github.com/mit-elan/itea#readme",
+  "devDependencies": {
+    "@types/jquery": "^4.0.0",
+    "typescript": "^6.0.3"
+  }
+}

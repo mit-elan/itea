@@ -21,7 +21,7 @@ class DataHandler
     // ── Sprint 1: Produkte ────────────────────────────────────────#
 
     // public function getProducts(): array { 
-    // $result = $this->db->query("SELECT * FROM products");
+    //$result = $this->db->query("SELECT * FROM products");
     // return $result->fetch_all(MYSQLI_ASSOC);
     //}}
     // public function getProductsByCategory(int $categoryId): array { ... }
@@ -31,7 +31,38 @@ class DataHandler
     // ── Sprint 1: User / Auth ─────────────────────────────────────
     // public function getUserByUsername(string $username): ?array { ... }
     // public function getUserByEmail(string $email): ?array { ... }
-    // public function createUser(array $data): bool { ... }
+    public function createUser(array $data): string|bool
+    {
+        $stmt = $this->db->prepare("INSERT INTO user (salutation, first_name, last_name, address, zip, city, email, username, password, role, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $password = password_hash($data['password'], PASSWORD_DEFAULT);
+        $active = 1; // Standardmäßig aktiv
+        $role = 'customer'; // Standardrolle
+
+        $stmt->bind_param(
+            "ssssssssssi",
+            $data['salutation'],
+            $data['firstname'],
+            $data['lastname'],
+            $data['address'],
+            $data['zip'],
+            $data['city'],
+            $data['email'],
+            $data['username'],
+            $password,
+            $role,
+            $active
+        );
+        try {
+            $stmt->execute();
+            return true;
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() == 1062) {
+                return "doubleEntry";
+            }
+            return false;
+        }
+    }
+
 
     // ── Sprint 2: Warenkorb / Bestellungen ───────────────────────
     // public function createOrder(array $data): int { ... }
