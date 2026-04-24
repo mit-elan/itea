@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     height: 100%;
 }
 
@@ -114,7 +115,7 @@ main {
 ========================= */
 
 .products-page {
-    background-color: #f6f4ef; 
+    background-color: #f6f4ef;
 }
 
 .products-title {
@@ -183,7 +184,8 @@ main {
 
 /* Image area */
 .tea-card-image-wrapper {
-    background-color: #f3f1eb; /* subtle warm contrast */
+    background-color: #f3f1eb;
+    /* subtle warm contrast */
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
@@ -529,7 +531,7 @@ main {
     .cart-item-quantity,
     .cart-item-subtotal {
         padding-left: 3.25rem;
-}
+    }
 
 }
 
@@ -563,7 +565,7 @@ main {
         padding: 1.2rem;
     }
 
-        .cart-title {
+    .cart-title {
         font-size: 2.2rem;
     }
 
