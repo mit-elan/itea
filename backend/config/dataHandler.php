@@ -20,12 +20,31 @@ class DataHandler
     }
     // ── Sprint 1: Produkte ────────────────────────────────────────#
 
-    // public function getProducts(): array { 
-    //$result = $this->db->query("SELECT * FROM products");
-    // return $result->fetch_all(MYSQLI_ASSOC);
-    //}}
-    // public function getProductsByCategory(int $categoryId): array { ... }
-    // public function searchProducts(string $term): array { ... }
+    public function getProducts(): array
+    {
+        $result = $this->db->query("SELECT * FROM product");
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getProductsByCategory(int $categoryId): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM product WHERE category_id = ?");
+        $stmt->bind_param("i", $categoryId);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        return $result;
+    }
+
+    public function getProductById(int $id): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM product WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc() ?: [];
+        return $result;
+    }
+
+    // public function searchProducts(string $term): array {}
     // public function getCategories(): array { ... }
 
     // ── Sprint 1: User / Auth ─────────────────────────────────────
