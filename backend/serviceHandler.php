@@ -20,7 +20,6 @@ header('Access-Control-Allow-Origin: *');
 $handler = $_GET['handler'] ?? $_POST['handler'] ?? '';
 $method  = $_GET['method']  ?? $_POST['method']  ?? '';
 
-
 $requestHandler = new RequestHandler(new DataHandler());
 $result = $requestHandler->dispatch($handler, $method);
 
