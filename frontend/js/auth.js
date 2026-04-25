@@ -4,10 +4,79 @@
  * Sprint 1: SCRUM-54 (Login Formular), SCRUM-53 (Admin-User), SCRUM-52/51 (Registrierung)
  */
 $(document).ready(function () {
+    checkLoginStatus();
+    setupPasswordToggle();
+    $("#login-form").on("submit", function (event) {
+        event.preventDefault();
+        $("#login-message")
+            .hide()
+            .removeClass("alert-success alert-danger")
+            .text("");
+        const form = this;
+        // HTML5 Validierung ausführen
+        if (!form.checkValidity()) {
+            form.classList.add("was-validated");
+            return;
+        }
+        // Login-Daten aus dem Formular holen
+        const identifier = $("#login-identifier").val().trim();
+        const password = $("#login-password").val();
+        const remember = $("#remember-login").is(":checked");
+        $.ajax({
+            url: "/itea/backend/serviceHandler.php?handler=users&method=login",
+            type: "POST",
+            dataType: "json",
+            data: {
+                identifier: identifier,
+                password: password,
+                remember: remember,
+            },
+            success: function (response) {
+                if (response.error) {
+                    $("#login-message")
+                        .addClass("alert-danger")
+                        .text(response.error)
+                        .show();
+                    return;
+                }
+                $("#login-message")
+                    .addClass("alert-success")
+                    .text("Login successful!")
+                    .show();
+                // Rolle und User-ID werden vom Backend geliefert und dort in der Session gespeichert
+                window.location.href = "/itea/frontend/index.php";
+            },
+            error: function (xhr) {
+                $("#login-message")
+                    .addClass("alert-danger")
+                    .text("Fehler: " + xhr.responseText)
+                    .show();
+            },
+        });
+    });
+    $("#logout-button, #admin-logout-button").on("click", function (event) {
+        event.preventDefault();
+        $.ajax({
+            url: "/itea/backend/serviceHandler.php?handler=users&method=logout",
+            type: "POST",
+            dataType: "json",
+            success: function () {
+                window.location.href = "/itea/frontend/index.php";
+            },
+            error: function (xhr) {
+                alert("Fehler: " + xhr.responseText);
+            },
+        });
+    });
     $("#register-form").on("submit", function (event) {
         event.preventDefault();
         $("#password-error").hide().text("");
         $("#field-error").hide().text("");
+        $("#database-error").hide().text("");
+        $("#register-message")
+            .hide()
+            .removeClass("alert-success alert-danger")
+            .text("");
         const password = $("#password").val();
         const passwordConfirm = $("#password-repeat").val();
         // Flag ob es Fehler gibt
@@ -15,7 +84,7 @@ $(document).ready(function () {
         // Check 1: Passwörter
         if (password !== passwordConfirm) {
             $("#password-error").text("Passwords do not match").show();
-            hasError = true; // kein return – weitermachen mit nächstem Check
+            hasError = true;
         }
         // Alle Felder in ein User-Objekt packen
         const newUser = {
@@ -52,18 +121,76 @@ $(document).ready(function () {
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=users&method=register",
             type: "POST",
+            dataType: "json",
             data: newUser,
             success: function (response) {
                 if (response.error) {
-                    $("#database-error").text(response.error).show();
+                    $("#database-error")
+                        .text(response.error)
+                        .show();
+                    return;
                 }
-                else {
-                    alert("Registrierung erfolgreich!");
-                }
+                $("#register-message")
+                    .removeClass("d-none alert-danger")
+                    .addClass("alert-success")
+                    .text("Registration successful! Please log in.")
+                    .show();
+                $("#register-form")[0].reset();
+                // Nach kurzer Anzeige zur Login-Seite weiterleiten
+                setTimeout(function () {
+                    window.location.href = "/itea/frontend/sites/login.php";
+                }, 1500);
             },
             error: function (xhr) {
-                alert("Fehler: " + xhr.responseText);
+                $("#database-error")
+                    .text("Registration failed: " + xhr.responseText)
+                    .show();
             },
         });
     });
 });
+function setupPasswordToggle() {
+    const toggleButton = document.getElementById("toggle-login-password");
+    const passwordInput = document.getElementById("login-password");
+    if (!toggleButton || !passwordInput) {
+        return;
+    }
+    toggleButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleButton.textContent = "Hide";
+            return;
+        }
+        passwordInput.type = "password";
+        toggleButton.textContent = "Show";
+    });
+}
+function checkLoginStatus() {
+    $.ajax({
+        url: "/itea/backend/serviceHandler.php?handler=users&method=status",
+        type: "GET",
+        dataType: "json",
+        success: function (response) {
+            $(".customer-link").hide();
+            $(".admin-link").hide();
+            $("#login-link").show();
+            $("#register-link").show();
+            $("#products-link").show();
+            $("#cart-link").show();
+            if (response.loggedIn && response.role === "customer") {
+                $("#login-link").hide();
+                $("#register-link").hide();
+                $(".customer-link").show();
+                return;
+            }
+            if (response.loggedIn && response.role === "admin") {
+                $("#login-link").hide();
+                $("#register-link").hide();
+                $("#products-link").hide();
+                $("#cart-link").hide();
+                $(".admin-link").show();
+            }
+        },
+    });
+}
