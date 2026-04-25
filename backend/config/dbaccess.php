@@ -6,8 +6,8 @@
 // Datenbankverbindung – wird von DataHandler eingebunden
 function getDatabaseConnection() {
     $host = "localhost";
-    $user = "webProjektUser";
-    $password = "webProjekt";
+    $user = "root";
+    $password = "";
     $database = "webProjekt26";
 
     $db = new mysqli($host, $user, $password, $database);
