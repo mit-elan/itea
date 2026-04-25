@@ -608,3 +608,15 @@ main {
         font-size: 1.7rem;
     }
 }
+
+.account-toggle::after {
+    content: "▶";
+    border: none;
+    margin-left: 0.45rem;
+    vertical-align: middle;
+    font-size: 0.75rem;
+}
+
+.account-toggle.show::after {
+    content: "▼";
+}
