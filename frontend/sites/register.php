@@ -9,6 +9,8 @@
                 <div class="card-body p-4">
                     <h1 class="h3 mb-4">Register</h1>
 
+                    <div id="register-message" class="alert d-none" role="alert"></div>
+
                     <form id="register-form" class="row g-3">
                         <div class="col-md-2">
                             <label for="salutation" class="form-label">Salutation*</label>
@@ -68,10 +70,10 @@
                             <label for="payment-info" class="form-label">Payment information</label>
                             <input type="text" class="form-control" id="payment-info" placeholder="Will later be split into proper fields">
                         </div>
+
                         <div class="alert alert-danger" role="alert" id="password-error" style="display:none"></div>
                         <div class="alert alert-danger" role="alert" id="field-error" style="display:none"></div>
                         <div class="alert alert-danger" role="alert" id="database-error" style="display:none"></div>
-
 
                         <div class="col-12">
                             <button type="submit" class="btn btn-success">Create account</button>

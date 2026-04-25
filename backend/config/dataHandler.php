@@ -48,8 +48,26 @@ class DataHandler
     // public function getCategories(): array { ... }
 
     // ── Sprint 1: User / Auth ─────────────────────────────────────
-    // public function getUserByUsername(string $username): ?array { ... }
-    // public function getUserByEmail(string $email): ?array { ... }
+    public function getUserByIdentifier(string $identifier): ?array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT id, salutation, first_name, last_name, address, zip, city, email, username, password, role, active
+             FROM user
+             WHERE username = ? OR email = ?
+             LIMIT 1"
+        );
+
+        $stmt->bind_param("ss", $identifier, $identifier);
+        $stmt->execute();
+
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if (!$user) {
+            return null;
+        }
+
+        return $user;
+    }
     public function createUser(array $data): string|bool
     {
         $stmt = $this->db->prepare("INSERT INTO user (salutation, first_name, last_name, address, zip, city, email, username, password, role, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
