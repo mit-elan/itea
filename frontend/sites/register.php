@@ -66,11 +66,6 @@
                             <input type="password" class="form-control" id="password-repeat" required>
                         </div>
 
-                        <div class="col-12">
-                            <label for="payment-info" class="form-label">Payment information</label>
-                            <input type="text" class="form-control" id="payment-info" placeholder="Will later be split into proper fields">
-                        </div>
-
                         <div class="alert alert-danger" role="alert" id="password-error" style="display:none"></div>
                         <div class="alert alert-danger" role="alert" id="field-error" style="display:none"></div>
                         <div class="alert alert-danger" role="alert" id="database-error" style="display:none"></div>
