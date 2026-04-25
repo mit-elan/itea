@@ -48,14 +48,15 @@ $(document).ready(function () {
       .attr("src", "/iTEA/backend/productpictures/" + product.file_path)
       .attr("alt", product.name);
     $("#product-title").text(product.name);
-    $("#product-description").text(product.description);
 
-    // Sicherstellen, dass price eine Zahl ist, bevor toFixed genutzt wird
-    const price =
-      typeof product.price === "string"
-        ? parseFloat(product.price)
-        : product.price;
-    $("#product-price").text(`€ ${price.toFixed(2)} | 100g`);
+    const stars = "★".repeat(Math.floor(product.rating || 0)).padEnd(5, "☆");
+    const reviewText = product.rating > 0 ? product.rating + " Star-Rating" : " (0 reviews)";
+    $("#star-rating").text(stars);
+    $("#rating-text").text(reviewText);
+
+    $("#product-description").text(product.description);
+   
+    $("#product-price").text(`€ ${product.price} | 100g`);
   }
 
   // 2. Quantity Logik

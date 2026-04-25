@@ -14,8 +14,7 @@
     <div class="row align-items-center" id="product-details">
         <!-- Links: Bild -->
         <div class="col-md-6 mb-4 mb-md-0" id="product-image">
-            <!-- Hintergrund-Grau simuliert das vorherige Styling der Karte -->
-            <div class="bg-light p-4 d-flex align-items-center justify-content-center">
+            <div class="tea-style-container p-4">
                 <img src="" class="img-fluid object-fit-contain" alt="Produktbild" style="max-height: 100%;">
             </div>
         </div>
@@ -34,6 +33,13 @@
 
             <!-- Titel: display-6 für modernes, fettes Design -->
             <h1 class="display-6 fw-bold mb-3" id="product-title"></h1>
+
+            <div class="d-flex align-items-center mb-3">
+                <div id="product-rating" class="text-warning fs-5">
+                </div>
+                <span class="text-muted small" id="star-rating"></span>
+                <span class="text-muted small ms-2" id="rating-text"></span>
+            </div>
 
             <!-- Beschreibung: lead für bessere Lesbarkeit -->
             <p class="lead text-muted mb-4" id="product-description"></p>
