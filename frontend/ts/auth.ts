@@ -29,6 +29,7 @@ interface LoginResponse {
   username?: string;
 }
 
+//Login
 $(document).ready(function () {
   checkLoginStatus();
   setupPasswordToggle();
@@ -105,6 +106,7 @@ $(document).ready(function () {
     });
   });
 
+  //Register
   $("#register-form").on("submit", function (event) {
     event.preventDefault();
 
@@ -174,9 +176,7 @@ $(document).ready(function () {
       data: newUser,
       success: function (response) {
         if (response.error) {
-          $("#database-error")
-            .text(response.error)
-            .show();
+          $("#database-error").text(response.error).show();
 
           return;
         }
@@ -204,8 +204,12 @@ $(document).ready(function () {
 });
 
 function setupPasswordToggle(): void {
-  const toggleButton = document.getElementById("toggle-login-password") as HTMLButtonElement | null;
-  const passwordInput = document.getElementById("login-password") as HTMLInputElement | null;
+  const toggleButton = document.getElementById(
+    "toggle-login-password",
+  ) as HTMLButtonElement | null;
+  const passwordInput = document.getElementById(
+    "login-password",
+  ) as HTMLInputElement | null;
 
   if (!toggleButton || !passwordInput) {
     return;

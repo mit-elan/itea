@@ -3,6 +3,7 @@
  * auth.ts – Login & Registrierung
  * Sprint 1: SCRUM-54 (Login Formular), SCRUM-53 (Admin-User), SCRUM-52/51 (Registrierung)
  */
+//Login
 $(document).ready(function () {
     checkLoginStatus();
     setupPasswordToggle();
@@ -68,6 +69,7 @@ $(document).ready(function () {
             },
         });
     });
+    //Register
     $("#register-form").on("submit", function (event) {
         event.preventDefault();
         $("#password-error").hide().text("");
@@ -125,9 +127,7 @@ $(document).ready(function () {
             data: newUser,
             success: function (response) {
                 if (response.error) {
-                    $("#database-error")
-                        .text(response.error)
-                        .show();
+                    $("#database-error").text(response.error).show();
                     return;
                 }
                 $("#register-message")
