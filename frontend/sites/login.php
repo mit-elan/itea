@@ -1,9 +1,19 @@
-<?php include __DIR__ . '/../layouts/header.php'; ?>
-<?php include __DIR__ . '/../layouts/nav.php'; ?>
+<?php
+include __DIR__ . '/../layouts/header.php';
+include __DIR__ . '/../layouts/nav.php';
+
+if (isset($_GET['register']) && $_GET['register'] === 'success') { ?>
+    
+<?php }
+?>
+
 
 <main class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
+            <div id="registration-message" class="alert alert-success alert-dismissible fade show my-4 text-center" role="alert" style="display:none">
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             <div class="card shadow-sm">
                 <div class="card-body p-4">
 
@@ -24,8 +34,7 @@
                                 id="login-identifier"
                                 name="identifier"
                                 required
-                                autocomplete="username"
-                            >
+                                autocomplete="username">
 
                             <div class="invalid-feedback">
                                 Please enter your username or email.
@@ -44,15 +53,13 @@
                                     id="login-password"
                                     name="password"
                                     required
-                                    autocomplete="current-password"
-                                >
+                                    autocomplete="current-password">
 
                                 <button
                                     type="button"
                                     class="btn btn-outline-secondary"
                                     id="toggle-login-password"
-                                    aria-label="Show password"
-                                >
+                                    aria-label="Show password">
                                     Show
                                 </button>
 
@@ -67,8 +74,7 @@
                                 class="form-check-input"
                                 type="checkbox"
                                 id="remember-login"
-                                name="remember"
-                            >
+                                name="remember">
 
                             <label class="form-check-label" for="remember-login">
                                 Remember login
