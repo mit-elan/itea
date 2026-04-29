@@ -89,6 +89,8 @@ class DataHandler
             $role,
             $active
         );
+        //Füge User in DB ein - Catch error 1062: Doppelter Eintrag
+        //Gib als Success den String "doubleEntry" zurück an userHandler
         try {
             $stmt->execute();
             return true;
@@ -96,7 +98,7 @@ class DataHandler
             if ($e->getCode() == 1062) {
                 return "doubleEntry";
             }
-            return false;
+            return "databaseError";
         }
     }
 

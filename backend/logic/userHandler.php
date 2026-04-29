@@ -32,7 +32,7 @@ class UserHandler
             default => null,
         };
     }
-
+    //Login
     private function login()
     {
         foreach (['identifier', 'password'] as $field) {
@@ -74,6 +74,7 @@ class UserHandler
         ];
     }
 
+    //Logout
     private function logout()
     {
         //Session Daten löschen
@@ -99,6 +100,7 @@ class UserHandler
         return ['message' => 'Logout successful'];
     }
 
+    //Register
     private function register()
     {
         foreach (['salutation', 'firstname', 'lastname', 'address', 'zip', 'city', 'email', 'username', 'password'] as $field) {
@@ -109,29 +111,29 @@ class UserHandler
 
         $success = $this->dh->createUser($_POST);
 
-        if ($success === false) {
-            return ['error' => 'Registration failed due to a database error'];
-        } elseif ($success === "doubleEntry") {
-            return ['error' => 'Username or Email already taken'];
-        } else if ($success === true) {
+        if ($success === true) {
             return ['message' => 'Registration successful'];
+        } elseif ($success === "doubleEntry") {
+            return ['error' => 'Email or username already taken!'];
+        } else {
+            return ['error' => 'Registration failed due to a database error'];
         }
     }
 
     private function status()
-{
-    if (!isset($_SESSION['user_id'])) {
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return [
+                'loggedIn' => false,
+                'role' => 'guest'
+            ];
+        }
+
         return [
-            'loggedIn' => false,
-            'role' => 'guest'
+            'loggedIn' => true,
+            'userId' => $_SESSION['user_id'],
+            'username' => $_SESSION['username'],
+            'role' => $_SESSION['role']
         ];
     }
-
-    return [
-        'loggedIn' => true,
-        'userId' => $_SESSION['user_id'],
-        'username' => $_SESSION['username'],
-        'role' => $_SESSION['role']
-    ];
-}
 }
