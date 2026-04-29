@@ -9,8 +9,6 @@
                 <div class="card-body p-4">
                     <h1 class="h3 mb-4">Register</h1>
 
-                    <div id="register-message" class="alert d-none" role="alert"></div>
-
                     <form id="register-form" class="row g-3">
                         <div class="col-md-2">
                             <label for="salutation" class="form-label">Salutation*</label>
@@ -66,13 +64,17 @@
                             <input type="password" class="form-control" id="password-repeat" required>
                         </div>
 
-                        <div class="alert alert-danger" role="alert" id="password-error" style="display:none"></div>
-                        <div class="alert alert-danger" role="alert" id="field-error" style="display:none"></div>
-                        <div class="alert alert-danger" role="alert" id="database-error" style="display:none"></div>
-
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-success">Create account</button>
+                        <!-- 60px Platz für potentielle Fehlermeldung -->
+                        <div class="col-12" style="min-height: 60px;">
+                            <div id="password-error" class="alert alert-danger mb-1" style="display:none"></div>
+                            <div id="database-error" class="alert alert-danger mb-1" style="display:none"></div>
+                            <div id="field-error" class="alert alert-danger mb-1" style="display:none"></div>
                         </div>
+                        <div class="col-12">
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success">Create account</button>
+                            </div>
                     </form>
                 </div>
             </div>
