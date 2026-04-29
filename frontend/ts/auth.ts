@@ -33,6 +33,13 @@ interface LoginResponse {
 $(document).ready(function () {
   checkLoginStatus();
   setupPasswordToggle();
+  const params = new URLSearchParams(window.location.search);
+  const registerStatus = params.get("register"); // → "success"
+  if (registerStatus === "success") {
+    $("#registration-message")
+      .text("Registration successful! Please log in.")
+      .fadeIn(500);
+  }
 
   $("#login-form").on("submit", function (event) {
     event.preventDefault();
@@ -110,14 +117,11 @@ $(document).ready(function () {
   $("#register-form").on("submit", function (event) {
     event.preventDefault();
 
-    $("#password-error").hide().text("");
-    $("#field-error").hide().text("");
-    $("#database-error").hide().text("");
-
-    $("#register-message")
-      .hide()
-      .removeClass("alert-success alert-danger")
-      .text("");
+    // 1. IMMER zuerst alles wegräumen — Animationen stoppen, Text löschen, verstecken
+    $("#password-error, #field-error, #database-error, #register-message")
+      .stop(true, true) // Stoppt alle laufenden Animationen (wichtig gegen "Nachladen" alter Fehler)
+      .hide() // Versteckt die Boxen
+      .text(""); // Löscht den Textinhalt (leert die Nachricht)
 
     const password = $("#password").val() as string;
     const passwordConfirm = $("#password-repeat").val() as string;
@@ -127,7 +131,7 @@ $(document).ready(function () {
 
     // Check 1: Passwörter
     if (password !== passwordConfirm) {
-      $("#password-error").text("Passwords do not match").show();
+      $("#password-error").text("Passwords do not match").fadeIn(300);
       hasError = true;
     }
 
@@ -159,11 +163,9 @@ $(document).ready(function () {
     if (missingFields.length > 0) {
       $("#field-error")
         .text("Missing fields: " + missingFields.join(", "))
-        .show();
-
+        .fadeIn(300);
       hasError = true;
     }
-
     // Erst hier abbrechen wenn irgendein Fehler vorhanden
     if (hasError) {
       return;
@@ -175,25 +177,18 @@ $(document).ready(function () {
       dataType: "json",
       data: newUser,
       success: function (response) {
+        // Falls das Backend trotzdem einen Fehler meldet (z.B. Email existiert schon)
         if (response.error) {
           $("#database-error").text(response.error).show();
-
           return;
         }
 
-        $("#register-message")
-          .removeClass("d-none alert-danger")
-          .addClass("alert-success")
-          .text("Registration successful! Please log in.")
-          .show();
-
+        $("#password-error, #field-error, #database-error").text("").hide();
         ($("#register-form")[0] as HTMLFormElement).reset();
-
-        // Nach kurzer Anzeige zur Login-Seite weiterleiten
-        setTimeout(function () {
-          window.location.href = "/itea/frontend/sites/login.php";
-        }, 1500);
+        window.location.href =
+          "/itea/frontend/sites/login.php?register=success";
       },
+
       error: function (xhr) {
         $("#database-error")
           .text("Registration failed: " + xhr.responseText)
