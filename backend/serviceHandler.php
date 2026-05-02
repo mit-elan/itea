@@ -1,5 +1,6 @@
 <?php
-ini_set('display_errors', 1);
+if ($_SERVER['SERVER_NAME'] === 'localhost') {
+    ini_set('display_errors', 1);}
 error_reporting(E_ALL);
 /**
  * Zentraler Einstiegspunkt für alle AJAX-Requests vom Frontend.
