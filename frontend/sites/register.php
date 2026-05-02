@@ -1,6 +1,5 @@
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
-<script src="/itea/frontend/js/auth.js"></script>
 
 <main class="container py-5">
     <div class="row justify-content-center">

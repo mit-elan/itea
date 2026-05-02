@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../models/user.class.php';
+
 /**
  * UserHandler
  * Sprint 1: Login, Registrierung
@@ -45,32 +47,35 @@ class UserHandler
         $password = $_POST['password'];
 
         // User kann sich mit username oder email einloggen
-        $user = $this->dh->getUserByIdentifier($identifier);
+        $userData = $this->dh->getUserByIdentifier($identifier);
 
-        if (!$user) {
+        if (!$userData) {
             return ['error' => 'Invalid username/email or password'];
         }
 
+        // Aus den DB-Daten wird ein User Model erstellt
+        $user = new User($userData);
+
         // Inaktive User dürfen sich nicht einloggen
-        if ((int)$user['active'] !== 1) {
+        if (!$user->active) {
             return ['error' => 'This account is inactive'];
         }
 
         // Passwort gegen den gespeicherten Hash prüfen
-        if (!password_verify($password, $user['password'])) {
+        if (!$user->checkPassword($password)) {
             return ['error' => 'Invalid username/email or password'];
         }
 
         // Session Werte für eingeloggten User setzen
-        $_SESSION['user_id'] = (int)$user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
+        $_SESSION['user_id'] = $user->id;
+        $_SESSION['username'] = $user->username;
+        $_SESSION['role'] = $user->role;
 
         return [
             'message' => 'Login successful',
-            'userId' => (int)$user['id'],
-            'username' => $user['username'],
-            'role' => $user['role'],
+            'userId' => $user->id,
+            'username' => $user->username,
+            'role' => $user->role,
         ];
     }
 
