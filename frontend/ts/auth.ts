@@ -33,12 +33,12 @@ interface LoginResponse {
 $(document).ready(function () {
   checkLoginStatus();
   setupPasswordToggle();
+
+  //Parameter aus der URL lesen, falls User von Registration weitergeleitet wurde, wird Success Meesage ausgespielt
   const params = new URLSearchParams(window.location.search);
-  const registerStatus = params.get("register"); // → "success"
+  const registerStatus = params.get("register");
   if (registerStatus === "success") {
-    $("#registration-message")
-      .text("Registration successful! Please log in.")
-      .fadeIn(500);
+    $("#registration-message").fadeIn(500);
   }
 
   $("#login-form").on("submit", function (event) {
@@ -50,8 +50,7 @@ $(document).ready(function () {
       .text("");
 
     const form = this as HTMLFormElement;
-
-    // HTML5 Validierung ausführen
+    // HTML5 Validierung ausführen - macht die roten Rahmen, wenn fehlende Felder erkannt werden
     if (!form.checkValidity()) {
       form.classList.add("was-validated");
       return;
@@ -199,6 +198,30 @@ $(document).ready(function () {
 });
 
 function setupPasswordToggle(): void {
+  const $toggleButton = $("#toggle-login-password");
+  const $passwordInput = $("#login-password");
+
+  // Prüfen ob Elemente existieren
+  if ($toggleButton.length === 0 || $passwordInput.length === 0) {
+    return;
+  }
+
+  $toggleButton.on("click", function (event) {
+    event.preventDefault();
+
+    if ($passwordInput.attr("type") === "password") {
+      $passwordInput.attr("type", "text");
+      $toggleButton.text("Hide");
+      return;
+    }
+
+    $passwordInput.attr("type", "password");
+    $toggleButton.text("Show");
+  });
+}
+
+/*
+function setupPasswordToggle(): void {
   const toggleButton = document.getElementById(
     "toggle-login-password",
   ) as HTMLButtonElement | null;
@@ -222,7 +245,7 @@ function setupPasswordToggle(): void {
     passwordInput.type = "password";
     toggleButton.textContent = "Show";
   });
-}
+}*/
 
 function checkLoginStatus(): void {
   $.ajax({
