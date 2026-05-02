@@ -256,6 +256,17 @@ main {
     color: #ffffff;
 }
 
+.tea-style-container {
+    background-color: #f3f1eb;
+    border: 1px solid #e6e2d8;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.035);
+    aspect-ratio: 1 / 1;
+    /* Hält das Bild quadratisch wie in der Übersicht */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* =========================
    CART PAGE
 ========================= */
