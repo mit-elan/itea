@@ -7,12 +7,11 @@
 $(document).ready(function () {
     checkLoginStatus();
     setupPasswordToggle();
+    //Parameter aus der URL lesen, falls User von Registration weitergeleitet wurde, wird Success Meesage ausgespielt
     const params = new URLSearchParams(window.location.search);
-    const registerStatus = params.get("register"); // → "success"
+    const registerStatus = params.get("register");
     if (registerStatus === "success") {
-        $("#registration-message")
-            .text("Registration successful! Please log in.")
-            .fadeIn(500);
+        $("#registration-message").fadeIn(500);
     }
     $("#login-form").on("submit", function (event) {
         event.preventDefault();
@@ -21,7 +20,7 @@ $(document).ready(function () {
             .removeClass("alert-success alert-danger")
             .text("");
         const form = this;
-        // HTML5 Validierung ausführen
+        // HTML5 Validierung ausführen - macht die roten Rahmen, wenn fehlende Felder erkannt werden
         if (!form.checkValidity()) {
             form.classList.add("was-validated");
             return;
@@ -150,22 +149,49 @@ $(document).ready(function () {
     });
 });
 function setupPasswordToggle() {
-    const toggleButton = document.getElementById("toggle-login-password");
-    const passwordInput = document.getElementById("login-password");
-    if (!toggleButton || !passwordInput) {
+    const $toggleButton = $("#toggle-login-password");
+    const $passwordInput = $("#login-password");
+    // Prüfen ob Elemente existieren
+    if ($toggleButton.length === 0 || $passwordInput.length === 0) {
         return;
     }
-    toggleButton.addEventListener("click", function (event) {
+    $toggleButton.on("click", function (event) {
         event.preventDefault();
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            toggleButton.textContent = "Hide";
+        if ($passwordInput.attr("type") === "password") {
+            $passwordInput.attr("type", "text");
+            $toggleButton.text("Hide");
             return;
         }
-        passwordInput.type = "password";
-        toggleButton.textContent = "Show";
+        $passwordInput.attr("type", "password");
+        $toggleButton.text("Show");
     });
 }
+/*
+function setupPasswordToggle(): void {
+  const toggleButton = document.getElementById(
+    "toggle-login-password",
+  ) as HTMLButtonElement | null;
+  const passwordInput = document.getElementById(
+    "login-password",
+  ) as HTMLInputElement | null;
+
+  if (!toggleButton || !passwordInput) {
+    return;
+  }
+
+  toggleButton.addEventListener("click", function (event) {
+    event.preventDefault();
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      toggleButton.textContent = "Hide";
+      return;
+    }
+
+    passwordInput.type = "password";
+    toggleButton.textContent = "Show";
+  });
+}*/
 function checkLoginStatus() {
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=users&method=status",
