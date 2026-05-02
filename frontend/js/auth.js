@@ -16,7 +16,7 @@ $(document).ready(function () {
     $("#login-form").on("submit", function (event) {
         event.preventDefault();
         $("#login-message")
-            .hide()
+            .addClass("d-none")
             .removeClass("alert-success alert-danger")
             .text("");
         const form = this;
@@ -41,22 +41,32 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.error) {
                     $("#login-message")
+                        .removeClass("d-none alert-success")
                         .addClass("alert-danger")
                         .text(response.error)
                         .show();
                     return;
                 }
+                if (!response.userId || !response.role) {
+                    $("#login-message")
+                        .removeClass("d-none alert-success")
+                        .addClass("alert-danger")
+                        .text("Login failed. Please try again.")
+                        .show();
+                    return;
+                }
                 $("#login-message")
+                    .removeClass("d-none alert-danger")
                     .addClass("alert-success")
                     .text("Login successful!")
                     .show();
-                // Rolle und User-ID werden vom Backend geliefert und dort in der Session gespeichert
                 window.location.href = "/itea/frontend/index.php";
             },
-            error: function (xhr) {
+            error: function () {
                 $("#login-message")
+                    .removeClass("d-none alert-success")
                     .addClass("alert-danger")
-                    .text("Fehler: " + xhr.responseText)
+                    .text("Login failed. Please try again later.")
                     .show();
             },
         });
