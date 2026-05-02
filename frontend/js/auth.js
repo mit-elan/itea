@@ -3,9 +3,16 @@
  * auth.ts – Login & Registrierung
  * Sprint 1: SCRUM-54 (Login Formular), SCRUM-53 (Admin-User), SCRUM-52/51 (Registrierung)
  */
+//Login
 $(document).ready(function () {
     checkLoginStatus();
     setupPasswordToggle();
+    //Parameter aus der URL lesen, falls User von Registration weitergeleitet wurde, wird Success Meesage ausgespielt
+    const params = new URLSearchParams(window.location.search);
+    const registerStatus = params.get("register");
+    if (registerStatus === "success") {
+        $("#registration-message").fadeIn(500);
+    }
     $("#login-form").on("submit", function (event) {
         event.preventDefault();
         $("#login-message")
@@ -13,7 +20,7 @@ $(document).ready(function () {
             .removeClass("alert-success alert-danger")
             .text("");
         const form = this;
-        // HTML5 Validierung ausführen
+        // HTML5 Validierung ausführen - macht die roten Rahmen, wenn fehlende Felder erkannt werden
         if (!form.checkValidity()) {
             form.classList.add("was-validated");
             return;
@@ -68,22 +75,21 @@ $(document).ready(function () {
             },
         });
     });
+    //Register
     $("#register-form").on("submit", function (event) {
         event.preventDefault();
-        $("#password-error").hide().text("");
-        $("#field-error").hide().text("");
-        $("#database-error").hide().text("");
-        $("#register-message")
-            .hide()
-            .removeClass("alert-success alert-danger")
-            .text("");
+        // 1. IMMER zuerst alles wegräumen — Animationen stoppen, Text löschen, verstecken
+        $("#password-error, #field-error, #database-error, #register-message")
+            .stop(true, true) // Stoppt alle laufenden Animationen (wichtig gegen "Nachladen" alter Fehler)
+            .hide() // Versteckt die Boxen
+            .text(""); // Löscht den Textinhalt (leert die Nachricht)
         const password = $("#password").val();
         const passwordConfirm = $("#password-repeat").val();
         // Flag ob es Fehler gibt
         let hasError = false;
         // Check 1: Passwörter
         if (password !== passwordConfirm) {
-            $("#password-error").text("Passwords do not match").show();
+            $("#password-error").text("Passwords do not match").fadeIn(300);
             hasError = true;
         }
         // Alle Felder in ein User-Objekt packen
@@ -111,7 +117,7 @@ $(document).ready(function () {
         if (missingFields.length > 0) {
             $("#field-error")
                 .text("Missing fields: " + missingFields.join(", "))
-                .show();
+                .fadeIn(300);
             hasError = true;
         }
         // Erst hier abbrechen wenn irgendein Fehler vorhanden
@@ -124,22 +130,15 @@ $(document).ready(function () {
             dataType: "json",
             data: newUser,
             success: function (response) {
+                // Falls das Backend trotzdem einen Fehler meldet (z.B. Email existiert schon)
                 if (response.error) {
-                    $("#database-error")
-                        .text(response.error)
-                        .show();
+                    $("#database-error").text(response.error).show();
                     return;
                 }
-                $("#register-message")
-                    .removeClass("d-none alert-danger")
-                    .addClass("alert-success")
-                    .text("Registration successful! Please log in.")
-                    .show();
+                $("#password-error, #field-error, #database-error").text("").hide();
                 $("#register-form")[0].reset();
-                // Nach kurzer Anzeige zur Login-Seite weiterleiten
-                setTimeout(function () {
-                    window.location.href = "/itea/frontend/sites/login.php";
-                }, 1500);
+                window.location.href =
+                    "/itea/frontend/sites/login.php?register=success";
             },
             error: function (xhr) {
                 $("#database-error")
@@ -150,22 +149,49 @@ $(document).ready(function () {
     });
 });
 function setupPasswordToggle() {
-    const toggleButton = document.getElementById("toggle-login-password");
-    const passwordInput = document.getElementById("login-password");
-    if (!toggleButton || !passwordInput) {
+    const $toggleButton = $("#toggle-login-password");
+    const $passwordInput = $("#login-password");
+    // Prüfen ob Elemente existieren
+    if ($toggleButton.length === 0 || $passwordInput.length === 0) {
         return;
     }
-    toggleButton.addEventListener("click", function (event) {
+    $toggleButton.on("click", function (event) {
         event.preventDefault();
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            toggleButton.textContent = "Hide";
+        if ($passwordInput.attr("type") === "password") {
+            $passwordInput.attr("type", "text");
+            $toggleButton.text("Hide");
             return;
         }
-        passwordInput.type = "password";
-        toggleButton.textContent = "Show";
+        $passwordInput.attr("type", "password");
+        $toggleButton.text("Show");
     });
 }
+/*
+function setupPasswordToggle(): void {
+  const toggleButton = document.getElementById(
+    "toggle-login-password",
+  ) as HTMLButtonElement | null;
+  const passwordInput = document.getElementById(
+    "login-password",
+  ) as HTMLInputElement | null;
+
+  if (!toggleButton || !passwordInput) {
+    return;
+  }
+
+  toggleButton.addEventListener("click", function (event) {
+    event.preventDefault();
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      toggleButton.textContent = "Hide";
+      return;
+    }
+
+    passwordInput.type = "password";
+    toggleButton.textContent = "Show";
+  });
+}*/
 function checkLoginStatus() {
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=users&method=status",

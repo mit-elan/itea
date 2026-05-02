@@ -36,13 +36,13 @@
 
                 <li class="nav-item dropdown customer-link" style="display:none;">
                     <a class="nav-link dropdown-toggle account-toggle"
-   href="#"
-   id="accountDropdown"
-   role="button"
-   data-bs-toggle="dropdown"
-   aria-expanded="false">
-    My Account
-</a>
+                        href="#"
+                        id="accountDropdown"
+                        role="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        My Account
+                    </a>
 
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
                         <li>
