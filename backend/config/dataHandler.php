@@ -53,7 +53,7 @@ class DataHandler
         $stmt = $this->db->prepare(
             "SELECT id, salutation, first_name, last_name, address, zip, city, email, username, password, role, active
              FROM user
-             WHERE username = ? OR email = ?
+             WHERE BINARY username = ? OR email = ?
              LIMIT 1"
         );
 

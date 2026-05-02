@@ -71,7 +71,7 @@ main {
 .hero-modern {
     position: relative;
     height: 92vh;
-    background-image: url('/iTEA/frontend/assets/img/iTEAhero2.avif');
+    background-image: url('/iTEA/backend/productpictures/iTEAhero2.avif');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

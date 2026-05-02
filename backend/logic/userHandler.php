@@ -67,6 +67,7 @@ class UserHandler
         }
 
         // Session Werte für eingeloggten User setzen
+        session_regenerate_id(true);
         $_SESSION['user_id'] = $user->id;
         $_SESSION['username'] = $user->username;
         $_SESSION['role'] = $user->role;
