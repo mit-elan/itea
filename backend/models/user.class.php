@@ -1,5 +1,5 @@
 <?php
-/** Sprint 1 – User Model */
+// Sprint 1 - user model
 class User {
     public int    $id;
     public string $salutation;
@@ -29,7 +29,12 @@ class User {
         $this->active     = $data['active'] ?? true;
     }
 
-    /** Safe export – never expose password */
+    // Checks an inserted password against the saved hash
+    public function checkPassword(string $plainPassword): bool {
+        return password_verify($plainPassword, $this->password);
+    }
+
+    // Safe export, never expose password
     public function toArray(): array {
         return [
             'id'        => $this->id,
