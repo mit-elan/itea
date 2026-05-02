@@ -45,7 +45,7 @@ $(document).ready(function () {
     event.preventDefault();
 
     $("#login-message")
-      .hide()
+      .addClass("d-none")
       .removeClass("alert-success alert-danger")
       .text("");
 
@@ -71,28 +71,39 @@ $(document).ready(function () {
         remember: remember,
       },
       success: function (response: LoginResponse) {
-        if (response.error) {
-          $("#login-message")
-            .addClass("alert-danger")
-            .text(response.error)
-            .show();
-          return;
-        }
+  if (response.error) {
+    $("#login-message")
+      .removeClass("d-none alert-success")
+      .addClass("alert-danger")
+      .text(response.error)
+      .show();
+    return;
+  }
 
-        $("#login-message")
-          .addClass("alert-success")
-          .text("Login successful!")
-          .show();
+  if (!response.userId || !response.role) {
+    $("#login-message")
+      .removeClass("d-none alert-success")
+      .addClass("alert-danger")
+      .text("Login failed. Please try again.")
+      .show();
+    return;
+  }
 
-        // Rolle und User-ID werden vom Backend geliefert und dort in der Session gespeichert
-        window.location.href = "/itea/frontend/index.php";
-      },
-      error: function (xhr) {
-        $("#login-message")
-          .addClass("alert-danger")
-          .text("Fehler: " + xhr.responseText)
-          .show();
-      },
+  $("#login-message")
+    .removeClass("d-none alert-danger")
+    .addClass("alert-success")
+    .text("Login successful!")
+    .show();
+
+  window.location.href = "/itea/frontend/index.php";
+},
+error: function () {
+  $("#login-message")
+    .removeClass("d-none alert-success")
+    .addClass("alert-danger")
+    .text("Login failed. Please try again later.")
+    .show();
+},
     });
   });
 

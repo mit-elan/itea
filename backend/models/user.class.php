@@ -26,7 +26,7 @@ class User {
         $this->username   = $data['username']   ?? '';
         $this->password   = $data['password']   ?? '';
         $this->role       = $data['role']       ?? 'customer';
-        $this->active     = $data['active'] ?? true;
+        $this->active     = (bool)($data['active'] ?? true);
     }
 
     // Checks an inserted password against the saved hash
