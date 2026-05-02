@@ -25,17 +25,13 @@
                 </li>
 
                 <li class="nav-item admin-link" style="display:none;">
-                    <a class="nav-link" href="/itea/frontend/sites/admin-vouchers.php">Manage Vouchers</a>
+                    <a class="nav-link" href="/itea/frontend/sites/admin-coupons.php">Manage Coupons</a>
                 </li>
             </ul>
 
             <ul class="navbar-nav align-items-lg-center">
                 <li class="nav-item" id="login-link">
                     <a class="nav-link" href="/itea/frontend/sites/login.php">Login</a>
-                </li>
-
-                <li class="nav-item" id="register-link">
-                    <a class="nav-link" href="/itea/frontend/sites/register.php">Register</a>
                 </li>
 
                 <li class="nav-item dropdown customer-link" style="display:none;">
