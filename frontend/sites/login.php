@@ -3,7 +3,7 @@ include __DIR__ . '/../layouts/header.php';
 include __DIR__ . '/../layouts/nav.php';
 
 if (isset($_GET['register']) && $_GET['register'] === 'success') { ?>
-    
+
 <?php }
 ?>
 
@@ -11,7 +11,8 @@ if (isset($_GET['register']) && $_GET['register'] === 'success') { ?>
 <main class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <div id="registration-message" class="alert alert-success alert-dismissible fade show my-4 text-center" role="alert" style="display:none">
+            <div id="registration-message" class="alert alert-success alert-dismissable show my-4 text-center" role="alert" style="display:none">
+                Registration successful! Please log in.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <div class="card shadow-sm">
