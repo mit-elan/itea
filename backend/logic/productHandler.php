@@ -15,13 +15,9 @@ class ProductHandler
     public function handle(string $method): ?array
     {
         return match ($method) {
-
-            // Sprint 1
             'getAll'         => $this->getAll(),
             'getById'        => $this->getById(),
             'getByCategory'  => $this->getByCategory(),
-            //'search'         => $this->search(),
-            // 'getCategories'  => $this->getCategories(),
             default => null,
         };
     }
@@ -33,11 +29,11 @@ class ProductHandler
 
     private function getById(): array
     {
-        return $this->dh->getProductById((int)$_GET['id']);
+        return $this->dh->getProductById($_GET['id']);
     }
 
     private function getByCategory(): array
     {
-        return $this->dh->getProductsByCategory((int)$_GET['id']);
+        return $this->dh->getProductsByCategory($_GET['id']);
     }
 }
