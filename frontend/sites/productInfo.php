@@ -1,6 +1,7 @@
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
 <script src="/itea/frontend/js/productInfo.js"></script>
+<script src="/itea/frontend/js/cart.js"></script>
 
 <main class="container my-5">
     <div class="text-center p-5" style="display: none" id="no-tea-found">
@@ -64,7 +65,7 @@
                 </div>
 
                 <!-- Add to Cart Button: btn-dark und rounded-0 für den modernen Look -->
-                <button class="btn btn-dark rounded-0 px-5 py-2 fw-bold text-uppercase add-to-cart-btn">
+                <button class="btn btn-dark rounded-0 px-5 py-2 fw-bold text-uppercase add-to-cart-btn" id="button-addToCartDetail">
                     Add to cart
                 </button>
 
