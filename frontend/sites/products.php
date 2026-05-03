@@ -1,6 +1,10 @@
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
 <script src="/itea/frontend/js/products-dynamic.js"></script>
+<script src="/itea/frontend/js/cart.js"></script>
+
+
+
 
 <main class="products-page py-5">
     <div class="container">

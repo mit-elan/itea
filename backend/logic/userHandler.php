@@ -115,11 +115,11 @@ class UserHandler
             }
         }
 
-        $success = $this->dh->createUser($_POST);
+        $message = $this->dh->createUser($_POST);
 
-        if ($success === true) {
+        if ($message === true) {
             return ['message' => 'Registration successful'];
-        } elseif ($success === "doubleEntry") {
+        } elseif ($message === "doubleEntry") {
             return ['error' => 'Email or username already taken!'];
         } else {
             return ['error' => 'Registration failed due to a database error'];
@@ -134,12 +134,13 @@ class UserHandler
                 'role' => 'guest'
             ];
         }
-
+        $cartCount = $this->dh->getCartCount($_SESSION['user_id']);
         return [
             'loggedIn' => true,
             'userId' => $_SESSION['user_id'],
             'username' => $_SESSION['username'],
-            'role' => $_SESSION['role']
+            'role' => $_SESSION['role'],
+            'cartCount' => $cartCount
         ];
     }
 }

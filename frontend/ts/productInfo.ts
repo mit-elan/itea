@@ -1,5 +1,7 @@
 const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
+let userId;
+let currentValue;
 
 interface Product {
   id: number;
@@ -12,6 +14,21 @@ interface Product {
 }
 
 $(document).ready(function () {
+  let userIsAllowed = false; // Lokale Status-Variable
+
+  checkLoginStatus().then(function (response) {
+    userId = response.userId;
+    updateNavigation(response);
+    if (response.loggedIn && response.role === "customer") {
+      userIsAllowed = true;
+    } else {
+      $("#button-addToCart")
+        .addClass("disabled")
+        .prop("disabled", true)
+        .text("Log in to buy");
+    }
+  });
+
   $("#no-tea-found").hide();
   // 1. Daten laden
   if (productId) {
@@ -50,18 +67,19 @@ $(document).ready(function () {
     $("#product-title").text(product.name);
 
     const stars = "★".repeat(Math.floor(product.rating || 0)).padEnd(5, "☆");
-    const reviewText = product.rating > 0 ? product.rating + " Star-Rating" : " (0 reviews)";
+    const reviewText =
+      product.rating > 0 ? product.rating + " Star-Rating" : " (0 reviews)";
     $("#star-rating").text(stars);
     $("#rating-text").text(reviewText);
 
     $("#product-description").text(product.description);
-   
+
     $("#product-price").text(`€ ${product.price} | 100g`);
   }
 
   // 2. Quantity Logik
   $("#button-minus").on("click", function () {
-    let currentValue = parseInt($("#quantity-input").val() as string) || 1;
+    currentValue = parseInt($("#quantity-input").val() as string) || 1;
     if (currentValue > 1) {
       currentValue--;
       $("#quantity-input").val(currentValue);
@@ -72,5 +90,5 @@ $(document).ready(function () {
     let currentValue = parseInt($("#quantity-input").val() as string) || 1;
     currentValue++;
     $("#quantity-input").val(currentValue);
-  });
+  }); 
 });

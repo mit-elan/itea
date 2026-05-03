@@ -64,8 +64,8 @@
                     <a class="btn btn-outline-light position-relative" href="/itea/frontend/sites/cart.php">
                         Cart
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
-                            0
-                        </span>
+                    0    
+                    </span>
                     </a>
                 </li>
 

@@ -10,8 +10,18 @@ const CATEGORY_ID_TO_NAME = {
     4: "herbal",
 };
 $(document).ready(function () {
-    loadProducts("getAll");
     setupFilterLogic();
+    var canBuy = false;
+    var userId = null;
+    checkLoginStatus().then(function (response) {
+        updateNavigation(response);
+        if ((response.loggedIn && response.role === "customer") ||
+            (response.loggedIn && response.role === "admin")) {
+            canBuy = true;
+            userId = response.userId;
+        }
+        loadProducts(canBuy);
+    });
     $("#search-input").on("input", function () {
         $(".category-chip.active").removeClass("active");
         $("#button-all").addClass("active");
@@ -30,10 +40,9 @@ $(document).ready(function () {
             }
         });
     });
-    function loadProducts(method) {
-        console.log("Mehtode:" + method);
+    function loadProducts(canBuy) {
         $.ajax({
-            url: "/itea/backend/serviceHandler.php?handler=products&method=" + method,
+            url: "/itea/backend/serviceHandler.php?handler=products&method=getAll",
             method: "GET",
             success: function (data) {
                 $("#no-products").hide();
@@ -43,7 +52,7 @@ $(document).ready(function () {
                     $("#no-products").show();
                     return;
                 }
-                renderProducts(data);
+                renderProducts(data, canBuy);
             },
             error: function (err) {
                 console.error("Error loading products: ", err);
@@ -51,7 +60,7 @@ $(document).ready(function () {
             },
         });
     }
-    function renderProducts(products) {
+    function renderProducts(products, canBuy) {
         const $container = $("#product-list");
         $container.empty();
         if (!products) {
@@ -65,6 +74,9 @@ $(document).ready(function () {
             const categoryName = CATEGORY_ID_TO_NAME[product.category_id];
             const stars = "★".repeat(Math.floor(product.rating || 0)).padEnd(5, "☆");
             const reviewText = product.rating > 0 ? "" : " (0 reviews)";
+            const addToCartBtn = canBuy
+                ? `<button class="btn tea-card-button button-addToCartList" data-id="${product.id}">Add to cart</button>`
+                : `<button class="btn tea-card-button" disabled title="Please log in to buy">Log-in to buy</button>`;
             const cardHtml = `
             <div class="col-md-6 col-xl-4 product-item" data-category="${categoryName}"> 
                 <a href="productInfo.php?id=${product.id}" class="text-decoration-none text-dark">
@@ -78,11 +90,11 @@ $(document).ready(function () {
                             <p class="tea-card-rating mb-3">${stars}<span class="text-muted small">${reviewText}</span></p>
                             <div class="tea-card-footer mt-auto d-flex justify-content-between align-items-center gap-3">
                                 <p class="tea-card-price mb-0">€${Number(product.price).toFixed(2)}</p>
-                                <button class="btn tea-card-button add-to-cart-btn">Add to cart</button>
+                                </a>
+                                ${addToCartBtn}
                             </div>
                         </div>
                     </article>
-                </a>
             </div>`;
             $container.append(cardHtml);
         });
