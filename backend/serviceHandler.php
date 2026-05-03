@@ -33,3 +33,4 @@ if ($result === null) {
     echo json_encode($result);
 }
 
+?>

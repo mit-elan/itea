@@ -5,7 +5,9 @@
  */
 //Login
 $(document).ready(function () {
-    checkLoginStatus();
+    checkLoginStatus().then(function (response) {
+        updateNavigation(response);
+    });
     setupPasswordToggle();
     //Parameter aus der URL lesen, falls User von Registration weitergeleitet wurde, wird Success Meesage ausgespielt
     const params = new URLSearchParams(window.location.search);
@@ -203,30 +205,65 @@ function setupPasswordToggle(): void {
   });
 }*/
 function checkLoginStatus() {
-    $.ajax({
+    return $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=users&method=status",
         type: "GET",
         dataType: "json",
-        success: function (response) {
-            $(".customer-link").hide();
-            $(".admin-link").hide();
-            $("#login-link").show();
-            $("#register-link").show();
-            $("#products-link").show();
-            $("#cart-link").show();
-            if (response.loggedIn && response.role === "customer") {
-                $("#login-link").hide();
-                $("#register-link").hide();
-                $(".customer-link").show();
-                return;
-            }
-            if (response.loggedIn && response.role === "admin") {
-                $("#login-link").hide();
-                $("#register-link").hide();
-                $("#products-link").hide();
-                $("#cart-link").hide();
-                $(".admin-link").show();
-            }
-        },
     });
 }
+function updateNavigation(response) {
+    $(".customer-link").hide();
+    $(".admin-link").hide();
+    $("#login-link").show();
+    $("#register-link").show();
+    $("#products-link").show();
+    $("#cart-link").show();
+    if (response.loggedIn && response.role === "customer") {
+        $("#login-link").hide();
+        $("#register-link").hide();
+        $(".customer-link").show();
+        $("#cart-count").text(response.cartCount);
+        return;
+    }
+    if (response.loggedIn && response.role === "admin") {
+        $("#login-link").hide();
+        $("#register-link").hide();
+        $("#products-link").hide();
+        $("#cart-link").hide();
+        $(".admin-link").show();
+        $("#cart-count").text(response.cartCount);
+    }
+}
+/*
+function checkLoginStatus(): void {
+  $.ajax({
+    url: "/itea/backend/serviceHandler.php?handler=users&method=status",
+    type: "GET",
+    dataType: "json",
+    success: function (response) {
+      $(".customer-link").hide();
+      $(".admin-link").hide();
+
+      $("#login-link").show();
+      $("#register-link").show();
+      $("#products-link").show();
+      $("#cart-link").show();
+
+      if (response.loggedIn && response.role === "customer") {
+        $("#login-link").hide();
+        $("#register-link").hide();
+        $(".customer-link").show();
+        return;
+      }
+
+      if (response.loggedIn && response.role === "admin") {
+        $("#login-link").hide();
+        $("#register-link").hide();
+        $("#products-link").hide();
+        $("#cart-link").hide();
+        $(".admin-link").show();
+      }
+    },
+  });
+}
+*/
