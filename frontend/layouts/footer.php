@@ -5,7 +5,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-<!--<script src="/itea/frontend/assets/js/script.js">--!-</script>-->
 <script src="/itea/frontend/js/auth.js?v=5"></script>
 </body>
+
 </html>
