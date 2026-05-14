@@ -21,13 +21,13 @@ class UserHandler
         return match ($method) {
 
             // Sprint 1
-            'login'    => $this->login(),
+            'login' => $this->login(),
             'register' => $this->register(),
-            'logout'   => $this->logout(),
+            'logout' => $this->logout(),
             'status' => $this->status(),
 
             // Sprint 2
-            // 'getProfile'       => $this->getProfile(),
+            'getProfile' => $this->getProfile(),
             // 'updateProfile'    => $this->updateProfile(),
             // 'addPaymentMethod' => $this->addPaymentMethod(),
 
@@ -142,5 +142,26 @@ class UserHandler
             'role' => $_SESSION['role'],
             'cartCount' => $cartCount
         ];
+    }
+
+    private function getProfile()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return [
+                'error' => 'You must be logged in'
+            ];
+        }
+
+        $userData = $this->dh->getUserById($_SESSION['user_id']);
+
+        if (!$userData) {
+            return [
+                'error' => 'User not found'
+            ];
+        }
+
+        $user = new User($userData);
+
+        return $user->toArray();
     }
 }

@@ -68,6 +68,30 @@ class DataHandler
 
         return $user;
     }
+
+    
+    //Userdaten über Session-ID holen
+    public function getUserById(int $id): ?array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT id, salutation, first_name, last_name, address, zip, city, email, username, role, active
+         FROM user
+         WHERE id = ?
+         LIMIT 1"
+        );
+
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if (!$user) {
+            return null;
+        }
+
+        return $user;
+    }
+
     public function createUser(array $data): string|bool
     {
         $stmt = $this->db->prepare("INSERT INTO user (salutation, first_name, last_name, address, zip, city, email, username, password, role, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -116,7 +140,7 @@ class DataHandler
         $stmt->execute();
 
         return [
-            'success'   => true,
+            'success' => true,
             'cartCount' => $this->getCartCount($userId)  // ← wiederverwendet
         ];
     }
