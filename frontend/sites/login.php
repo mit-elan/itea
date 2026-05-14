@@ -6,6 +6,7 @@ if (isset($_GET['register']) && $_GET['register'] === 'success') { ?>
 
 <?php }
 ?>
+<script src="/itea/frontend/js/auth.js"></script>
 
 
 <main class="container py-5">
@@ -20,10 +21,9 @@ if (isset($_GET['register']) && $_GET['register'] === 'success') { ?>
 
                     <h1 class="h3 mb-4">Login</h1>
 
-                    <div id="login-message" class="alert d-none" role="alert"></div>
+                    <div id="login-message" class="alert" role="alert" style="display:none"></div>
 
                     <form id="login-form" novalidate>
-
                         <div class="mb-3">
                             <label for="login-identifier" class="form-label">
                                 Username or email
