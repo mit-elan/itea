@@ -6,7 +6,17 @@ let currentValue;
 $(document).ready(function () {
     let userIsAllowed = false; // Lokale Status-Variable
     checkLoginStatus().then(function (response) {
+        userId = response.userId;
         updateNavigation(response);
+        if (response.loggedIn && response.role === "customer") {
+            userIsAllowed = true;
+        }
+        else {
+            $("#button-addToCart")
+                .addClass("disabled")
+                .prop("disabled", true)
+                .text("Log in to buy");
+        }
     });
     $("#no-tea-found").hide();
     // 1. Daten laden

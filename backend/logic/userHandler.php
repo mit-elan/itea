@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../models/user.class.php';
+
 /**
  * UserHandler
  * Sprint 1: Login, Registrierung
@@ -19,14 +21,14 @@ class UserHandler
         return match ($method) {
 
             // Sprint 1
-            'login'    => $this->login(),
+            'login' => $this->login(),
             'register' => $this->register(),
-            'logout'   => $this->logout(),
+            'logout' => $this->logout(),
             'status' => $this->status(),
 
             // Sprint 2
-            // 'getProfile'       => $this->getProfile(),
-            // 'updateProfile'    => $this->updateProfile(),
+            'getProfile' => $this->getProfile(),
+            'updateProfile' => $this->updateProfile(),
             // 'addPaymentMethod' => $this->addPaymentMethod(),
 
             default => null,
@@ -45,32 +47,36 @@ class UserHandler
         $password = $_POST['password'];
 
         // User kann sich mit username oder email einloggen
-        $user = $this->dh->getUserByIdentifier($identifier);
+        $userData = $this->dh->getUserByIdentifier($identifier);
 
-        if (!$user) {
+        if (!$userData) {
             return ['error' => 'Invalid username/email or password'];
         }
 
+        // Aus den DB-Daten wird ein User Model erstellt
+        $user = new User($userData);
+
         // Inaktive User dürfen sich nicht einloggen
-        if ((int)$user['active'] !== 1) {
+        if (!$user->active) {
             return ['error' => 'This account is inactive'];
         }
 
         // Passwort gegen den gespeicherten Hash prüfen
-        if (!password_verify($password, $user['password'])) {
+        if (!$user->checkPassword($password)) {
             return ['error' => 'Invalid username/email or password'];
         }
 
         // Session Werte für eingeloggten User setzen
-        $_SESSION['user_id'] = (int)$user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $user->id;
+        $_SESSION['username'] = $user->username;
+        $_SESSION['role'] = $user->role;
 
         return [
             'message' => 'Login successful',
-            'userId' => (int)$user['id'],
-            'username' => $user['username'],
-            'role' => $user['role'],
+            'userId' => $user->id,
+            'username' => $user->username,
+            'role' => $user->role,
         ];
     }
 
@@ -145,6 +151,72 @@ class UserHandler
             'username'  => $_SESSION['username'],
             'role'      => $_SESSION['role'],
             'cartCount' => $cartCount
+        ];
+    }
+
+    private function getProfile()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return [
+                'error' => 'You must be logged in'
+            ];
+        }
+
+        $userData = $this->dh->getUserById($_SESSION['user_id']);
+
+        if (!$userData) {
+            return [
+                'error' => 'User not found'
+            ];
+        }
+
+        $user = new User($userData);
+
+        return $user->toArray();
+    }
+
+    private function updateProfile()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return [
+                'error' => 'You must be logged in'
+            ];
+        }
+
+        $userData = $this->dh->getUserById(
+            $_SESSION['user_id']
+        );
+
+        if (!$userData) {
+            return [
+                'error' => 'User not found'
+            ];
+        }
+
+        $user = new User($userData);
+
+        $password = $_POST['password'] ?? '';
+
+        // Passwort bestätigen
+        if (!$user->checkPassword($password)) {
+            return [
+                'error' => 'Incorrect password'
+            ];
+        }
+
+        $success = $this->dh->updateUser(
+            $_SESSION['user_id'],
+            $_POST
+        );
+
+        if (!$success) {
+            return [
+                'error' => 'Failed to update profile'
+            ];
+        }
+
+        return [
+            'success' => true
         ];
     }
 }
