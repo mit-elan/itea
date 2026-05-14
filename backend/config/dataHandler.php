@@ -49,12 +49,14 @@ class DataHandler
     // public function getCategories(): array { ... }
 
     // ── Sprint 1: User / Auth ─────────────────────────────────────
+
+    // Für Login: User über Username oder E-Mail identifizieren
     public function getUserByIdentifier(string $identifier): ?array
     {
         $stmt = $this->db->prepare(
             "SELECT id, salutation, first_name, last_name, address, zip, city, email, username, password, role, active
              FROM user
-             WHERE username = ? OR email = ?
+             WHERE BINARY username = ? OR email = ?
              LIMIT 1"
         );
 
