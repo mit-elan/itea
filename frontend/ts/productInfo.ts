@@ -17,16 +17,7 @@ $(document).ready(function () {
   let userIsAllowed = false; // Lokale Status-Variable
 
   checkLoginStatus().then(function (response) {
-    userId = response.userId;
     updateNavigation(response);
-    if (response.loggedIn && response.role === "customer") {
-      userIsAllowed = true;
-    } else {
-      $("#button-addToCart")
-        .addClass("disabled")
-        .prop("disabled", true)
-        .text("Log in to buy");
-    }
   });
 
   $("#no-tea-found").hide();
@@ -75,6 +66,7 @@ $(document).ready(function () {
     $("#product-description").text(product.description);
 
     $("#product-price").text(`€ ${product.price} | 100g`);
+    $("#button-addToCartDetail").data("id", product.id);
   }
 
   // 2. Quantity Logik
@@ -90,5 +82,5 @@ $(document).ready(function () {
     let currentValue = parseInt($("#quantity-input").val() as string) || 1;
     currentValue++;
     $("#quantity-input").val(currentValue);
-  }); 
+  });
 });

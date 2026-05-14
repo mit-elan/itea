@@ -58,6 +58,7 @@ $(document).ready(function () {
         $("#rating-text").text(reviewText);
         $("#product-description").text(product.description);
         $("#product-price").text(`€ ${product.price} | 100g`);
+        $("#button-addToCartDetail").data("id", product.id);
     }
     // 2. Quantity Logik
     $("#button-minus").on("click", function () {

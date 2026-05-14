@@ -1,23 +1,29 @@
 <?php
-/** Sprint 2 – PaymentMethod Model */
-class PaymentMethod {
-    public int    $id;
-    public int    $userId;
-    public string $type;
-    public string $details;  // masked display only
 
-    public function __construct(array $data) {
-        $this->id      = $data['id']      ?? 0;
-        $this->userId  = $data['user_id'] ?? 0;
-        $this->type    = $data['type']    ?? '';
-        $this->details = $data['details'] ?? '';
+/** Sprint 2 – PaymentMethod Model */
+class PaymentMethod
+{
+    public int    $userId;
+    public int $isBankAccount;
+    public string $cardNumber;  // masked display only
+    public string $label;
+
+    public function __construct(array $data)
+    {
+
+        $this->userId           = $data['user_id'] ?? 0;
+        $this->isBankAccount    = $data['paymentType']    ?? '';
+        $this->cardNumber       = $data['cardNumber'] ?? '';
+        $this->label           = $data['paymentName'] ?? '';
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
-            'id'      => $this->id,
-            'type'    => $this->type,
-            'details' => $this->details,
+            'id'      => $this->userId,
+            'type'    => $this->isBankAccount,
+            'details' => $this->cardNumber,
+            'label'   => $this->label
         ];
     }
 }
