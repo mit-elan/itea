@@ -28,7 +28,7 @@ class UserHandler
 
             // Sprint 2
             'getProfile' => $this->getProfile(),
-            // 'updateProfile'    => $this->updateProfile(),
+            'updateProfile' => $this->updateProfile(),
             // 'addPaymentMethod' => $this->addPaymentMethod(),
 
             default => null,
@@ -163,5 +163,50 @@ class UserHandler
         $user = new User($userData);
 
         return $user->toArray();
+    }
+
+    private function updateProfile()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return [
+                'error' => 'You must be logged in'
+            ];
+        }
+
+        $userData = $this->dh->getUserById(
+            $_SESSION['user_id']
+        );
+
+        if (!$userData) {
+            return [
+                'error' => 'User not found'
+            ];
+        }
+
+        $user = new User($userData);
+
+        $password = $_POST['password'] ?? '';
+
+        // Passwort bestätigen
+        if (!$user->checkPassword($password)) {
+            return [
+                'error' => 'Incorrect password'
+            ];
+        }
+
+        $success = $this->dh->updateUser(
+            $_SESSION['user_id'],
+            $_POST
+        );
+
+        if (!$success) {
+            return [
+                'error' => 'Failed to update profile'
+            ];
+        }
+
+        return [
+            'success' => true
+        ];
     }
 }

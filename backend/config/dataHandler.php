@@ -48,6 +48,8 @@ class DataHandler
     // public function getCategories(): array { ... }
 
     // ── Sprint 1: User / Auth ─────────────────────────────────────
+
+    // Für Login: User über Username oder E-Mail identifizieren
     public function getUserByIdentifier(string $identifier): ?array
     {
         $stmt = $this->db->prepare(
@@ -69,12 +71,12 @@ class DataHandler
         return $user;
     }
 
-    
-    //Userdaten über Session-ID holen
+
+    // Für bereits eingeloggte user: Userdaten über Session-ID holen
     public function getUserById(int $id): ?array
     {
         $stmt = $this->db->prepare(
-            "SELECT id, salutation, first_name, last_name, address, zip, city, email, username, role, active
+            "SELECT id, salutation, first_name, last_name, address, zip, city, email, username, password, role, active
          FROM user
          WHERE id = ?
          LIMIT 1"
@@ -90,6 +92,36 @@ class DataHandler
         }
 
         return $user;
+    }
+
+    public function updateUser(
+        int $id,
+        array $data
+    ): bool {
+
+        $stmt = $this->db->prepare(
+            "UPDATE user
+         SET first_name = ?,
+             last_name = ?,
+             email = ?,
+             address = ?,
+             zip = ?,
+             city = ?
+         WHERE id = ?"
+        );
+
+        $stmt->bind_param(
+            "ssssssi",
+            $data['firstname'],
+            $data['lastname'],
+            $data['email'],
+            $data['address'],
+            $data['zip'],
+            $data['city'],
+            $id
+        );
+
+        return $stmt->execute();
     }
 
     public function createUser(array $data): string|bool
