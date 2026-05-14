@@ -115,11 +115,18 @@ class UserHandler
             }
         }
 
-        $message = $this->dh->createUser($_POST);
+        foreach (['paymentName', 'paymentType', 'cardNumber'] as $field) {
+            if (empty($_POST[$field])) {
+                return ['error' => "Field '$field' is required"];
+            }
+        }
 
-        if ($message === true) {
+        $userId = $this->dh->createUser($_POST);
+
+        if (is_int($userId)) {
+            $this->dh->createPaymentMethod($userId, $_POST);
             return ['message' => 'Registration successful'];
-        } elseif ($message === "doubleEntry") {
+        } elseif ($userId === "doubleEntry") {
             return ['error' => 'Email or username already taken!'];
         } else {
             return ['error' => 'Registration failed due to a database error'];
@@ -128,18 +135,21 @@ class UserHandler
 
     private function status()
     {
+        $cartCount = array_sum($_SESSION['cart'] ?? []);
+
         if (!isset($_SESSION['user_id'])) {
             return [
-                'loggedIn' => false,
-                'role' => 'guest'
+                'loggedIn'  => false,
+                'role'      => 'guest',
+                'cartCount' => $cartCount
             ];
         }
-        $cartCount = $this->dh->getCartCount($_SESSION['user_id']);
+
         return [
-            'loggedIn' => true,
-            'userId' => $_SESSION['user_id'],
-            'username' => $_SESSION['username'],
-            'role' => $_SESSION['role'],
+            'loggedIn'  => true,
+            'userId'    => $_SESSION['user_id'],
+            'username'  => $_SESSION['username'],
+            'role'      => $_SESSION['role'],
             'cartCount' => $cartCount
         ];
     }

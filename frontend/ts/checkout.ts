@@ -11,23 +11,16 @@ interface Cart {
 }
 
 $(document).ready(function () {
-  let userId = null;
-  let userIsAllowed: boolean = false;
-
   checkLoginStatus().then(function (response) {
     updateNavigation(response);
     if (response.loggedIn && response.role === "customer") {
-      userId = response.userId;
-      userIsAllowed = true;
       loadCart();
     }
   });
 
   function loadCart() {
     $.ajax({
-      url:
-        "/itea/backend/serviceHandler.php?handler=cart&method=loadCart&userId=" +
-        userId,
+      url: "/itea/backend/serviceHandler.php?handler=cart&method=loadCart",
       type: "GET",
       dataType: "json",
       success: function (response) {
@@ -64,7 +57,7 @@ $(document).ready(function () {
                 <div class="col-8">
                     <div class="d-flex align-items-center">
                         <div class="cart-item-image-wrapper me-3" style="width: 60px; height: 60px;">
-                            <img src="/itea/backend/productpictures/${item.file_path}" 
+                            <img src="/itea/backend/productpictures/${item.file_path}"
                                  alt="${item.name}" class="cart-item-image">
                         </div>
                         <div>
@@ -81,8 +74,26 @@ $(document).ready(function () {
       $cartContainer.append(cartItemHtml);
     });
 
-    // Nach der Schleife einmal setzen
     $("#subtotal-value").text("€" + total.toFixed(2));
     $("#total-value").text("€" + total.toFixed(2));
   }
+
+  $(".cart-checkout-button").on("click", function () {
+    $.ajax({
+      url: "/itea/backend/serviceHandler.php?handler=orders&method=placeOrder",
+      type: "POST",
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          window.location.href = "/itea/frontend/sites/account.php";
+        } else {
+          alert("Order failed: " + response.error);
+        }
+      },
+      error: function (err) {
+        console.error("Error placing order: ", err);
+        alert("Failed to place order.");
+      },
+    });
+  });
 });
