@@ -10,36 +10,77 @@
 
                     <h1 class="h3 mb-4">My Account</h1>
 
-                    <div id="account-error"
-                         class="alert alert-danger d-none">
+                    <div id="account-error" class="alert alert-danger d-none">
+                    </div>
+
+                    <div id="account-success" class="alert alert-success d-none">
                     </div>
 
                     <div id="account-content" class="d-none">
 
-                        <div class="mb-3">
-                            <strong>Name:</strong>
-                            <span id="account-name"></span>
-                        </div>
+                        <form id="account-form">
 
-                        <div class="mb-3">
-                            <strong>Email:</strong>
-                            <span id="account-email"></span>
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    First Name
+                                </label>
 
-                        <div class="mb-3">
-                            <strong>Username:</strong>
-                            <span id="account-username"></span>
-                        </div>
+                                <input type="text" class="form-control" id="account-firstname" required>
+                            </div>
 
-                        <div class="mb-3">
-                            <strong>Address:</strong>
-                            <span id="account-address"></span>
-                        </div>
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Last Name
+                                </label>
 
-                        <div class="mb-3">
-                            <strong>ZIP / City:</strong>
-                            <span id="account-city"></span>
-                        </div>
+                                <input type="text" class="form-control" id="account-lastname" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Email
+                                </label>
+
+                                <input type="email" class="form-control" id="account-email" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Address
+                                </label>
+
+                                <input type="text" class="form-control" id="account-address">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    ZIP
+                                </label>
+
+                                <input type="text" class="form-control" id="account-zip">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    City
+                                </label>
+
+                                <input type="text" class="form-control" id="account-city">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    Confirm Password
+                                </label>
+
+                                <input type="password" class="form-control" id="account-password" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-dark">
+                                Save Changes
+                            </button>
+
+                        </form>
 
                     </div>
 
