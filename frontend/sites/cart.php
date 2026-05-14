@@ -58,7 +58,7 @@
                         <span id="total-value">€0.00</span>
                     </div>
 
-                    <a href="/iTEA/frontend/sites/checkout.php" class="cart-checkout-button text-center d-block">
+                    <a id="checkout-button" href="/iTEA/frontend/sites/checkout.php" class="cart-checkout-button text-center d-block">
                         Proceed to checkout
                     </a>
                 </aside>

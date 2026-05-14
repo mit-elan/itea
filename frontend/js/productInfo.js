@@ -1,7 +1,13 @@
 "use strict";
 const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
+let userId;
+let currentValue;
 $(document).ready(function () {
+    let userIsAllowed = false; // Lokale Status-Variable
+    checkLoginStatus().then(function (response) {
+        updateNavigation(response);
+    });
     $("#no-tea-found").hide();
     // 1. Daten laden
     if (productId) {
@@ -42,10 +48,11 @@ $(document).ready(function () {
         $("#rating-text").text(reviewText);
         $("#product-description").text(product.description);
         $("#product-price").text(`€ ${product.price} | 100g`);
+        $("#button-addToCartDetail").data("id", product.id);
     }
     // 2. Quantity Logik
     $("#button-minus").on("click", function () {
-        let currentValue = parseInt($("#quantity-input").val()) || 1;
+        currentValue = parseInt($("#quantity-input").val()) || 1;
         if (currentValue > 1) {
             currentValue--;
             $("#quantity-input").val(currentValue);

@@ -20,6 +20,12 @@ interface User {
   active: boolean;
 }
 
+interface PaymentMethod {
+  paymentName: string;
+  paymentType: string; // "0" = Credit-/Debitcard, "1" = Bank Account
+  cardNumber: string;
+}
+
 interface LoginResponse {
   success?: boolean;
   error?: string;
@@ -119,7 +125,9 @@ $(document).ready(function () {
     event.preventDefault();
 
     // 1. IMMER zuerst alles wegräumen — Animationen stoppen, Text löschen, verstecken
-    $("#password-error, #field-error, #database-error, #register-message")
+    $(
+      "#password-error, #field-error, #database-error, #payment-error, #register-message",
+    )
       .stop(true, true) // Stoppt alle laufenden Animationen (wichtig gegen "Nachladen" alter Fehler)
       .hide() // Versteckt die Boxen
       .text(""); // Löscht den Textinhalt (leert die Nachricht)
@@ -152,11 +160,44 @@ $(document).ready(function () {
       active: true,
     };
 
-    // Check 2: Pflichtfelder
+    // Check 2: Zahlungsmethode
+    const newPaymentMethod: PaymentMethod = {
+      paymentName: ($("#payment-name").val() as string).trim(),
+      paymentType: $("#payment-type").val() as string,
+      cardNumber: ($("#payment-number").val() as string).replace(/[\s-]/g, ""),
+    };
+
+    if (!newPaymentMethod.paymentName) {
+      hasError = true;
+    } else if (!newPaymentMethod.paymentType) {
+      hasError = true;
+    } else if (
+      newPaymentMethod.paymentType === "0" &&
+      !luhnCheck(newPaymentMethod.cardNumber)
+    ) {
+      $("#payment-error").text("Invalid card number").fadeIn(300);
+      hasError = true;
+    } else if (
+      newPaymentMethod.paymentType === "1" &&
+      !ibanCheck(newPaymentMethod.cardNumber)
+    ) {
+      $("#payment-error")
+        .text("Invalid IBAN (expected format e.g. AT12 3456 7890 1234 5678)")
+        .fadeIn(300);
+      hasError = true;
+    }
+
+    // Check 3: Pflichtfelders
     const missingFields: string[] = [];
 
     Object.entries(newUser).forEach(([key, value]) => {
       if (!value && key !== "id" && key !== "role" && key !== "active") {
+        missingFields.push(key);
+      }
+    });
+
+    Object.entries(newPaymentMethod).forEach(([key, value]) => {
+      if (!value) {
         missingFields.push(key);
       }
     });
@@ -167,6 +208,7 @@ $(document).ready(function () {
         .fadeIn(300);
       hasError = true;
     }
+
     // Erst hier abbrechen wenn irgendein Fehler vorhanden
     if (hasError) {
       return;
@@ -176,7 +218,7 @@ $(document).ready(function () {
       url: "/itea/backend/serviceHandler.php?handler=users&method=register",
       type: "POST",
       dataType: "json",
-      data: newUser,
+      data: { ...newUser, ...newPaymentMethod },
       success: function (response) {
         // Falls das Backend trotzdem einen Fehler meldet (z.B. Email existiert schon)
         if (response.error) {
@@ -249,7 +291,33 @@ function setupPasswordToggle(): void {
   });
 }*/
 
+// Luhn-Algorithmus: prüft ob eine Kartennummer rechnerisch gültig ist
+function luhnCheck(cardNumber: string): boolean {
+  const digits = cardNumber.replace(/[\s-]/g, "");
+  if (!/^\d{13,19}$/.test(digits)) return false;
+
+  let sum = 0;
+  let double = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10);
+    if (double) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    double = !double;
+  }
+  return sum % 10 === 0;
+}
+
+// Einfache IBAN-Formatprüfung: 2 Buchstaben, 2 Ziffern, bis zu 30 alphanumerische Zeichen
+function ibanCheck(iban: string): boolean {
+  const cleaned = iban.replace(/\s/g, "").toUpperCase();
+  return /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(cleaned);
+}
+
 function checkLoginStatus(): JQuery.jqXHR {
+  //
   return $.ajax({
     url: "/itea/backend/serviceHandler.php?handler=users&method=status",
     type: "GET",
@@ -264,12 +332,12 @@ function updateNavigation(response: any): void {
   $("#register-link").show();
   $("#products-link").show();
   $("#cart-link").show();
+  $("#cart-count").text(response.cartCount);
 
   if (response.loggedIn && response.role === "customer") {
     $("#login-link").hide();
     $("#register-link").hide();
     $(".customer-link").show();
-    $("#cart-count").text(response.cartCount);
     return;
   }
 
@@ -279,7 +347,6 @@ function updateNavigation(response: any): void {
     $("#products-link").hide();
     $("#cart-link").hide();
     $(".admin-link").show();
-    $("#cart-count").text(response.cartCount);
   }
 }
 

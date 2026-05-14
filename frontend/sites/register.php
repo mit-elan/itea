@@ -9,7 +9,11 @@
                 <div class="card-body p-4">
                     <h1 class="h3 mb-4">Register</h1>
 
-                    <form id="register-form" class="row g-3">
+                    <div class="col-12 mt-2">
+                        <h2 class="h5 mb-1">Personal Information</h2>
+                    </div>
+
+                    <form id="register-form" class="row g-3 mt-2">
                         <div class="col-md-2">
                             <label for="salutation" class="form-label">Salutation*</label>
                             <select class="form-select" id="salutation">
@@ -64,11 +68,43 @@
                             <input type="password" class="form-control" id="password-repeat" required>
                         </div>
 
+                        <!-- ===== PAYMENT METHOD ===== -->
+                        <div class="col-12 mt-2">
+                            <hr class="mb-3">
+                            <h2 class="h5 mb-1">Payment Method</h2>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="payment-name" class="form-label">Name*</label>
+                            <input type="text" class="form-control" id="payment-name"
+                                placeholder="e.g. My Mastercard" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="payment-type" class="form-label">Type*</label>
+                            <select class="form-select" id="payment-type">
+                                <option value="" selected>Select your payment type</option>
+                                <option value="0">Credit- / Debitcard</option>
+                                <option value="1">Bank Account</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label for="payment-number" class="form-label" id="number-label">Card number*</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control font-monospace"
+                                    id="payment-number"
+                                    required>
+                            </div>
+                        </div>
+                        <!-- ===== END PAYMENT METHOD ===== -->
+
                         <!-- 60px Platz für potentielle Fehlermeldung -->
                         <div class="col-12" style="min-height: 60px;">
                             <div id="password-error" class="alert alert-danger mb-1" style="display:none"></div>
                             <div id="database-error" class="alert alert-danger mb-1" style="display:none"></div>
                             <div id="field-error" class="alert alert-danger mb-1" style="display:none"></div>
+                            <div id="payment-error" class="alert alert-danger mb-1" style="display:none"></div>
                         </div>
                         <div class="col-12">
 
