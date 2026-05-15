@@ -16,7 +16,7 @@
         <!-- Links: Bild -->
         <div class="col-md-6 mb-4 mb-md-0" id="product-image">
             <div class="tea-style-container p-4">
-                <img src="" class="img-fluid object-fit-contain" alt="Produktbild" style="max-height: 100%;">
+                <img id="product-detail-img" class="tea-card-image" alt="">
             </div>
         </div>
 

@@ -127,59 +127,55 @@ class DataHandler
 
 
     // ── Sprint 2: Warenkorb / Bestellungen ───────────────────────
-    // Cart wird jetzt session-basiert verwaltet (cartHandler.php).
-    // DB-Methoden bleiben auskommentiert als Referenz.
 
-    // public function updateCart(int $userId, int $productId, int $quantity): array
-    // {
-    //     $stmt = $this->db->prepare("
-    //     INSERT INTO cart (user_id, product_id, quantity)
-    //     VALUES (?, ?, ?)
-    //     ON DUPLICATE KEY UPDATE
-    //     quantity = quantity + VALUES(quantity)
-    // ");
-    //     $stmt->bind_param("iii", $userId, $productId, $quantity);
-    //     $stmt->execute();
-    //     return [
-    //         'success'   => true,
-    //         'cartCount' => $this->getCartCount($userId)
-    //     ];
-    // }
+    // Ersetzt den gespeicherten DB-Cart eines Users komplett durch den Session-Cart.
+    // Wird beim Logout aufgerufen.
+    public function saveCartToDb(int $userId, array $sessionCart): void
+    {
+        $stmt = $this->db->prepare("DELETE FROM cart WHERE user_id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
 
-    // public function getCartCount(int $userId): int
-    // {
-    //     $stmt = $this->db->prepare("SELECT SUM(quantity) as total FROM cart WHERE user_id = ?");
-    //     $stmt->bind_param("i", $userId);
-    //     $stmt->execute();
-    //     $result = $stmt->get_result()->fetch_assoc();
-    //     return ($result['total'] ?? 0);
-    // }
+        if (empty($sessionCart)) return;
 
-    // public function getCart(int $userId): array
-    // {
-    //     $stmt = $this->db->prepare("
-    //     SELECT p.id, p.file_path, p.name, p.price, c.quantity
-    //     FROM cart c
-    //     JOIN product p ON c.product_id = p.id
-    //     WHERE c.user_id = ?
-    // ");
-    //     $stmt->bind_param("i", $userId);
-    //     $stmt->execute();
-    //     $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    //     return $result;
-    // }
+        $stmt = $this->db->prepare(
+            "INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)"
+        );
+        foreach ($sessionCart as $productId => $quantity) {
+            if ($quantity > 0) {
+                $stmt->bind_param("iii", $userId, $productId, $quantity);
+                $stmt->execute();
+            }
+        }
+    }
 
-    public function createOrder(int $userId, float $totalPrice, array $items): array
+    // Lädt den DB-Cart eines Users als Session-Format zurück: [product_id => quantity].
+    // Wird beim Login aufgerufen.
+    public function loadCartFromDb(int $userId): array
+    {
+        $stmt = $this->db->prepare("SELECT product_id, quantity FROM cart WHERE user_id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        $cart = [];
+        foreach ($rows as $row) {
+            $cart[$row['product_id']] = $row['quantity'];
+        }
+        return $cart;
+    }
+
+    public function createOrder(Order $order): array
     //Das noch leichter machen ohne diesen Datums String
     {
         $stmt = $this->db->prepare(
-            "INSERT INTO `order` (user_id, total_price) VALUES (?, ?)"
+            "INSERT INTO `order` (user_id, total_price, payment_method_id) VALUES (?, ?, ?)"
         );
-        $stmt->bind_param("id", $userId, $totalPrice);
+        $stmt->bind_param("idi", $order->userId, $order->totalPrice, $order->paymentMethodId);
         $stmt->execute();
         $orderId = $stmt->insert_id;
 
-        $invoiceNumber = 'INV-' . date('Ymd') . '-' . str_pad($orderId, 4, '0', STR_PAD_LEFT);
+        $invoiceNumber = 'INV-' . date('Ymd') . '-' . + $orderId;
 
         $stmt = $this->db->prepare("UPDATE `order` SET invoice_number = ? WHERE id = ?");
         $stmt->bind_param("si", $invoiceNumber, $orderId);
@@ -188,12 +184,20 @@ class DataHandler
         $stmt = $this->db->prepare(
             "INSERT INTO order_item (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)"
         );
-        foreach ($items as $item) {
+        foreach ($order->items as $item) {
             $stmt->bind_param("iiid", $orderId, $item['product_id'], $item['quantity'], $item['unit_price']);
             $stmt->execute();
         }
 
         return ['orderId' => $orderId, 'invoiceNumber' => $invoiceNumber];
+    }
+
+    public function getPaymentMethodsByUserId(int $userId): array
+    {
+        $stmt = $this->db->prepare("SELECT id, is_bank_account, card_number, label FROM payment_method WHERE user_id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     // public function getOrdersByUser(int $userId): array { ... }
@@ -210,3 +214,5 @@ class DataHandler
     // public function getCouponByCode(string $code): ?array { ... }
     // public function redeemCoupon(string $code, int $userId): bool { ... }
 }
+
+
