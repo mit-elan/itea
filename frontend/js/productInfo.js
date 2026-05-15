@@ -6,17 +6,7 @@ let currentValue;
 $(document).ready(function () {
     let userIsAllowed = false; // Lokale Status-Variable
     checkLoginStatus().then(function (response) {
-        userId = response.userId;
         updateNavigation(response);
-        if (response.loggedIn && response.role === "customer") {
-            userIsAllowed = true;
-        }
-        else {
-            $("#button-addToCart")
-                .addClass("disabled")
-                .prop("disabled", true)
-                .text("Log in to buy");
-        }
     });
     $("#no-tea-found").hide();
     // 1. Daten laden
@@ -30,10 +20,11 @@ $(document).ready(function () {
     }
     function loadProduct() {
         $.ajax({
-            url: "/itea/backend/serviceHandler.php?handler=products&method=getById&id=" +
-                productId,
-            method: "GET",
-            dataType: "json", // Stellt sicher, dass jQuery das JSON automatisch parst
+            url: "/itea/backend/serviceHandler.php?handler=products&method=getById",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ id: Number(productId) }),
+            dataType: "json",
             success: function (data) {
                 if (!data || (Array.isArray(data) && data.length === 0)) {
                     $("#product-details").hide();
@@ -48,16 +39,16 @@ $(document).ready(function () {
         });
     }
     function renderProduct(product) {
-        $("#product-image img")
-            .attr("src", "/iTEA/backend/productpictures/" + product.file_path)
+        $("#product-detail-img")
+            .attr("src", "/itea/backend/productpictures/" + product.filePath)
             .attr("alt", product.name);
         $("#product-title").text(product.name);
         const stars = "★".repeat(Math.floor(product.rating || 0)).padEnd(5, "☆");
-        const reviewText = product.rating > 0 ? product.rating + " Star-Rating" : " (0 reviews)";
+        const reviewText = typeof product.rating === "number" && product.rating > 0 ? product.rating + " Star-Rating" : " (0 reviews)";
         $("#star-rating").text(stars);
         $("#rating-text").text(reviewText);
         $("#product-description").text(product.description);
-        $("#product-price").text(`€ ${product.price} | 100g`);
+        $("#product-price").text(`€ ${Number(product.price).toFixed(2)} | 100g`);
         $("#button-addToCartDetail").data("id", product.id);
     }
     // 2. Quantity Logik

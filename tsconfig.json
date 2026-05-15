@@ -3,7 +3,7 @@
     "target": "ES6",
     "module": "none",
     "ignoreDeprecations": "6.0",
-    "strict": false,
+    "strict": true,
     "skipLibCheck": true,
     "lib": [
       "ES2017",
@@ -12,7 +12,10 @@
     "types": [
       "jquery"
     ],
-    "outDir": "./frontend/js", // JS-Output Ordner
-    "rootDir": "./frontend/ts", // TS-Source Ordner
-  }
+    "outDir": "./frontend/js",
+    "rootDir": "./frontend/ts"
+  },
+  "include": [
+    "./frontend/ts/**/*"
+  ]
 }

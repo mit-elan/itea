@@ -37,28 +37,17 @@
                 <aside class="cart-summary">
                     <h2 class="cart-summary-title">Cart Summary</h2>
 
-                    <div class="cart-summary-row d-flex justify-content-between">
+                    <div class="cart-summary-total d-flex justify-content-between">
                         <span>Subtotal</span>
                         <span id="subtotal-value">€0.00</span>
                     </div>
 
-
-                    <!-- VOUCHER HIER IN DER SUMMARY -->
-                    <div class="cart-coupon mt-4 mb-4">
-                        <div class="d-flex w-100">
-                            <input type="text" class="cart-coupon-input flex-grow-1" placeholder="Voucher code" style="min-width: 0;">
-                            <button class="btn cart-coupon-button">Apply</button>
-                        </div>
-                    </div>
-
                     <div class="cart-summary-divider"></div>
 
-                    <div class="cart-summary-total d-flex justify-content-between">
-                        <span>Total</span>
-                        <span id="total-value">€0.00</span>
-                    </div>
-
-                    <a id="checkout-button" href="/iTEA/frontend/sites/checkout.php" class="cart-checkout-button text-center d-block">
+                    <p id="checkout-hint" class="text-muted small text-center mt-1" style="display:none;">
+                    </p>
+                    <a id="checkout-button" href="/iTEA/frontend/sites/checkout.php"
+                        class="cart-checkout-button text-center d-block">
                         Proceed to checkout
                     </a>
                 </aside>
@@ -67,5 +56,35 @@
         </div> <!-- Ende der Haupt-Row -->
     </div>
 </main>
+
+<template id="cart-item-template">
+    <article class="cart-item">
+        <div class="row align-items-center">
+            <div class="col-md-6 col-12">
+                <div class="cart-item-main">
+                    <button class="cart-remove" aria-label="Remove item">×</button>
+                    <div class="cart-item-image-wrapper">
+                        <img src="" alt="" class="cart-item-image">
+                    </div>
+                    <div class="cart-item-details">
+                        <h2 class="cart-item-title"></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mt-3 mt-md-0 text-md-center">
+                <div class="cart-item-price"></div>
+            </div>
+            <div class="col-md-2 col-4 mt-3 mt-md-0 d-flex flex-column align-items-md-center">
+                <div class="cart-item-quantity">
+                    <input type="number" min="1" class="cart-quantity-input">
+                </div>
+            </div>
+            <div class="col-md-2 col-4 mt-3 mt-md-0 text-end">
+                <span class="d-md-none d-block small text-muted">Subtotal</span>
+                <div class="cart-item-subtotal"></div>
+            </div>
+        </div>
+    </article>
+</template>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

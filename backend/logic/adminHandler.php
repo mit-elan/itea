@@ -13,7 +13,7 @@ class AdminHandler
         $this->dh = $dh;
     }
 
-    public function handle(string $method): ?array
+    public function handle(string $method, array $data = []): ?array
     {
         if (!isAdmin()) {
             http_response_code(403);
