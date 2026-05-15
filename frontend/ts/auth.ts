@@ -53,7 +53,7 @@ $(document).ready(function () {
     event.preventDefault();
 
     $("#login-message")
-      .addClass("d-none")
+      .hide()
       .removeClass("alert-success alert-danger")
       .text("");
 
@@ -79,39 +79,28 @@ $(document).ready(function () {
         remember: remember,
       },
       success: function (response: LoginResponse) {
-  if (response.error) {
-    $("#login-message")
-      .removeClass("d-none alert-success")
-      .addClass("alert-danger")
-      .text(response.error)
-      .show();
-    return;
-  }
+        if (response.error) {
+          $("#login-message")
+            .addClass("alert-danger")
+            .text(response.error)
+            .show();
+          return;
+        }
 
-  if (!response.userId || !response.role) {
-    $("#login-message")
-      .removeClass("d-none alert-success")
-      .addClass("alert-danger")
-      .text("Login failed. Please try again.")
-      .show();
-    return;
-  }
+        $("#login-message")
+          .addClass("alert-success")
+          .text("Login successful!")
+          .show();
 
-  $("#login-message")
-    .removeClass("d-none alert-danger")
-    .addClass("alert-success")
-    .text("Login successful!")
-    .show();
-
-  window.location.href = "/itea/frontend/index.php";
-},
-error: function () {
-  $("#login-message")
-    .removeClass("d-none alert-success")
-    .addClass("alert-danger")
-    .text("Login failed. Please try again later.")
-    .show();
-},
+        // Rolle und User-ID werden vom Backend geliefert und dort in der Session gespeichert
+        window.location.href = "/itea/frontend/index.php";
+      },
+      error: function (xhr) {
+        $("#login-message")
+          .addClass("alert-danger")
+          .text("Fehler: " + xhr.responseText)
+          .show();
+      },
     });
   });
 
@@ -174,15 +163,11 @@ error: function () {
     // Check 2: Zahlungsmethode
     const newPaymentMethod: PaymentMethod = {
       paymentName: ($("#payment-name").val() as string).trim(),
-      paymentType: $("#payment-type").val() as string,
+      paymentType: String($("#payment-type").val() ?? ""),
       cardNumber: ($("#payment-number").val() as string).replace(/[\s-]/g, ""),
     };
 
-    if (!newPaymentMethod.paymentName) {
-      hasError = true;
-    } else if (!newPaymentMethod.paymentType) {
-      hasError = true;
-    } else if (
+    if (
       newPaymentMethod.paymentType === "0" &&
       !luhnCheck(newPaymentMethod.cardNumber)
     ) {
@@ -208,7 +193,7 @@ error: function () {
     });
 
     Object.entries(newPaymentMethod).forEach(([key, value]) => {
-      if (!value) {
+      if (value === "" || value == null) {
         missingFields.push(key);
       }
     });
@@ -274,33 +259,6 @@ function setupPasswordToggle(): void {
     $toggleButton.text("Show");
   });
 }
-
-/*
-function setupPasswordToggle(): void {
-  const toggleButton = document.getElementById(
-    "toggle-login-password",
-  ) as HTMLButtonElement | null;
-  const passwordInput = document.getElementById(
-    "login-password",
-  ) as HTMLInputElement | null;
-
-  if (!toggleButton || !passwordInput) {
-    return;
-  }
-
-  toggleButton.addEventListener("click", function (event) {
-    event.preventDefault();
-
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      toggleButton.textContent = "Hide";
-      return;
-    }
-
-    passwordInput.type = "password";
-    toggleButton.textContent = "Show";
-  });
-}*/
 
 // Luhn-Algorithmus: prüft ob eine Kartennummer rechnerisch gültig ist
 function luhnCheck(cardNumber: string): boolean {

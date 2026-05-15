@@ -41,36 +41,27 @@
                     <!-- 4. Total Wert -->
                     <div class="cart-summary-total d-flex justify-content-between mt-4 mb-5">
                         <span>Total Amount</span>
-                        <span id="total-value">€0.00</span> <!-- ← id hinzufügen -->
+                        <span id="total-value"></span> <!-- ← id hinzufügen -->
                     </div>
 
                     <!-- 3. Payment Sektion -->
                     <div class="mb-4">
                         <h2 class="h5 fw-bold mb-3 text-uppercase">Payment Method</h2>
-
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="radio" name="payment" id="pay1" checked>
-                            <label class="form-check-label w-100" for="pay1">
-                                <span class="fw-bold d-block">Credit Card</span>
-                                <span class="small text-muted">Visa / Mastercard ending in XX45</span>
-                            </label>
+                        <div id="payment-methods-container">
+                            <!-- Hier werden die Zahlungsmethoden dynamisch eingefügt -->
                         </div>
 
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="radio" name="payment" id="pay2">
-                            <label class="form-check-label w-100" for="pay2">
-                                <span class="fw-bold d-block">Bank Transfer (IBAN)</span>
-                                <span class="small text-muted">DE XXXX XXXX XXXX XX89</span>
-                            </label>
-                        </div>
-
-                        <a href="/iTEA/frontend/sites/profile.php" class="small text-decoration-none text-dark d-block mt-2 opacity-75">
+                        <a href="/iTEA/frontend/sites/profile.php"
+                            class="small text-dark d-block mt-2 opacity-75"
+                            style="text-decoration: none;"
+                            onmouseover="this.style.textDecoration='underline'"
+                            onmouseout="this.style.textDecoration='none'">
                             Payment method missing? Add it in your profile.
                         </a>
                     </div>
 
                     <!-- Button: Zahlungspflichtig bestellen -->
-                    <button type="submit" class="cart-checkout-button w-100 py-3 border-0">
+                    <button type="submit" class="cart-checkout-button w-100 py-3 border-0" id = "order-button">
                         Place Order
                     </button>
                 </div>
@@ -78,5 +69,32 @@
         </div>
     </div>
 </main>
+
+<template id="checkout-item-template">
+    <div class="row align-items-center mb-4">
+        <div class="col-8">
+            <div class="d-flex align-items-center">
+                <div class="cart-item-image-wrapper me-3" style="width: 60px; height: 60px;">
+                    <img src="" alt="" class="cart-item-image">
+                </div>
+                <div>
+                    <h3 class="cart-item-title h6 mb-1"></h3>
+                    <span class="text-muted small cart-item-quantity"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 text-end fw-bold cart-item-subtotal"></div>
+    </div>
+</template>
+
+<template id="payment-method-template">
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="radio" name="payment">
+        <label class="form-check-label w-100">
+            <span class="fw-bold d-block payment-type-label"></span>
+            <span class="small text-muted payment-sub-label"></span>
+        </label>
+    </div>
+</template>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>
