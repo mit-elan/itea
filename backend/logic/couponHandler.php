@@ -7,7 +7,7 @@ class CouponHandler {
     private DataHandler $dh;
     public function __construct(DataHandler $dh) { $this->dh = $dh; }
 
-    public function handle(string $method): ?array {
+    public function handle(string $method, array $data = []): ?array {
         return match($method) {
             // Sprint 4
             // 'validate' => $this->validate(),

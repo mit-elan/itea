@@ -10,20 +10,18 @@ class PaymentMethod
 
     public function __construct(array $data)
     {
-
-        $this->userId           = $data['user_id'] ?? 0;
-        $this->isBankAccount    = $data['paymentType']    ?? '';
-        $this->cardNumber       = $data['cardNumber'] ?? '';
-        $this->label           = $data['paymentName'] ?? '';
+        $this->userId        = $data['user_id'] ?? 0;
+        $this->isBankAccount = (int) ($data['is_bank_account'] ?? 0);
+        $this->cardNumber    = $data['card_number'] ?? '';
+        $this->label         = $data['label'] ?? '';
     }
 
     public function toArray(): array
     {
         return [
-            'id'      => $this->userId,
-            'type'    => $this->isBankAccount,
-            'details' => $this->cardNumber,
-            'label'   => $this->label
+            'label'         => $this->label,
+            'cardNumber'    => $this->cardNumber,
+            'isBankAccount' => $this->isBankAccount,
         ];
     }
 }

@@ -18,7 +18,7 @@ $(document).ready(function () {
     $("#login-form").on("submit", function (event) {
         event.preventDefault();
         $("#login-message")
-            .addClass("d-none")
+            .hide()
             .removeClass("alert-success alert-danger")
             .text("");
         const form = this;
@@ -43,32 +43,22 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.error) {
                     $("#login-message")
-                        .removeClass("d-none alert-success")
                         .addClass("alert-danger")
                         .text(response.error)
                         .show();
                     return;
                 }
-                if (!response.userId || !response.role) {
-                    $("#login-message")
-                        .removeClass("d-none alert-success")
-                        .addClass("alert-danger")
-                        .text("Login failed. Please try again.")
-                        .show();
-                    return;
-                }
                 $("#login-message")
-                    .removeClass("d-none alert-danger")
                     .addClass("alert-success")
                     .text("Login successful!")
                     .show();
+                // Rolle und User-ID werden vom Backend geliefert und dort in der Session gespeichert
                 window.location.href = "/itea/frontend/index.php";
             },
-            error: function () {
+            error: function (xhr) {
                 $("#login-message")
-                    .removeClass("d-none alert-success")
                     .addClass("alert-danger")
-                    .text("Login failed. Please try again later.")
+                    .text("Fehler: " + xhr.responseText)
                     .show();
             },
         });
@@ -89,6 +79,7 @@ $(document).ready(function () {
     });
     //Register
     $("#register-form").on("submit", function (event) {
+        var _a;
         event.preventDefault();
         // 1. IMMER zuerst alles wegräumen — Animationen stoppen, Text löschen, verstecken
         $("#password-error, #field-error, #database-error, #payment-error, #register-message")
@@ -122,16 +113,10 @@ $(document).ready(function () {
         // Check 2: Zahlungsmethode
         const newPaymentMethod = {
             paymentName: $("#payment-name").val().trim(),
-            paymentType: $("#payment-type").val(),
+            paymentType: String((_a = $("#payment-type").val()) !== null && _a !== void 0 ? _a : ""),
             cardNumber: $("#payment-number").val().replace(/[\s-]/g, ""),
         };
-        if (!newPaymentMethod.paymentName) {
-            hasError = true;
-        }
-        else if (!newPaymentMethod.paymentType) {
-            hasError = true;
-        }
-        else if (newPaymentMethod.paymentType === "0" &&
+        if (newPaymentMethod.paymentType === "0" &&
             !luhnCheck(newPaymentMethod.cardNumber)) {
             $("#payment-error").text("Invalid card number").fadeIn(300);
             hasError = true;
@@ -151,7 +136,7 @@ $(document).ready(function () {
             }
         });
         Object.entries(newPaymentMethod).forEach(([key, value]) => {
-            if (!value) {
+            if (value === "" || value == null) {
                 missingFields.push(key);
             }
         });
@@ -207,32 +192,6 @@ function setupPasswordToggle() {
         $toggleButton.text("Show");
     });
 }
-/*
-function setupPasswordToggle(): void {
-  const toggleButton = document.getElementById(
-    "toggle-login-password",
-  ) as HTMLButtonElement | null;
-  const passwordInput = document.getElementById(
-    "login-password",
-  ) as HTMLInputElement | null;
-
-  if (!toggleButton || !passwordInput) {
-    return;
-  }
-
-  toggleButton.addEventListener("click", function (event) {
-    event.preventDefault();
-
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      toggleButton.textContent = "Hide";
-      return;
-    }
-
-    passwordInput.type = "password";
-    toggleButton.textContent = "Show";
-  });
-}*/
 // Luhn-Algorithmus: prüft ob eine Kartennummer rechnerisch gültig ist
 function luhnCheck(cardNumber) {
     const digits = cardNumber.replace(/[\s-]/g, "");
