@@ -14,7 +14,7 @@ require_once __DIR__ . '/config/dataHandler.php';
 require_once __DIR__ . '/logic/requestHandler.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: *'); // In Produktion sollte dies auf die tatsächliche Domain eingeschränkt werden
 
 $handler = $_GET['handler'] ?? $_POST['handler'] ?? '';
 $method  = $_GET['method']  ?? $_POST['method']  ?? '';
