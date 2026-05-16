@@ -161,7 +161,7 @@ class UserHandler
             'cartCount' => $cartCount
         ];
     }
-    /*
+    
 
     private function getProfile()
     {
@@ -228,5 +228,4 @@ class UserHandler
             'success' => true
         ];
     }
-        */
 }
