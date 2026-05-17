@@ -3,19 +3,19 @@ let currentOrder: any = null;
 declare const html2pdf: any;
 
 $(document).ready(function () {
-
   loadOrderDetails();
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("success") === "1") {
+    $("#order-success").removeClass("d-none");
+  }
 
   $(document).on("click", "#download-invoice", function () {
-
     generateInvoicePdf();
-
   });
-
 });
 
 function loadOrderDetails(): void {
-
   const params = new URLSearchParams(window.location.search);
 
   const orderId = params.get("id");
@@ -26,46 +26,35 @@ function loadOrderDetails(): void {
 
   $.ajax({
     url:
-      "/itea/backend/serviceHandler.php?handler=orders&method=getOrderById&id="
-      + orderId,
+      "/itea/backend/serviceHandler.php?handler=orders&method=getOrderById&id=" +
+      orderId,
 
     type: "GET",
 
     dataType: "json",
 
     success: function (response) {
-
       currentOrder = response;
 
       if (response.error) {
-
-        $("#order-error")
-          .removeClass("d-none")
-          .text(response.error);
+        $("#order-error").removeClass("d-none").text(response.error);
 
         return;
       }
 
-      $("#order-content")
-        .removeClass("d-none");
+      $("#order-content").removeClass("d-none");
 
-      $("#order-id")
-        .text(response.order.id);
+      $("#order-id").text(response.order.id);
 
-      $("#order-date")
-        .text(response.order.date);
+      $("#order-date").text(response.order.date);
 
-      $("#order-invoice")
-        .text(response.order.invoice_number);
+      $("#order-invoice").text(response.order.invoice_number);
 
-      $("#order-total")
-        .text(
-          "€ " +
-          Number(response.order.total_price).toFixed(2)
-        );
+      $("#order-total").text(
+        "€ " + Number(response.order.total_price).toFixed(2),
+      );
 
       response.items.forEach((item: any) => {
-
         $("#order-items").append(`
 
           <div class="card mb-3">
@@ -99,25 +88,20 @@ function loadOrderDetails(): void {
           </div>
 
         `);
-
       });
-
     },
 
     error: function (xhr) {
-
       console.log(xhr.responseText);
 
       $("#order-error")
         .removeClass("d-none")
         .text("Failed to load order details.");
-
     },
   });
 }
 
 function generateInvoicePdf(): void {
-
   if (!currentOrder) {
     return;
   }
@@ -129,9 +113,7 @@ function generateInvoicePdf(): void {
   let itemsHtml = "";
 
   items.forEach((item: any) => {
-
-    const itemTotal =
-      Number(item.price) * Number(item.quantity);
+    const itemTotal = Number(item.price) * Number(item.quantity);
 
     itemsHtml += `
 
@@ -297,7 +279,5 @@ function generateInvoicePdf(): void {
 
   `;
 
-  html2pdf()
-    .from(invoice)
-    .save(`invoice-${order.invoice_number}.pdf`);
+  html2pdf().from(invoice).save(`invoice-${order.invoice_number}.pdf`);
 }

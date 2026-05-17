@@ -2,6 +2,10 @@
 let currentOrder = null;
 $(document).ready(function () {
     loadOrderDetails();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "1") {
+        $("#order-success").removeClass("d-none");
+    }
     $(document).on("click", "#download-invoice", function () {
         generateInvoicePdf();
     });
@@ -13,29 +17,21 @@ function loadOrderDetails() {
         return;
     }
     $.ajax({
-        url: "/itea/backend/serviceHandler.php?handler=orders&method=getOrderById&id="
-            + orderId,
+        url: "/itea/backend/serviceHandler.php?handler=orders&method=getOrderById&id=" +
+            orderId,
         type: "GET",
         dataType: "json",
         success: function (response) {
             currentOrder = response;
             if (response.error) {
-                $("#order-error")
-                    .removeClass("d-none")
-                    .text(response.error);
+                $("#order-error").removeClass("d-none").text(response.error);
                 return;
             }
-            $("#order-content")
-                .removeClass("d-none");
-            $("#order-id")
-                .text(response.order.id);
-            $("#order-date")
-                .text(response.order.date);
-            $("#order-invoice")
-                .text(response.order.invoice_number);
-            $("#order-total")
-                .text("€ " +
-                Number(response.order.total_price).toFixed(2));
+            $("#order-content").removeClass("d-none");
+            $("#order-id").text(response.order.id);
+            $("#order-date").text(response.order.date);
+            $("#order-invoice").text(response.order.invoice_number);
+            $("#order-total").text("€ " + Number(response.order.total_price).toFixed(2));
             response.items.forEach((item) => {
                 $("#order-items").append(`
 
@@ -250,7 +246,5 @@ function generateInvoicePdf() {
     </div>
 
   `;
-    html2pdf()
-        .from(invoice)
-        .save(`invoice-${order.invoice_number}.pdf`);
+    html2pdf().from(invoice).save(`invoice-${order.invoice_number}.pdf`);
 }
