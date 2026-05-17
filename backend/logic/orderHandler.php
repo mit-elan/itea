@@ -77,7 +77,7 @@ public function handle(
         );
 
         return [
-            'order' => $order,
+            'order' => $order->toArray(),
             'items' => $items
         ];
     }
