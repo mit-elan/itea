@@ -311,6 +311,13 @@ class DataHandler
         }
     }
 
+    public function deleteCart(int $userId): void
+    {
+        $stmt = $this->db->prepare("DELETE FROM cart WHERE user_id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+    }   
+
     // Lädt den DB-Cart eines Users als Session-Format zurück: [product_id => quantity].
     // Wird beim Login aufgerufen.
     public function loadCartFromDb(

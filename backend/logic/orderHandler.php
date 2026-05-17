@@ -144,6 +144,7 @@ public function handle(
         $result = $this->odh->createOrder($order);
 
         $_SESSION['cart'] = [];
+        $this->dh->deleteCart($userId);
 
         return [
             'success' => true,
