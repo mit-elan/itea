@@ -1,20 +1,27 @@
 <?php
 
 require_once __DIR__ . '/../models/user.class.php';
+require_once __DIR__ . '/../models/cart.class.php';
 
 /**
  * UserHandler
  * Sprint 1: Login, Registrierung
  * Sprint 2: Profil bearbeiten, Zahlungsmethoden
- */
+ * 
+ **/
 class UserHandler
 {
     private DataHandler $dh;
+    private CartDataHandler $cartDataHandler;
+    private PaymentDataHandler $paymentDataHandler;
 
-    public function __construct(DataHandler $dh)
+    public function __construct(DataHandler $dh, CartDataHandler $cartDataHandler, PaymentDataHandler $paymentDataHandler)
     {
-        $this->dh = $dh;
+        $this->dh                   = $dh;
+        $this->cartDataHandler      = $cartDataHandler;
+        $this->paymentDataHandler    = $paymentDataHandler;
     }
+
 
     public function handle(string $method, array $data = [])
     {
@@ -72,8 +79,20 @@ class UserHandler
         $_SESSION['username'] = $user->username;
         $_SESSION['role'] = $user->role;
 
-        // Gespeicherten Cart aus der DB in die Session laden
-        $_SESSION['cart'] = $this->dh->loadCartFromDb($user->id);
+        // Gast-Cart sichern, DB-Cart laden und mergen
+        $guestCart = $_SESSION['cart'] ?? [];
+
+        $dbCart = [];
+        foreach ($this->cartDataHandler->loadCartFromDb($user->id) as $item) {
+            $dbCart[$item->product_id] = $item->quantity;
+        }
+
+        // Gast-Items addieren (Gast-Menge hat Vorrang bei Überschneidung)
+        foreach ($guestCart as $productId => $quantity) {
+            $dbCart[$productId] = ($dbCart[$productId] ?? 0) + $quantity;
+        }
+
+        $_SESSION['cart'] = $dbCart;
 
         return [
             'message' => 'Login successful',
@@ -88,7 +107,16 @@ class UserHandler
     {
         // Cart in DB persistieren bevor die Session gelöscht wird
         if (isset($_SESSION['user_id']) && !empty($_SESSION['cart'])) {
-            $this->dh->saveCartToDb((int)$_SESSION['user_id'], $_SESSION['cart']);
+            $userId    = (int)$_SESSION['user_id'];
+            $cartItems = [];
+            foreach ($_SESSION['cart'] as $productId => $quantity) {
+                $cartItems[] = new Cart([
+                    'userId'    => $userId,
+                    'productId' => (int)$productId,
+                    'quantity'  => $quantity,
+                ]);
+            }
+            $this->cartDataHandler->saveCartToDb($userId, $cartItems);
         }
 
         //Session Daten löschen
@@ -132,7 +160,7 @@ class UserHandler
         $userId = $this->dh->createUser($_POST);
 
         if (is_int($userId)) {
-            $this->dh->createPaymentMethod($userId, $_POST);
+            $this->paymentDataHandler->createPaymentMethod($userId, $_POST);
             return ['message' => 'Registration successful'];
         } elseif ($userId === "doubleEntry") {
             return ['error' => 'Email or username already taken!'];
@@ -161,7 +189,7 @@ class UserHandler
             'cartCount' => $cartCount
         ];
     }
-    
+
 
     private function getProfile()
     {
@@ -213,7 +241,7 @@ class UserHandler
             ];
         }
 
-       $success = $this->dh->updateUser(
+        $success = $this->dh->updateUser(
             $_SESSION['user_id'],
             $_POST
         );

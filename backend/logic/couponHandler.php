@@ -3,16 +3,13 @@
  * CouponHandler
  * Sprint 4: Gutschein einlösen
  */
-class CouponHandler {
-    private DataHandler $dh;
-    public function __construct(DataHandler $dh) { $this->dh = $dh; }
+class couponHandler
 
-    public function handle(string $method, array $data = []): ?array {
-        return match($method) {
-            // Sprint 4
-            // 'validate' => $this->validate(),
-            // 'redeem'   => $this->redeem(),
-            default => null,
-        };
+{
+    private CouponDataHandler $couponDataHandler;
+    
+     public function __construct(CouponDataHandler $couponDataHandler)
+    {
+        $this->couponDataHandler = $couponDataHandler;
     }
 }

@@ -1,14 +1,12 @@
 <?php
 
 require_once __DIR__ . '/../models/payment.class.php';
-
 class PaymentHandler
 {
-    private DataHandler $dh;
-
-    public function __construct(DataHandler $dh)
+    private PaymentDataHandler $paymentDataHandler;
+    public function __construct(PaymentDataHandler $paymentDataHandler)
     {
-        $this->dh = $dh;
+        $this->paymentDataHandler = $paymentDataHandler;
     }
 
     public function handle(
@@ -19,8 +17,8 @@ class PaymentHandler
 
             'getByUserId' => $this->getByUserId(),
             'getPaymentMethods' => $this->getByUserId(),
-            'createPaymentMethod' => $this->createPaymentMethod(),
-            'deletePaymentMethod' => $this->deletePaymentMethod(),
+            'createPaymentMethod' => $this->createPaymentMethod($data),
+            'deletePaymentMethod' => $this->deletePaymentMethod($data),
 
             default => null,
         };
@@ -34,12 +32,12 @@ class PaymentHandler
         }
 
         $userId = $_SESSION['user_id'];
-        $rows = $this->dh->getPaymentMethodsByUserId($userId);
+        $rows = $this->paymentDataHandler->getPaymentMethodsByUserId($userId);
 
         return ['paymentMethods' => $rows];
     }
 
-    private function createPaymentMethod(): array
+    private function createPaymentMethod(array $data): array
     {
         if (!isLoggedIn()) {
 
@@ -53,9 +51,9 @@ class PaymentHandler
 
         $userId = $_SESSION['user_id'];
 
-        $success = $this->dh->createPaymentMethod(
+        $success = $this->paymentDataHandler->createPaymentMethod(
             $userId,
-            $_POST
+            $data
         );
 
         if (!$success) {
@@ -71,7 +69,7 @@ class PaymentHandler
         ];
     }
 
-    private function deletePaymentMethod(): array
+    private function deletePaymentMethod(array $data): array
     {
         if (!isLoggedIn()) {
 
@@ -81,9 +79,9 @@ class PaymentHandler
             ];
         }
 
-        $paymentId = intval($_POST['paymentId'] ?? 0);
+        $paymentId = intval($data['paymentId'] ?? 0);
 
-        $success = $this->dh->deletePaymentMethod(
+        $success = $this->paymentDataHandler->deletePaymentMethod(
             $paymentId,
             $_SESSION['user_id']
         );

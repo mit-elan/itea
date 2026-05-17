@@ -50,7 +50,8 @@ $(document).ready(function () {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=cart&method=addToCart",
       type: "POST",
-      data: { productId, quantity },
+      contentType: "application/json",
+      data: JSON.stringify({ productId, quantity }),
       success: function (response) {
         if (response.error) {
           alert("Failed to add product to cart.");
@@ -69,7 +70,8 @@ $(document).ready(function () {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=cart&method=updateCart",
       type: "POST",
-      data: { productId, quantity },
+      contentType: "application/json",
+      data: JSON.stringify({ productId, quantity }),
       success: function (response) {
         if (response.error) {
           alert("Failed to update cart.");
@@ -193,9 +195,10 @@ $(document).ready(function () {
       $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=cart&method=removeFromCart",
         method: "POST",
-        data: { productId },
+        contentType: "application/json",
+        data: JSON.stringify({ productId }),
         success: function (response) {
-          if (response.success) {
+          if (!response.error) {
             $("#cart-count").text(response.cartCount);
             loadCart();
           }

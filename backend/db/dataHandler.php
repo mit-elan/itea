@@ -12,47 +12,14 @@ require_once __DIR__ . '/dbaccess.php';
 class DataHandler
 {
 
-    private $db;
+    private mysqli $db;
 
-    // Verbindung wird beim Erstellen des DataHandlers aufgebaut
-    public function __construct()
+    public function __construct(DBaccess $db)
     {
-        $this->db = getDatabaseConnection();
+        $this->db = $db->getConnection();
     }
 
     // ── Sprint 1: Produkte ────────────────────────────────────────#
-
-    public function getProducts(): array
-    {
-        $result = $this->db->query("SELECT * FROM product");
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function getProductsByCategory(
-        int $categoryId
-    ): array {
-        $stmt = $this->db->prepare(
-            "SELECT * FROM product WHERE category_id = ?"
-        );
-        $stmt->bind_param("i", $categoryId);
-        $stmt->execute();
-        return $stmt
-            ->get_result()
-            ->fetch_all(MYSQLI_ASSOC);
-    }
-    public function getProductById(
-        int $id
-    ): array {
-        $stmt = $this->db->prepare(
-            "SELECT * FROM product WHERE id = ?"
-        );
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-
-        return $stmt
-            ->get_result()
-            ->fetch_assoc() ?: [];
-    }
 
     // ── Sprint 1: User / Auth ─────────────────────────────────────
 
@@ -216,179 +183,10 @@ class DataHandler
             return "databaseError";
         }
     }
-
-    public function createPaymentMethod(
-        int $userId,
-        array $data
-    ): bool {
-
-        $isBankAccount =
-            ($data['paymentType'] ?? '') === '1'
-            ? 1
-            : 0;
-
-        $cardNumber =
-            $data['cardNumber'] ?? '';
-
-        $label =
-            $data['paymentName'] ?? '';
-
-        $stmt = $this->db->prepare(
-            "INSERT INTO payment_method
-            (
-                user_id,
-                is_bank_account,
-                card_number,
-                label
-            )
-            VALUES (?, ?, ?, ?)"
-        );
-
-        $stmt->bind_param(
-            "iiss",
-            $userId,
-            $isBankAccount,
-            $cardNumber,
-            $label
-        );
-
-        try {
-
-            $stmt->execute();
-
-            return true;
-
-        } catch (mysqli_sql_exception $e) {
-
-            return false;
-        }
-    }
-
     // ── Sprint 2: Warenkorb / Payment ────────────────────────────
 
-    // Ersetzt den gespeicherten DB-Cart eines Users komplett durch den Session-Cart.
+     // Ersetzt den gespeicherten DB-Cart eines Users komplett durch den Session-Cart.
     // Wird beim Logout aufgerufen.
-    public function saveCartToDb(
-        int $userId,
-        array $sessionCart
-    ): void {
-
-        $stmt = $this->db->prepare(
-            "DELETE FROM cart WHERE user_id = ?"
-        );
-
-        $stmt->bind_param("i", $userId);
-
-        $stmt->execute();
-
-        if (empty($sessionCart)) {
-            return;
-        }
-
-        $stmt = $this->db->prepare(
-            "INSERT INTO cart
-            (
-                user_id,
-                product_id,
-                quantity
-            )
-            VALUES (?, ?, ?)"
-        );
-
-        foreach ($sessionCart as $productId => $quantity) {
-
-            if ($quantity > 0) {
-
-                $stmt->bind_param(
-                    "iii",
-                    $userId,
-                    $productId,
-                    $quantity
-                );
-
-                $stmt->execute();
-            }
-        }
-    }
-
-    public function deleteCart(int $userId): void
-    {
-        $stmt = $this->db->prepare("DELETE FROM cart WHERE user_id = ?");
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-    }   
-
-    // Lädt den DB-Cart eines Users als Session-Format zurück: [product_id => quantity].
-    // Wird beim Login aufgerufen.
-    public function loadCartFromDb(
-        int $userId
-    ): array {
-
-        $stmt = $this->db->prepare(
-            "SELECT product_id,
-                    quantity
-             FROM cart
-             WHERE user_id = ?"
-        );
-
-        $stmt->bind_param("i", $userId);
-
-        $stmt->execute();
-
-        $rows = $stmt
-            ->get_result()
-            ->fetch_all(MYSQLI_ASSOC);
-
-        $cart = [];
-
-        foreach ($rows as $row) {
-
-            $cart[$row['product_id']]
-                = $row['quantity'];
-        }
-
-        return $cart;
-    }
-
-    public function getPaymentMethodsByUserId(
-        int $userId
-    ): array {
-        $stmt = $this->db->prepare(
-            "SELECT id,
-                    is_bank_account,
-                    card_number,
-                    label
-             FROM payment_method
-             WHERE user_id = ?"
-        );
-
-        $stmt->bind_param("i", $userId);
-        $stmt->execute();
-
-        return $stmt
-            ->get_result()
-            ->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function deletePaymentMethod(
-        int $paymentId,
-        int $userId
-    ): bool {
-
-        $stmt = $this->db->prepare(
-            "DELETE FROM payment_method
-         WHERE id = ?
-         AND user_id = ?"
-        );
-
-        $stmt->bind_param(
-            "ii",
-            $paymentId,
-            $userId
-        );
-
-        return $stmt->execute();
-    }
 
     // ── Sprint 3: Admin ───────────────────────────────────────────
 

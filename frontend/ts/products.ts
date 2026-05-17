@@ -56,6 +56,7 @@ $(document).ready(function () {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=products&method=getAll",
       method: "GET",
+      dataType: "json",
       success: function (data: Product[]) {
         $("#no-products").hide();
         if (!data || data.length === 0) {
@@ -131,3 +132,6 @@ $(document).ready(function () {
     });
   }
 });
+
+//Test
+
