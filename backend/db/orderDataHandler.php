@@ -1,15 +1,15 @@
 <?php
 
-require_once __DIR__ . '/../config/dbaccess.php';
+require_once __DIR__ . '/dbaccess.php';
 require_once __DIR__ . '/../models/order.class.php';
 
 class OrderDataHandler
 {
-    private $db;
+    private mysqli $db;
 
-    public function __construct()
+    public function __construct(DBaccess $db)
     {
-        $this->db = getDatabaseConnection();
+        $this->db = $db->getConnection();
     }
 
     public function createOrder(Order $order): array
