@@ -4,30 +4,33 @@ require_once __DIR__ . '/../models/cart.class.php';
 
 class CartHandler
 {
-    private DataHandler $dh;
-    public function __construct(DataHandler $dh)
+    private CartDataHandler $cartDataHandler;
+    private ProductDataHandler $productDataHandler;
+
+    public function __construct(CartDataHandler $cartDataHandler, ProductDataHandler $productDataHandler)
     {
-        $this->dh = $dh;
+        $this->cartDataHandler = $cartDataHandler;
+        $this->productDataHandler = $productDataHandler;
     }
 
-    public function handle(string $method, array $data = [])
+    public function handle(string $method, array $data = []): ?array
     {
         return match ($method) {
-            'addToCart'      => $this->addToCart(),
+            'addToCart'      => $this->addToCart($data),
             'loadCart'       => $this->loadCart(),
-            'removeFromCart' => $this->removeFromCart(),
-            'updateCart'     => $this->updateCart(), // addToCart und updateCart können dieselbe Logik verwenden
+            'removeFromCart' => $this->removeFromCart($data),
+            'updateCart'     => $this->updateCart($data),
             default          => null,
         };
     }
 
-    private function addToCart(): array
+    private function addToCart(array $data): array
     {
-        $productId = (int)($_POST['productId'] ?? 0);
-        $quantity  = (int)($_POST['quantity']  ?? 0);
+        $productId = (int)($data['productId'] ?? 0);
+        $quantity  = (int)($data['quantity']  ?? 0);
 
         if (!$productId || !$quantity) {
-            return ['success' => false, 'error' => 'Missing parameters'];
+            return ['code' => 400, 'error' => 'Missing parameters'];
         }
 
         if (!isset($_SESSION['cart'])) {
@@ -42,19 +45,16 @@ class CartHandler
 
         $_SESSION['cart'][$cartItem->product_id] = ($_SESSION['cart'][$cartItem->product_id] ?? 0) + $cartItem->quantity;
 
-        return [
-            'success'   => true,
-            'cartCount' => array_sum($_SESSION['cart'])
-        ];
+        return ['cartCount' => array_sum($_SESSION['cart'])];
     }
 
-    private function updateCart(): array
+    private function updateCart(array $data): array
     {
-        $productId = (int)($_POST['productId'] ?? 0);
-        $quantity  = (int)($_POST['quantity']  ?? 0);
+        $productId = (int)($data['productId'] ?? 0);
+        $quantity  = (int)($data['quantity']  ?? 0);
 
         if (!$productId || !$quantity) {
-            return ['success' => false, 'error' => 'Missing parameters'];
+            return ['code' => 400, 'error' => 'Missing parameters'];
         }
 
         $cartItem = new Cart([
@@ -65,10 +65,7 @@ class CartHandler
 
         $_SESSION['cart'][$cartItem->product_id] = $cartItem->quantity;
 
-        return [
-            'success'   => true,
-            'cartCount' => array_sum($_SESSION['cart'])
-        ];
+        return ['cartCount' => array_sum($_SESSION['cart'])];
     }
 
     private function loadCart(): array
@@ -76,45 +73,36 @@ class CartHandler
         $cart = $_SESSION['cart'] ?? [];
 
         if (empty($cart)) {
-            return ['success' => true, 'cartItems' => []];
+            return ['cartItems' => []];
         }
 
         $cartItems = [];
         foreach ($cart as $productId => $quantity) {
-            $product = $this->dh->getProductById((int)$productId);
+            $product = $this->productDataHandler->getProductById((int)$productId);
             if (!$product) continue;
 
-            $cartItem = new Cart([
-                'userId'    => $_SESSION['user_id'] ?? 0,
-                'productId' => (int)$productId,
-                'quantity'  => $quantity,
-            ]);
-
             $cartItems[] = [
-                'id'        => $product['id'],
-                'file_path' => $product['file_path'],
-                'name'      => $product['name'],
-                'price'     => $product['price'],
-                'quantity'  => $cartItem->quantity,
+                'id'        => $product->id,
+                'file_path' => $product->filePath,
+                'name'      => $product->name,
+                'price'     => $product->price,
+                'quantity'  => $quantity,
             ];
         }
 
-        return ['success' => true, 'cartItems' => $cartItems];
+        return ['cartItems' => $cartItems];
     }
 
-    private function removeFromCart(): array
+    private function removeFromCart(array $data): array
     {
-        $productId = (int)($_POST['productId'] ?? 0);
+        $productId = (int)($data['productId'] ?? 0);
 
         if (!$productId) {
-            return ['success' => false, 'error' => 'Missing parameters'];
+            return ['code' => 400, 'error' => 'Missing parameters'];
         }
 
         unset($_SESSION['cart'][$productId]);
 
-        return [
-            'success'   => true,
-            'cartCount' => array_sum($_SESSION['cart'] ?? [])
-        ];
+        return ['cartCount' => array_sum($_SESSION['cart'] ?? [])];
     }
 }

@@ -120,7 +120,8 @@ $(document).ready(function () {
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=orders&method=placeOrder",
             type: "POST",
-            data: { userId, paymentMethodId },
+            contentType: "application/json",
+            data: JSON.stringify({ userId, paymentMethodId }),
             success: function (response) {
                 if (response.error) {
                     alert("Failed to place order: " + response.error);

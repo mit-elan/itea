@@ -146,7 +146,9 @@ function createPaymentMethod() {
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=payment&method=createPaymentMethod",
         type: "POST",
-        data: paymentData,
+        contentType: "application/json",
+        data: JSON.stringify(paymentData),
+        // data: paymentData,
         dataType: "json",
         success: function (response) {
             if (!response.success) {
@@ -169,9 +171,9 @@ function deletePaymentMethod(paymentId) {
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=payment&method=deletePaymentMethod",
         type: "POST",
-        data: {
-            paymentId: paymentId,
-        },
+        contentType: "application/json",
+        data: JSON.stringify({ paymentId: paymentId }),
+        // data: { paymentId: paymentId },
         dataType: "json",
         success: function (response) {
             if (!response.success) {

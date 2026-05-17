@@ -1,7 +1,4 @@
 <?php
-if ($_SERVER['SERVER_NAME'] === 'localhost') {
-    ini_set('display_errors', 1);}
-error_reporting(E_ALL);
 /**
  * Zentraler Einstiegspunkt für alle AJAX-Requests vom Frontend.
  * URL-Schema: serviceHandler.php?handler=products&method=getAll
@@ -9,10 +6,17 @@ error_reporting(E_ALL);
  * Architektur:
  *   Frontend (AJAX) → serviceHandler.php → *Handler → DataHandler → DB
  */
-require_once __DIR__ . '/config/session.php';
-require_once __DIR__ . '/config/dataHandler.php';
+require_once __DIR__ . '/db/session.php';
+require_once __DIR__ . '/db/dbaccess.php';
+
+require_once __DIR__ . '/db/dataHandler.php';
+require_once __DIR__ . '/db/adminDataHandler.php';
+require_once __DIR__ . '/db/cartDataHandler.php';
+require_once __DIR__ . '/db/orderDataHandler.php';
+require_once __DIR__ . '/db/paymentDataHandler.php';
+require_once __DIR__ . '/db/productDataHandler.php';
+
 require_once __DIR__ . '/logic/requestHandler.php';
-require_once __DIR__ . '/config/orderDataHandler.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); // In Produktion sollte dies auf die tatsächliche Domain eingeschränkt werden
@@ -22,7 +26,13 @@ $method  = $_GET['method']  ?? $_POST['method']  ?? '';
 
 $data = json_decode(file_get_contents('php://input'), true) ?? [];
 
-$requestHandler = new RequestHandler(new DataHandler());
+try {
+    $requestHandler = new RequestHandler(new DBaccess());
+} catch (RuntimeException $e) {
+    response(503, ['error' => $e->getMessage()]);
+    exit();
+}
+
 $result = $requestHandler->dispatch($handler, $method, $data);
 
 if ($result === null) {
