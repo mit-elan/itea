@@ -363,6 +363,26 @@ class DataHandler
             ->fetch_all(MYSQLI_ASSOC);
     }
 
+    public function deletePaymentMethod(
+        int $paymentId,
+        int $userId
+    ): bool {
+
+        $stmt = $this->db->prepare(
+            "DELETE FROM payment_method
+         WHERE id = ?
+         AND user_id = ?"
+        );
+
+        $stmt->bind_param(
+            "ii",
+            $paymentId,
+            $userId
+        );
+
+        return $stmt->execute();
+    }
+
     // ── Sprint 3: Admin ───────────────────────────────────────────
 
     // public function createProduct(array $data): bool { ... }

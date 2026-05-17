@@ -8,7 +8,11 @@
 
             <div class="card shadow-sm">
                 <div class="card-body p-4">
+                    <div id="order-success" class="alert alert-success d-none">
 
+                        Order placed successfully!
+
+                    </div>
                     <div id="order-error" class="alert alert-danger d-none">
                     </div>
 
@@ -45,9 +49,7 @@
                                     <span id="order-invoice">
                                     </span>
 
-                                    <button
-                                        id="download-invoice"
-                                        class="btn btn-outline-dark btn-sm">
+                                    <button id="download-invoice" class="btn btn-outline-dark btn-sm">
 
                                         <i class="bi bi-download"></i>
 
