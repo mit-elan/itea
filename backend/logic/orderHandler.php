@@ -142,6 +142,7 @@ class OrderHandler
         $result = $this->orderDataHandler->createOrder($order);
 
         $_SESSION['cart'] = [];
+        $this->orderDataHandler->deleteCart($userId);
 
         return [
             'success' => true,
