@@ -1,9 +1,7 @@
 <?php
 
-/**
- * ProductHandler
- * Sprint 1: Produkte listen, Kategorien, Suche
- */
+require_once __DIR__ . '/../models/cart.class.php';
+
 class CartHandler
 {
     private DataHandler $dh;
@@ -12,7 +10,7 @@ class CartHandler
         $this->dh = $dh;
     }
 
-    public function handle(string $method)
+    public function handle(string $method, array $data = [])
     {
         return match ($method) {
             'addToCart'      => $this->addToCart(),
@@ -36,28 +34,22 @@ class CartHandler
             $_SESSION['cart'] = [];
         }
 
-        $_SESSION['cart'][$productId] = ($_SESSION['cart'][$productId] ?? 0) + $quantity;
+        $cartItem = new Cart([
+            'userId'    => $_SESSION['user_id'] ?? 0,
+            'productId' => $productId,
+            'quantity'  => $quantity,
+        ]);
+
+        $_SESSION['cart'][$cartItem->product_id] = ($_SESSION['cart'][$cartItem->product_id] ?? 0) + $cartItem->quantity;
 
         return [
             'success'   => true,
             'cartCount' => array_sum($_SESSION['cart'])
         ];
-
-        // OLD DB-based implementation (Sprint 2):
-        // $userId    = $_POST['userId'];
-        // $productId = $_POST['productId'];
-        // $quantity  = $_POST['quantity'];
-        // if (!$userId) {
-        //     return ['success' => false, 'error' => 'Missing User'];
-        // } else if (!$productId || !$quantity) {
-        //     return ['success' => false, 'error' => 'Missing parameters'];
-        // }
-        // return $this->dh->updateCart($userId, $productId, $quantity);
     }
 
     private function updateCart(): array
     {
-        //Error Handling? zB Negative Zahl und nicht-Integer
         $productId = (int)($_POST['productId'] ?? 0);
         $quantity  = (int)($_POST['quantity']  ?? 0);
 
@@ -65,7 +57,13 @@ class CartHandler
             return ['success' => false, 'error' => 'Missing parameters'];
         }
 
-        $_SESSION['cart'][$productId] = $quantity;
+        $cartItem = new Cart([
+            'userId'    => $_SESSION['user_id'] ?? 0,
+            'productId' => $productId,
+            'quantity'  => $quantity,
+        ]);
+
+        $_SESSION['cart'][$cartItem->product_id] = $cartItem->quantity;
 
         return [
             'success'   => true,
@@ -84,28 +82,24 @@ class CartHandler
         $cartItems = [];
         foreach ($cart as $productId => $quantity) {
             $product = $this->dh->getProductById((int)$productId);
-            if ($product) {
-                $cartItems[] = [
-                    'id'        => $product['id'],
-                    'file_path' => $product['file_path'],
-                    'name'      => $product['name'],
-                    'price'     => $product['price'],
-                    'quantity'  => $quantity,
-                ];
-            }
+            if (!$product) continue;
+
+            $cartItem = new Cart([
+                'userId'    => $_SESSION['user_id'] ?? 0,
+                'productId' => (int)$productId,
+                'quantity'  => $quantity,
+            ]);
+
+            $cartItems[] = [
+                'id'        => $product['id'],
+                'file_path' => $product['file_path'],
+                'name'      => $product['name'],
+                'price'     => $product['price'],
+                'quantity'  => $cartItem->quantity,
+            ];
         }
 
         return ['success' => true, 'cartItems' => $cartItems];
-
-        // OLD DB-based implementation (Sprint 2):
-        // $userId = $_GET['userId'];
-        // if (!$userId) {
-        //     return ['success' => false, 'error' => 'Missing User'];
-        // }
-        // return [
-        //     'success'   => true,
-        //     'cartItems' => $this->dh->getCart($userId)
-        // ];
     }
 
     private function removeFromCart(): array

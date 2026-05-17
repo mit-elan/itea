@@ -14,26 +14,29 @@ require_once __DIR__ . '/config/dataHandler.php';
 require_once __DIR__ . '/logic/requestHandler.php';
 require_once __DIR__ . '/config/orderDataHandler.php';
 
-
-// CORS-Header für lokale Entwicklung
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: *'); // In Produktion sollte dies auf die tatsächliche Domain eingeschränkt werden
 
 $handler = $_GET['handler'] ?? $_POST['handler'] ?? '';
 $method  = $_GET['method']  ?? $_POST['method']  ?? '';
 
-$requestHandler = new RequestHandler(new DataHandler());
-//hier data / json übergeben - Service Handler zuständig für das empfangen der Daten.  Im cart handler kann man dann die usecases abarbeiten
-$result = $requestHandler->dispatch($handler, $method);
+$data = json_decode(file_get_contents('php://input'), true) ?? [];
 
+$requestHandler = new RequestHandler(new DataHandler());
+$result = $requestHandler->dispatch($handler, $method, $data);
 
 if ($result === null) {
-    //Hier fehler ausgeben switch mit zb 404 und 400
-    http_response_code(400);
-    echo json_encode(['error' => 'Unknown handler or method']);
+    response(400, ['error' => 'Unknown handler or method']);
+} else if (isset($result['code'])) {
+    response($result['code'], ['error' => $result['error']]);
 } else {
-    http_response_code(200);
-    echo json_encode($result);
+    response(200, $result);
+}
+
+function response(int $httpStatus, array $data): void
+{
+    http_response_code($httpStatus);
+    echo json_encode($data);
 }
 
 ?>
