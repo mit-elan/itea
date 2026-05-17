@@ -219,7 +219,10 @@ function createPaymentMethod(): void {
 
     type: "POST",
 
-    data: paymentData,
+    contentType: "application/json",
+
+    data: JSON.stringify(paymentData),
+    // data: paymentData,
 
     dataType: "json",
 
@@ -254,20 +257,18 @@ function createPaymentMethod(): void {
 
 }
 
-function deletePaymentMethod(
-  paymentId: number
-): void {
 
+
+function deletePaymentMethod(paymentId: number): void {
   $.ajax({
-
     url:
       "/itea/backend/serviceHandler.php?handler=payment&method=deletePaymentMethod",
-
     type: "POST",
 
-    data: {
-      paymentId: paymentId,
-    },
+    contentType: "application/json",
+
+    data: JSON.stringify({ paymentId: paymentId }),
+    // data: { paymentId: paymentId },
 
     dataType: "json",
 

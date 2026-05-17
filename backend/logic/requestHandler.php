@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zentraler Request-Dispatcher.
  * Leitet Anfragen an die jeweiligen Handler-Klassen weiter.
@@ -17,35 +18,25 @@ require_once __DIR__ . '/adminHandler.php';
 require_once __DIR__ . '/cartHandler.php';
 require_once __DIR__ . '/paymentHandler.php';
 
-require_once __DIR__ . '/../config/orderDataHandler.php';
+require_once __DIR__ . '/../db/orderDataHandler.php';
 
 class RequestHandler
 {
-    private DataHandler $dh;
-    private OrderDataHandler $odh;
     private UserHandler $userHandler;
     private ProductHandler $productHandler;
     private OrderHandler $orderHandler;
-    private CouponHandler $couponHandler;
-    private AdminHandler $adminHandler;
     private CartHandler $cartHandler;
     private PaymentHandler $paymentHandler;
 
-    // In Zukunft muss noch pro Handler ein eigener DataHandler mitgegeben werden
-    public function __construct(DataHandler $dh)
+    public function __construct(DBaccess $db)
     {
-        $this->dh = $dh;
-        $this->userHandler = new UserHandler($dh);
-        $this->productHandler = new ProductHandler($dh);
-        $this->odh = new OrderDataHandler();
-        $this->orderHandler = new OrderHandler(
-            $this->odh,
-            $this->dh);
-        $this->couponHandler = new CouponHandler($dh);
-        $this->adminHandler = new AdminHandler($dh);
-     // $this->cartHandler = new CartHandler(new CartDataHandler($db));
-        $this->cartHandler = new CartHandler($dh);
-        $this->paymentHandler = new PaymentHandler($dh);
+        $this->userHandler    = new UserHandler(new DataHandler($db), new CartDataHandler($db), new PaymentDataHandler($db));
+        $this->productHandler = new ProductHandler(new ProductDataHandler($db));
+        $this->orderHandler   = new OrderHandler(new OrderDataHandler($db), new ProductDataHandler($db));
+        $this->cartHandler    = new CartHandler(new CartDataHandler($db), new ProductDataHandler($db));
+        $this->paymentHandler = new PaymentHandler(new PaymentDataHandler($db));
+       // $this->couponHandler  = new CouponHandler(new CouponDataHandler($db));
+       // $this->adminHandler   = new AdminHandler(new AdminDataHandler($db));
     }
 
     public function dispatch(
@@ -54,15 +45,14 @@ class RequestHandler
         array $data = []
     ): ?array {
         return match ($handler) {
-            'users' => $this->userHandler->handle($method, $data),
+            'users'    => $this->userHandler->handle($method, $data),
             'products' => $this->productHandler->handle($method, $data),
-            'orders' => $this->orderHandler->handle($method),
-            'coupons' => $this->couponHandler->handle($method, $data),
-            'admin' => $this->adminHandler->handle($method, $data),
-            'cart' => $this->cartHandler->handle($method, $data),
-            'payment' => $this->paymentHandler->handle($method, $data),
-            default => null,
+            'orders'   => $this->orderHandler->handle($method),
+            'cart'     => $this->cartHandler->handle($method, $data),
+            'payment'  => $this->paymentHandler->handle($method, $data),
+            // 'coupons'  => $this->couponHandler->handle($method, $data),
+            // 'admin'    => $this->adminHandler->handle($method, $data),
+            default    => null,
         };
     }
 }
-?>

@@ -5,35 +5,33 @@
  * Sprint 2: Bestellung aufgeben, einsehen
  */
 
-require_once __DIR__ . '/../config/orderDataHandler.php';
-require_once __DIR__ . '/../config/dataHandler.php';
+require_once __DIR__ . '/../db/orderDataHandler.php';
+require_once __DIR__ . '/../db/productDataHandler.php';
 require_once __DIR__ . '/../models/order.class.php';
 
 class OrderHandler
 {
-    private OrderDataHandler $odh;
-    private DataHandler $dh;
+    private OrderDataHandler $orderDataHandler;
+    private ProductDataHandler $productDataHandler;
 
-    public function __construct(
-    OrderDataHandler $odh,
-    DataHandler $dh
-) {
-    $this->odh = $odh;
-    $this->dh = $dh;
-}
+    public function __construct(OrderDataHandler $orderDataHandler, ProductDataHandler $productDataHandler)
+    {
+        $this->orderDataHandler = $orderDataHandler;
+        $this->productDataHandler = $productDataHandler;
+    }
 
-public function handle(
-    string $method,
-    array $data = []
-): ?array {
+    public function handle(
+        string $method,
+        array $data = []
+    ): ?array {
 
-    return match ($method) {
-        'placeOrder' => $this->placeOrder(),
-        'getOrders' => $this->getOrders(),
-        'getOrderById' => $this->getOrderById(),
-        default => null,
-    };
-}
+        return match ($method) {
+            'placeOrder' => $this->placeOrder(),
+            'getOrders' => $this->getOrders(),
+            'getOrderById' => $this->getOrderById(),
+            default => null,
+        };
+    }
 
     private function getOrders(): array
     {
@@ -44,7 +42,7 @@ public function handle(
             ];
         }
 
-        return $this->odh->getOrdersByUser(
+        return $this->orderDataHandler->getOrdersByUser(
             $_SESSION['user_id']
         );
     }
@@ -60,7 +58,7 @@ public function handle(
 
         $orderId = intval($_GET['id'] ?? 0);
 
-        $order = $this->odh->getOrderById(
+        $order = $this->orderDataHandler->getOrderById(
             $orderId,
             $_SESSION['user_id']
         );
@@ -72,7 +70,7 @@ public function handle(
             ];
         }
 
-        $items = $this->odh->getOrderItems(
+        $items = $this->orderDataHandler->getOrderItems(
             $orderId
         );
 
@@ -115,7 +113,7 @@ public function handle(
 
         foreach ($cart as $productId => $quantity) {
 
-            $product = $this->dh->getProductById(
+            $product = $this->productDataHandler->getProductById(
                 (int) $productId
             );
 
@@ -123,7 +121,7 @@ public function handle(
                 continue;
             }
 
-            $unitPrice = (float) $product['price'];
+            $unitPrice = (float) $product->price;
 
             $total += $unitPrice * $quantity;
 
@@ -141,7 +139,7 @@ public function handle(
         ]);
         $order->items = $items;
 
-        $result = $this->odh->createOrder($order);
+        $result = $this->orderDataHandler->createOrder($order);
 
         $_SESSION['cart'] = [];
 
