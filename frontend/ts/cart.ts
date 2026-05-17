@@ -12,24 +12,28 @@ interface Cart {
 }
 
 $(document).ready(function () {
+  let isGuest = false;
+
   checkLoginStatus().then(function (response) {
     updateNavigation(response);
+    isGuest = response.role === "guest";
     loadCart();
 
-    if (response.role === "guest") {
+    if (isGuest) {
       $("#checkout-button")
         .text("Log in to proceed")
         .attr("href", "/itea/frontend/sites/login.php");
     }
   });
-  //Wieso hier .button-addToCartList (ich schätze das ist referenz auf die klasse also das wurde der Klasse hinzugefügt )
+
+  //Produkt in Produktansicht zu Warenkorb hinzufügen
   $(document).on("click", ".button-addToCartList", function (event) {
     event.preventDefault();
     const productId = $(this).data("id");
     addToCart(productId, 1);
   });
 
-  //Hier #button-addToCartDetail - hier ist es eine id auf die referenziert wrid also der button hat eine ID ich nehme an hier deshalb weil es nur einen button mit dieser ID auf der Detail-Seite gibt aber auf der list seite gibt es eingie Buttons und dann nimmt man den "klassen name?"
+  //Product in Detailansicht zu Warenkorb hinzufügen (inkl. Custom Quantity)
   $("#button-addToCartDetail").on("click", function (e) {
     e.preventDefault();
     const productId = $(this).data("id");
@@ -41,7 +45,8 @@ $(document).ready(function () {
     addToCart(productId, quantity);
   });
 
-  function addToCart(productId, quantity) {
+
+  function addToCart(productId: number, quantity: number) {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=cart&method=addToCart",
       type: "POST",
@@ -60,7 +65,7 @@ $(document).ready(function () {
     });
   }
 
-  function updateCart(productId, quantity) {
+  function updateCart(productId: number, quantity: number) {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=cart&method=updateCart",
       type: "POST",
@@ -105,42 +110,60 @@ $(document).ready(function () {
 
     if (!cartItems || cartItems.length === 0) {
       $cartContainer.append("<p class='text-center'>Your cart is empty.</p>");
+      $("#subtotal-value").text("€0.00");
+      if (isGuest) {
+        $("#checkout-button")
+          .text("Log in to proceed")
+          .attr("href", "/itea/frontend/sites/login.php")
+          .removeClass("disabled")
+          .css("pointer-events", "");
+        $("#checkout-hint").hide();
+      } else {
+        $("#checkout-button")
+          .removeAttr("href")
+          .addClass("disabled")
+          .css("pointer-events", "none");
+        $("#checkout-hint").show().text("Add an item to your cart to continue.");
+      }
       return;
+    } else {
+      if (isGuest) {
+        $("#checkout-button")
+          .text("Log in to proceed")
+          .attr("href", "/itea/frontend/sites/login.php")
+          .removeClass("disabled")
+          .css("pointer-events", "");
+      } else {
+        $("#checkout-button")
+          .attr("href", "/itea/frontend/sites/checkout.php")
+          .removeClass("disabled")
+          .css("pointer-events", "");
+      }
+      $("#checkout-hint")
+        .show()
+        .text("Have a voucher? You can apply it at checkout!");
     }
+    const template = document.getElementById("cart-item-template") as HTMLTemplateElement;
     let total = 0;
+
     cartItems.forEach(function (item) {
       const subtotal = item.price * item.quantity;
       total += subtotal;
-      const cartItemHtml = `
-    <article class="cart-item">
-        <div class="row align-items-center">
-            <div class="col-md-6 col-12">
-                <div class="cart-item-main">
-                    <button class="cart-remove" data-id="${item.id}" aria-label="Remove item">×</button>
-                    <div class="cart-item-image-wrapper">
-                        <img src="/itea/backend/productpictures/${item.file_path}" alt="${item.name}" class="cart-item-image">
-                    </div>
-                    <div class="cart-item-details">
-                        <h2 class="cart-item-title">${item.name}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-4 mt-3 mt-md-0 text-md-center">
-                <div class="cart-item-price">€${Number(item.price).toFixed(2)}</div>
-            </div>
-            <div class="col-md-2 col-4 mt-3 mt-md-0 d-flex flex-column align-items-md-center">
-                <div class="cart-item-quantity">
-                    <input type="number" value="${item.quantity}" min="1" class="cart-quantity-input" data-id="${item.id}">
-                </div>
-            </div>
-            <div class="col-md-2 col-4 mt-3 mt-md-0 text-end">
-                <span class="d-md-none d-block small text-muted">Subtotal</span>
-                <div class="cart-item-subtotal">€${Number(subtotal).toFixed(2)}</div>
-            </div>
-        </div>
-    </article>
-    `;
-      $cartContainer.append(cartItemHtml);
+
+      const $item = $(document.importNode(template.content, true).firstElementChild as HTMLElement);
+
+      $item.find(".cart-remove").attr("data-id", String(item.id));
+      $item.find(".cart-item-image")
+        .attr("src", `/itea/backend/productpictures/${item.file_path}`)
+        .attr("alt", item.name);
+      $item.find(".cart-item-title").text(item.name);
+      $item.find(".cart-item-price").text(`€${Number(item.price).toFixed(2)}`);
+      $item.find(".cart-quantity-input")
+        .val(item.quantity)
+        .attr("data-id", String(item.id));
+      $item.find(".cart-item-subtotal").text(`€${Number(subtotal).toFixed(2)}`);
+
+      $cartContainer.append($item);
     });
     $("#subtotal-value").text("€" + total.toFixed(2));
     $("#total-value").text("€" + total.toFixed(2));
@@ -166,7 +189,7 @@ $(document).ready(function () {
       removeFromCart(productId);
     }
 
-    function removeFromCart(productId) {
+    function removeFromCart(productId: number) {
       $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=cart&method=removeFromCart",
         method: "POST",

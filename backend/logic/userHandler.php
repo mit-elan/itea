@@ -16,7 +16,7 @@ class UserHandler
         $this->dh = $dh;
     }
 
-    public function handle(string $method)
+    public function handle(string $method, array $data = [])
     {
         return match ($method) {
 
@@ -27,8 +27,8 @@ class UserHandler
             'status' => $this->status(),
 
             // Sprint 2
-            'getProfile' => $this->getProfile(),
-            'updateProfile' => $this->updateProfile(),
+            //'getProfile' => $this->getProfile(),
+            //'updateProfile' => $this->updateProfile(),
             // 'addPaymentMethod' => $this->addPaymentMethod(),
 
             default => null,
@@ -72,6 +72,9 @@ class UserHandler
         $_SESSION['username'] = $user->username;
         $_SESSION['role'] = $user->role;
 
+        // Gespeicherten Cart aus der DB in die Session laden
+        $_SESSION['cart'] = $this->dh->loadCartFromDb($user->id);
+
         return [
             'message' => 'Login successful',
             'userId' => $user->id,
@@ -83,6 +86,11 @@ class UserHandler
     //Logout
     private function logout()
     {
+        // Cart in DB persistieren bevor die Session gelöscht wird
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['cart'])) {
+            $this->dh->saveCartToDb((int)$_SESSION['user_id'], $_SESSION['cart']);
+        }
+
         //Session Daten löschen
         $_SESSION = [];
 
@@ -116,7 +124,7 @@ class UserHandler
         }
 
         foreach (['paymentName', 'paymentType', 'cardNumber'] as $field) {
-            if (empty($_POST[$field])) {
+            if (!isset($_POST[$field]) || $_POST[$field] === '') {
                 return ['error' => "Field '$field' is required"];
             }
         }
@@ -153,6 +161,7 @@ class UserHandler
             'cartCount' => $cartCount
         ];
     }
+    
 
     private function getProfile()
     {
@@ -204,7 +213,7 @@ class UserHandler
             ];
         }
 
-        $success = $this->dh->updateUser(
+       $success = $this->dh->updateUser(
             $_SESSION['user_id'],
             $_POST
         );

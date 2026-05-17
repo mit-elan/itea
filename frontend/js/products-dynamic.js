@@ -56,37 +56,26 @@ $(document).ready(function () {
     function renderProducts(products) {
         const $container = $("#product-list");
         $container.empty();
-        if (!products) {
-            console.error("Daten konnten nicht geladen werden oder sind leer.");
-            return;
-        }
+        const template = document.getElementById("product-card-template");
         products.forEach((product) => {
-            // Kurze Validierung: Sind alle Pflichtfelder da?
             if (!product.id || !product.name || !product.price)
                 return;
-            const categoryName = CATEGORY_ID_TO_NAME[product.category_id];
+            const categoryName = CATEGORY_ID_TO_NAME[product.categoryId];
             const stars = "★".repeat(Math.floor(product.rating || 0)).padEnd(5, "☆");
-            const reviewText = product.rating > 0 ? "" : " (0 reviews)";
-            const cardHtml = `
-            <div class="col-md-6 col-xl-4 product-item" data-category="${categoryName}"> 
-                <a href="productInfo.php?id=${product.id}" class="text-decoration-none text-dark">
-                    <article class="tea-card h-100">
-                        <div class="tea-card-image-wrapper">
-                            <img src="/itea/backend/productpictures/${product.file_path}" class="tea-card-image" alt="${product.name}">
-                        </div>
-                        <div class="tea-card-body d-flex flex-column">
-                            <h2 class="tea-card-title">${product.name}</h2>
-                            <p class="tea-card-description">${product.description}</p>
-                            <p class="tea-card-rating mb-3">${stars}<span class="text-muted small">${reviewText}</span></p>
-                            <div class="tea-card-footer mt-auto d-flex justify-content-between align-items-center gap-3">
-                                <p class="tea-card-price mb-0">€${Number(product.price).toFixed(2)}</p>
-                                </a>
-                                <button class="btn tea-card-button button-addToCartList" data-id="${product.id}">Add to cart</button>
-                            </div>
-                        </div>
-                    </article>
-            </div>`;
-            $container.append(cardHtml);
+            const reviewText = typeof product.rating === "number" && product.rating > 0
+                ? product.rating + " Star-Rating"
+                : "(0 reviews)";
+            const $card = $(document.importNode(template.content, true).firstElementChild);
+            $card.attr("data-category", categoryName);
+            $card.find(".product-link").attr("href", `productInfo.php?id=${product.id}`);
+            $card.find(".tea-card-image").attr("src", `/itea/backend/productpictures/${product.filePath}`).attr("alt", product.name);
+            $card.find(".tea-card-title").text(product.name);
+            $card.find(".tea-card-description").text(product.description);
+            $card.find(".stars").text(stars);
+            $card.find(".review-text").text(reviewText);
+            $card.find(".tea-card-price").text(`€${Number(product.price).toFixed(2)}`);
+            $card.find(".button-addToCartList").attr("data-id", String(product.id));
+            $container.append($card);
         });
     }
     function setupFilterLogic() {

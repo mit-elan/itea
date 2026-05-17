@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../config/orderDataHandler.php';
 require_once __DIR__ . '/../config/dataHandler.php';
+require_once __DIR__ . '/../models/order.class.php';
 
 class OrderHandler
 {
@@ -14,26 +15,25 @@ class OrderHandler
     private DataHandler $dh;
 
     public function __construct(
-        OrderDataHandler $odh,
-        DataHandler $dh
-    ) {
-        $this->odh = $odh;
-        $this->dh = $dh;
-    }
+    OrderDataHandler $odh,
+    DataHandler $dh
+) {
+    $this->odh = $odh;
+    $this->dh = $dh;
+}
 
-    public function handle(string $method): ?array
-    {
-        return match ($method) {
+public function handle(
+    string $method,
+    array $data = []
+): ?array {
 
-            'placeOrder' => $this->placeOrder(),
-
-            'getOrders' => $this->getOrders(),
-
-            'getOrderById' => $this->getOrderById(),
-
-            default => null,
-        };
-    }
+    return match ($method) {
+        'placeOrder' => $this->placeOrder(),
+        'getOrders' => $this->getOrders(),
+        'getOrderById' => $this->getOrderById(),
+        default => null,
+    };
+}
 
     private function getOrders(): array
     {
@@ -94,6 +94,11 @@ class OrderHandler
             ];
         }
 
+        $paymentMethodId = isset($_POST['paymentMethodId']) ? (int)$_POST['paymentMethodId'] : 0;
+        if (!$paymentMethodId) {
+            return ['success' => false, 'error' => 'No payment method selected'];
+        }
+
         $cart = $_SESSION['cart'] ?? [];
 
         if (empty($cart)) {
@@ -129,11 +134,14 @@ class OrderHandler
             ];
         }
 
-        $result = $this->odh->createOrder(
-            (int) $userId,
-            $total,
-            $items
-        );
+        $order = new Order([
+            'user_id'           => (int)$userId,
+            'payment_method_id' => $paymentMethodId,
+            'total_price'       => $total,
+        ]);
+        $order->items = $items;
+
+        $result = $this->odh->createOrder($order);
 
         $_SESSION['cart'] = [];
 

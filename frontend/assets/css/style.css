@@ -491,6 +491,14 @@ main {
     transition: all 0.2s ease;
 }
 
+.cart-checkout-button.disabled {
+    opacity: 0.5;
+    background-color: #111111;
+    /* oder welche Farbe bei dir "inaktiv" wirkt */
+    color: #fff;
+    cursor: not-allowed;
+}
+
 .cart-checkout-button:hover,
 .cart-checkout-button:focus {
     background-color: #111111;
