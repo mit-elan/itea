@@ -27,8 +27,8 @@ class UserHandler
             'status' => $this->status(),
 
             // Sprint 2
-            //'getProfile' => $this->getProfile(),
-            //'updateProfile' => $this->updateProfile(),
+            'getProfile' => $this->getProfile(),
+            'updateProfile' => $this->updateProfile(),
             // 'addPaymentMethod' => $this->addPaymentMethod(),
 
             default => null,
