@@ -1,12 +1,17 @@
 <?php
 require_once __DIR__ . '/../models/order.class.php';
 
-class OrderHandler {
+class OrderHandler
+{
     private DataHandler $dh;
-    public function __construct(DataHandler $dh) { $this->dh = $dh; }
+    public function __construct(DataHandler $dh)
+    {
+        $this->dh = $dh;
+    }
 
-    public function handle(string $method, array $data = []): ?array {
-        return match($method) {
+    public function handle(string $method, array $data = []): ?array
+    {
+        return match ($method) {
             'placeOrder'  => $this->placeOrder(),
             // 'getMyOrders' => $this->getMyOrders(),
             // 'getDetails'  => $this->getOrderDetails(),
@@ -55,6 +60,7 @@ class OrderHandler {
         $result = $this->dh->createOrder($order);
 
         $_SESSION['cart'] = [];
+        $this->dh->deleteCart($userId);
 
         return [
             'success'       => true,
