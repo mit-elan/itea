@@ -12,6 +12,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/config/session.php';
 require_once __DIR__ . '/config/dataHandler.php';
 require_once __DIR__ . '/logic/requestHandler.php';
+require_once __DIR__ . '/config/orderDataHandler.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); // In Produktion sollte dies auf die tatsächliche Domain eingeschränkt werden

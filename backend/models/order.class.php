@@ -1,33 +1,54 @@
 <?php
 /** Sprint 2 – Order Model */
-class Order {
-    public int    $id;
-    public int    $userId;
-    public ?int   $paymentMethodId;
-    public ?int   $voucherId;
-    public float  $totalPrice;
+class Order
+{
+    public int $id;
+    public int $userId;
+    public ?int $paymentMethodId;
+    public ?int $voucherId;
+    public float $totalPrice;
     public string $invoiceNumber;
     public string $date;
-    public array  $items = [];
+    public string $firstName;
+    public string $lastName;
+    public string $address;
+    public string $zip;
+    public string $city;
+    public string $email;
+    public array $items = [];
 
-    public function __construct(array $data) {
-        $this->id              = $data['id']                ?? 0;
-        $this->userId          = $data['user_id']           ?? 0;
+    public function __construct(array $data)
+    {
+        $this->id = $data['id'] ?? 0;
+        $this->userId = $data['user_id'] ?? 0;
         $this->paymentMethodId = $data['payment_method_id'] ?? null;
-        $this->voucherId       = $data['voucher_id']        ?? null;
-        $this->totalPrice      = $data['total_price']       ?? 0;
-        $this->invoiceNumber   = $data['invoice_number']    ?? '';
-        $this->date            = $data['date']              ?? '';
+        $this->voucherId = $data['voucher_id'] ?? null;
+        $this->totalPrice = $data['total_price'] ?? 0;
+        $this->invoiceNumber = $data['invoice_number'] ?? '';
+        $this->date = $data['date'] ?? '';
+        $this->firstName = $data['first_name'] ?? '';
+        $this->lastName = $data['last_name'] ?? '';
+        $this->address = $data['address'] ?? '';
+        $this->zip = $data['zip'] ?? '';
+        $this->city = $data['city'] ?? '';
+        $this->email = $data['email'] ?? '';
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
-            'id'             => $this->id,
-            'user_id'        => $this->userId,
-            'total_price'    => $this->totalPrice,
+            'id' => $this->id,
+            'user_id' => $this->userId,
+            'total_price' => $this->totalPrice,
             'invoice_number' => $this->invoiceNumber,
-            'date'           => $this->date,
-            'items'          => $this->items,
+            'date' => $this->date,
+            'items' => $this->items,
+            'first_name' => $this->firstName,
+            'last_name' => $this->lastName,
+            'address' => $this->address,
+            'zip' => $this->zip,
+            'city' => $this->city,
+            'email' => $this->email,
         ];
     }
 }
