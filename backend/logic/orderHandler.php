@@ -26,7 +26,7 @@ class OrderHandler
     ): ?array {
 
         return match ($method) {
-            'placeOrder' => $this->placeOrder(),
+            'placeOrder' => $this->placeOrder($data),
             'getOrders' => $this->getOrders(),
             'getOrderById' => $this->getOrderById(),
             default => null,
@@ -80,7 +80,7 @@ class OrderHandler
         ];
     }
 
-    private function placeOrder(): array
+    private function placeOrder(array $data): array
     {
         $userId = $_SESSION['user_id'] ?? null;
 
@@ -92,7 +92,7 @@ class OrderHandler
             ];
         }
 
-        $paymentMethodId = isset($_POST['paymentMethodId']) ? (int)$_POST['paymentMethodId'] : 0;
+        $paymentMethodId = isset($data['paymentMethodId']) ? (int)$data['paymentMethodId'] : 0;
         if (!$paymentMethodId) {
             return ['success' => false, 'error' => 'No payment method selected'];
         }
@@ -142,7 +142,6 @@ class OrderHandler
         $result = $this->orderDataHandler->createOrder($order);
 
         $_SESSION['cart'] = [];
-        $this->orderDataHandler->deleteCart($userId);
 
         return [
             'success' => true,
