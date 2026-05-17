@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../config/dbaccess.php';
+require_once __DIR__ . '/../models/order.class.php';
 
 class OrderDataHandler
 {
@@ -11,34 +12,75 @@ class OrderDataHandler
         $this->db = getDatabaseConnection();
     }
 
-        public function createOrder(int $userId, float $totalPrice, array $items): array
-    //Das noch leichter machen ohne diesen Datums String
+    public function createOrder(Order $order): array
     {
         $stmt = $this->db->prepare(
-            "INSERT INTO `order` (user_id, total_price) VALUES (?, ?)"
+            "INSERT INTO `order`
+         (user_id, total_price)
+         VALUES (?, ?)"
         );
-        $stmt->bind_param("id", $userId, $totalPrice);
+
+        $stmt->bind_param(
+            "id",
+            $order->userId,
+            $order->totalPrice
+        );
+
         $stmt->execute();
+
         $orderId = $stmt->insert_id;
 
-        $invoiceNumber = 'INV-' . date('Ymd') . '-' . str_pad($orderId, 4, '0', STR_PAD_LEFT);
+        $invoiceNumber =
+            'INV-' .
+            date('Ymd') .
+            '-' .
+            str_pad(
+                $orderId,
+                4,
+                '0',
+                STR_PAD_LEFT
+            );
 
-        $stmt = $this->db->prepare("UPDATE `order` SET invoice_number = ? WHERE id = ?");
-        $stmt->bind_param("si", $invoiceNumber, $orderId);
+        $stmt = $this->db->prepare(
+            "UPDATE `order`
+         SET invoice_number = ?
+         WHERE id = ?"
+        );
+
+        $stmt->bind_param(
+            "si",
+            $invoiceNumber,
+            $orderId
+        );
+
         $stmt->execute();
 
         $stmt = $this->db->prepare(
-            "INSERT INTO order_item (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)"
+            "INSERT INTO order_item
+         (order_id, product_id, quantity, unit_price)
+         VALUES (?, ?, ?, ?)"
         );
-        foreach ($items as $item) {
-            $stmt->bind_param("iiid", $orderId, $item['product_id'], $item['quantity'], $item['unit_price']);
+
+        foreach ($order->items as $item) {
+
+            $stmt->bind_param(
+                "iiid",
+                $orderId,
+                $item['product_id'],
+                $item['quantity'],
+                $item['unit_price']
+            );
+
             $stmt->execute();
         }
 
-        return ['orderId' => $orderId, 'invoiceNumber' => $invoiceNumber];
+        return [
+            'orderId' => $orderId,
+            'invoiceNumber' => $invoiceNumber
+        ];
     }
-    
-    
+
+
     public function getOrdersByUser(
         int $userId
     ): array {
