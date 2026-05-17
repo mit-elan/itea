@@ -71,6 +71,59 @@ class DataHandler
 
         return $user;
     }
+
+    // Für bereits eingeloggte user: Userdaten über Session-ID holen
+    public function getUserById(int $id): ?array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT id, salutation, first_name, last_name, address, zip, city, email, username, password, role, active
+         FROM user
+         WHERE id = ?
+         LIMIT 1"
+        );
+
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+
+        $user = $stmt->get_result()->fetch_assoc();
+
+        if (!$user) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    public function updateUser(
+        int $id,
+        array $data
+    ): bool {
+
+        $stmt = $this->db->prepare(
+            "UPDATE user
+         SET first_name = ?,
+             last_name = ?,
+             email = ?,
+             address = ?,
+             zip = ?,
+             city = ?
+         WHERE id = ?"
+        );
+
+        $stmt->bind_param(
+            "ssssssi",
+            $data['firstname'],
+            $data['lastname'],
+            $data['email'],
+            $data['address'],
+            $data['zip'],
+            $data['city'],
+            $id
+        );
+
+        return $stmt->execute();
+    }
+
     public function createUser(array $data): string|int
     {
         $stmt = $this->db->prepare("INSERT INTO user (salutation, first_name, last_name, address, zip, city, email, username, password, role, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -108,8 +161,8 @@ class DataHandler
     public function createPaymentMethod(int $userId, array $data): bool
     {
         $isBankAccount = ($data['paymentType'] ?? '') === '1' ? 1 : 0;
-        $cardNumber    = $data['cardNumber'] ?? '';
-        $label         = $data['paymentName'] ?? '';
+        $cardNumber = $data['cardNumber'] ?? '';
+        $label = $data['paymentName'] ?? '';
 
 
         $stmt = $this->db->prepare(
@@ -168,6 +221,29 @@ class DataHandler
     //     $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     //     return $result;
     // }
+
+    public function getOrdersByUser(
+        int $userId
+    ): array {
+
+        $stmt = $this->db->prepare(
+            "SELECT id,
+                date,
+                total_price,
+                invoice_number
+         FROM `order`
+         WHERE user_id = ?
+         ORDER BY date DESC"
+        );
+
+        $stmt->bind_param("i", $userId);
+
+        $stmt->execute();
+
+        return $stmt
+            ->get_result()
+            ->fetch_all(MYSQLI_ASSOC);
+    }
 
     public function createOrder(int $userId, float $totalPrice, array $items): array
     //Das noch leichter machen ohne diesen Datums String
