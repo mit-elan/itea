@@ -42,8 +42,10 @@ $(document).ready(function () {
         cartItems.forEach(function (item) {
             const subtotal = item.price * item.quantity;
             total += subtotal;
-            const $item = $(document.importNode(itemTemplate.content, true).firstElementChild);
-            $item.find(".cart-item-image")
+            const $item = $(document.importNode(itemTemplate.content, true)
+                .firstElementChild);
+            $item
+                .find(".cart-item-image")
                 .attr("src", `/itea/backend/productpictures/${item.file_path}`)
                 .attr("alt", item.name);
             $item.find(".cart-item-title").text(item.name);
@@ -90,13 +92,17 @@ $(document).ready(function () {
             const subLabel = isBankAccount
                 ? "DE XXXX XXXX XXXX " + last4
                 : "Card ending in " + last4;
-            const $method = $(document.importNode(paymentTemplate.content, true).firstElementChild);
-            $method.find("input")
+            const $method = $(document.importNode(paymentTemplate.content, true)
+                .firstElementChild);
+            $method
+                .find("input")
                 .attr("id", inputId)
                 .attr("value", String(method.id))
                 .prop("checked", index === 0);
             $method.find("label").attr("for", inputId);
-            $method.find(".payment-type-label").text(`${method.label} - ${typeLabel}`);
+            $method
+                .find(".payment-type-label")
+                .text(`${method.label} - ${typeLabel}`);
             $method.find(".payment-sub-label").text(subLabel);
             $paymentContainer.append($method);
         });
@@ -120,8 +126,10 @@ $(document).ready(function () {
                     alert("Failed to place order: " + response.error);
                     return;
                 }
-                alert("Order placed successfully!");
-                window.location.href = "/iTEA/frontend/sites/orderConfirmation.php?orderId=" + response.orderId;
+                window.location.href =
+                    "/itea/frontend/sites/order-details.php?id=" +
+                        response.orderId +
+                        "&success=1";
             },
             error: function (err) {
                 console.error("Error placing order: ", err);
