@@ -2,7 +2,8 @@
     <div class="container">
         <a class="navbar-brand" href="/itea/frontend/index.php">iTEA</a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -35,12 +36,8 @@
                 </li>
 
                 <li class="nav-item dropdown customer-link" style="display:none;">
-                    <a class="nav-link dropdown-toggle account-toggle"
-                        href="#"
-                        id="accountDropdown"
-                        role="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false">
+                    <a class="nav-link dropdown-toggle account-toggle" href="#" id="accountDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         My Account
                     </a>
 
@@ -50,6 +47,9 @@
                         </li>
                         <li>
                             <a class="dropdown-item" href="/itea/frontend/sites/orders.php">Orders</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/itea/frontend/sites/payment-methods.php">Payment Methods</a>
                         </li>
                         <li>
                             <hr class="dropdown-divider">
@@ -63,9 +63,10 @@
                 <li class="nav-item ms-lg-3" id="cart-link">
                     <a class="btn btn-outline-light position-relative" href="/itea/frontend/sites/cart.php">
                         Cart
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">
-                    0    
-                    </span>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            id="cart-count">
+                            0
+                        </span>
                     </a>
                 </li>
 

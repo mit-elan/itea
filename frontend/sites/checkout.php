@@ -51,7 +51,7 @@
                             <!-- Hier werden die Zahlungsmethoden dynamisch eingefügt -->
                         </div>
 
-                        <a href="/iTEA/frontend/sites/profile.php"
+                        <a href="/iTEA/frontend/sites/payment-methods.php"
                             class="small text-dark d-block mt-2 opacity-75"
                             style="text-decoration: none;"
                             onmouseover="this.style.textDecoration='underline'"
