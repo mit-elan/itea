@@ -185,7 +185,7 @@ class DataHandler
     }
     // ── Sprint 2: Warenkorb / Payment ────────────────────────────
 
-    // Ersetzt den gespeicherten DB-Cart eines Users komplett durch den Session-Cart.
+     // Ersetzt den gespeicherten DB-Cart eines Users komplett durch den Session-Cart.
     // Wird beim Logout aufgerufen.
 
     // ── Sprint 3: Admin ───────────────────────────────────────────
