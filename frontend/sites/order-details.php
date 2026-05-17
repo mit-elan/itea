@@ -9,12 +9,10 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4">
 
-                    <div id="order-error"
-                         class="alert alert-danger d-none">
+                    <div id="order-error" class="alert alert-danger d-none">
                     </div>
 
-                    <div id="order-content"
-                         class="d-none">
+                    <div id="order-content" class="d-none">
 
                         <div class="mb-4">
 
@@ -31,18 +29,40 @@
                         <div class="row mb-4">
 
                             <div class="col-md-4">
+
                                 <strong>Date:</strong>
+
                                 <div id="order-date"></div>
+
                             </div>
 
                             <div class="col-md-4">
+
                                 <strong>Invoice:</strong>
-                                <div id="order-invoice"></div>
+
+                                <div class="d-flex align-items-center gap-2 mt-1">
+
+                                    <span id="order-invoice">
+                                    </span>
+
+                                    <button
+                                        id="download-invoice"
+                                        class="btn btn-outline-dark btn-sm">
+
+                                        <i class="bi bi-download"></i>
+
+                                    </button>
+
+                                </div>
+
                             </div>
 
                             <div class="col-md-4">
+
                                 <strong>Total:</strong>
+
                                 <div id="order-total"></div>
+
                             </div>
 
                         </div>
@@ -66,6 +86,7 @@
 
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="/itea/frontend/js/order-details.js"></script>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

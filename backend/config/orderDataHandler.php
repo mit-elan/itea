@@ -107,17 +107,34 @@ class OrderDataHandler
     public function getOrderById(
         int $orderId,
         int $userId
-    ): ?array {
+    ): ?Order {
 
         $stmt = $this->db->prepare(
-            "SELECT id,
-                    date,
-                    total_price,
-                    invoice_number
-             FROM `order`
-             WHERE id = ?
-             AND user_id = ?
-             LIMIT 1"
+            "SELECT
+                o.id,
+                o.user_id,
+                o.payment_method_id,
+                o.voucher_id,
+                o.date,
+                o.total_price,
+                o.invoice_number,
+
+                u.first_name,
+                u.last_name,
+                u.address,
+                u.zip,
+                u.city,
+                u.email
+
+         FROM `order` o
+
+         JOIN user u
+            ON o.user_id = u.id
+
+         WHERE o.id = ?
+         AND o.user_id = ?
+
+         LIMIT 1"
         );
 
         $stmt->bind_param(
@@ -128,11 +145,24 @@ class OrderDataHandler
 
         $stmt->execute();
 
-        $order = $stmt
+        $orderData = $stmt
             ->get_result()
             ->fetch_assoc();
 
-        return $order ?: null;
+        if (!$orderData) {
+            return null;
+        }
+
+        $order = new Order($orderData);
+
+        $order->firstName = $orderData['first_name'];
+        $order->lastName = $orderData['last_name'];
+        $order->address = $orderData['address'];
+        $order->zip = $orderData['zip'];
+        $order->city = $orderData['city'];
+        $order->email = $orderData['email'];
+
+        return $order;
     }
 
     public function getOrderItems(
