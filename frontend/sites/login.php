@@ -6,8 +6,6 @@ if (isset($_GET['register']) && $_GET['register'] === 'success') { ?>
 
 <?php }
 ?>
-<script src="/itea/frontend/js/auth.js"></script>
-
 
 <main class="container py-5">
     <div class="row justify-content-center">
