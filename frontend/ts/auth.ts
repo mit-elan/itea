@@ -5,27 +5,6 @@
 
 // TODO Sprint 1: login(), register(), logout(), checkLoginCookie()
 
-interface User {
-  id: number;
-  salutation: string;
-  firstname: string;
-  lastname: string;
-  address: string;
-  zip: string;
-  city: string;
-  email: string;
-  username: string;
-  password: string;
-  role: string;
-  active: boolean;
-}
-
-interface PaymentMethod {
-  paymentName: string;
-  paymentType: string; // "0" = Credit-/Debitcard, "1" = Bank Account
-  cardNumber: string;
-}
-
 interface LoginResponse {
   success?: boolean;
   error?: string;
@@ -146,7 +125,7 @@ $(document).ready(function () {
 
     // Alle Felder in ein User-Objekt packen
     const newUser: User = {
-      id: 0, // ID wird vom Server vergeben
+      id: 0, // assigned by the database
       salutation: $("#salutation").val() as string,
       firstname: $("#first-name").val() as string,
       lastname: $("#last-name").val() as string,
@@ -213,8 +192,8 @@ $(document).ready(function () {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=users&method=register",
       type: "POST",
-      dataType: "json",
-      data: { ...newUser, ...newPaymentMethod },
+      contentType: "application/json",
+      data: JSON.stringify({ ...newUser, ...newPaymentMethod }),
       success: function (response) {
         // Falls das Backend trotzdem einen Fehler meldet (z.B. Email existiert schon)
         if (response.error) {
