@@ -30,17 +30,11 @@ function loadPaymentMethods() {
             if (!response.paymentMethods ||
                 response.paymentMethods.length === 0) {
                 $("#payment-list").append(`
-
           <div class="col-12">
-
             <div class="alert alert-info mb-0">
-
               No payment methods saved yet.
-
             </div>
-
           </div>
-
         `);
                 return;
             }
@@ -55,51 +49,31 @@ function loadPaymentMethods() {
                     ? "bi-bank"
                     : "bi-credit-card";
                 $("#payment-list").append(`
-
           <div class="col-md-6">
-
             <div class="card shadow-sm h-100">
-
               <div class="card-body">
-
                 <div class="d-flex justify-content-between align-items-start mb-3">
-
                   <div>
-
                     <h5 class="mb-1">
                       ${payment.label}
                     </h5>
-
                     <p class="text-muted mb-0">
                       ${type}
                     </p>
-
                   </div>
-
                   <i class="bi ${icon} fs-4"></i>
-
                 </div>
-
                 <div class="fw-semibold">
-
                   ${maskedNumber}
-
                 </div>
-
                 <button
                   class="btn btn-outline-danger btn-sm mt-3 delete-payment"
                   data-id="${payment.id}">
-
                   Remove
-
                 </button>
-
               </div>
-
             </div>
-
           </div>
-
         `);
             });
         },
@@ -143,12 +117,12 @@ function createPaymentMethod() {
             .text("Invalid IBAN.");
         return;
     }
+    //Architektur umgestellt - hier kommt noch Fehler im Forntend - Anpassung im Handler ausstehend
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=payment&method=createPaymentMethod",
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify(paymentData),
-        // data: paymentData,
         dataType: "json",
         success: function (response) {
             if (!response.success) {

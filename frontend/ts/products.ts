@@ -5,19 +5,6 @@
 
 // TODO Sprint 1: loadProducts(), loadCategories()
 // TODO Sprint 2: addToCart(), initDragDrop()
-/**
- * products.ts – Produktliste & Kategoriefilter
- */
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: number;
-  filePath: string;
-  rating?: number;
-}
-
 const CATEGORY_ID_TO_NAME: { [key: number]: string } = {
   1: "black",
   2: "green",
