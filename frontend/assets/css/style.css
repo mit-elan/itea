@@ -494,7 +494,6 @@ main {
 .cart-checkout-button.disabled {
     opacity: 0.5;
     background-color: #111111;
-    /* oder welche Farbe bei dir "inaktiv" wirkt */
     color: #fff;
     cursor: not-allowed;
 }
@@ -632,4 +631,26 @@ main {
 
 .account-toggle.show::after {
     content: "▼";
+}
+
+/* =========================
+   ADMIN DASHBOARD ADDITIONS
+========================= */
+.admin-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.admin-card-link:hover .tea-card-title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+/* Icon-Farbe im Dashboard */
+.admin-dashboard-icon {
+    font-size: 4rem;
+    color: #111111;
 }
