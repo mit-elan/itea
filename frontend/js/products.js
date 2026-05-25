@@ -3,6 +3,8 @@
  * products.ts – Produktliste, Kategorien, Drag & Drop
  * Sprint 1: SCRUM-55, SCRUM-58 (Produktsuche), SCRUM-57/56 (Warenkorb)
  */
+// TODO Sprint 1: loadProducts(), loadCategories()
+// TODO Sprint 2: addToCart(), initDragDrop()
 const CATEGORY_ID_TO_NAME = {
     1: "black",
     2: "green",

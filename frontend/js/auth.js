@@ -97,7 +97,7 @@ $(document).ready(function () {
         }
         // Alle Felder in ein User-Objekt packen
         const newUser = {
-            id: 0, // ID wird vom Server vergeben
+            id: 0, // assigned by the database
             salutation: $("#salutation").val(),
             firstname: $("#first-name").val(),
             lastname: $("#last-name").val(),
@@ -153,8 +153,8 @@ $(document).ready(function () {
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=users&method=register",
             type: "POST",
-            dataType: "json",
-            data: Object.assign(Object.assign({}, newUser), newPaymentMethod),
+            contentType: "application/json",
+            data: JSON.stringify(Object.assign(Object.assign({}, newUser), newPaymentMethod)),
             success: function (response) {
                 // Falls das Backend trotzdem einen Fehler meldet (z.B. Email existiert schon)
                 if (response.error) {
