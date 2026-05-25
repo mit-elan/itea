@@ -1,19 +1,9 @@
-const params = new URLSearchParams(window.location.search);
-const productId = params.get("id");
-let userId;
-let currentValue;
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: number;
-  filePath: string;
-  rating?: number;
-}
-
 $(document).ready(function () {
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("id");
+  let userId;
+  let currentValue;
+
   let userIsAllowed = false; // Lokale Status-Variable
 
   checkLoginStatus().then(function (response) {
@@ -33,7 +23,7 @@ $(document).ready(function () {
   function loadProduct() {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=products&method=getById",
-      method: "POST",
+      method: "GET",
       contentType: "application/json",
       data: JSON.stringify({ id: Number(productId) }),
       dataType: "json",
@@ -59,7 +49,9 @@ $(document).ready(function () {
 
     const stars = "★".repeat(Math.floor(product.rating || 0)).padEnd(5, "☆");
     const reviewText =
-      typeof product.rating === "number" && product.rating > 0 ? product.rating + " Star-Rating" : " (0 reviews)";
+      typeof product.rating === "number" && product.rating > 0
+        ? product.rating + " Star-Rating"
+        : " (0 reviews)";
     $("#star-rating").text(stars);
     $("#rating-text").text(reviewText);
 
