@@ -26,19 +26,25 @@ class PaymentDataHandler
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function createPaymentMethod(int $userId, array $data)
-    {
-        $isBankAccount = ($data['paymentType'] ?? '') === '1' ? 1 : 0;
-        $cardNumber    = $data['cardNumber'] ?? '';
-        $label         = $data['paymentName'] ?? '';
+    public function createPaymentMethod(int $userId, array $data): bool
+{
+    $isBankAccount = ($data['paymentType'] ?? '') === '1' ? 1 : 0;
+    $cardNumber    = $data['cardNumber'] ?? '';
+    $label         = $data['paymentName'] ?? '';
 
-        $stmt = $this->db->prepare(
-            "INSERT INTO payment_method (user_id, is_bank_account, card_number, label)
-             VALUES (?, ?, ?, ?)"
-        );
+    $stmt = $this->db->prepare(
+        "INSERT INTO payment_method (user_id, is_bank_account, card_number, label)
+         VALUES (?, ?, ?, ?)"
+    );
 
-        $stmt->bind_param("iiss", $userId, $isBankAccount, $cardNumber, $label);
+    if (!$stmt) {
+        return false;
     }
+
+    $stmt->bind_param("iiss", $userId, $isBankAccount, $cardNumber, $label);
+
+    return $stmt->execute();
+}
 
     public function deletePaymentMethod(int $paymentId, int $userId): bool
     {
