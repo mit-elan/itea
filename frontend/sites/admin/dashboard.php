@@ -46,7 +46,7 @@
 
             <!-- Manage Users -->
             <div class="col">
-                <a href="/itea/frontend/sites/admin/users.php" class="admin-card-link">
+                <a href="/itea/frontend/sites/admin/manageUsers.php" class="admin-card-link">
                     <div class="tea-card h-100 text-center">
                         <div class="tea-card-image-wrapper">
                             <i class="bi bi-people admin-dashboard-icon"></i>
