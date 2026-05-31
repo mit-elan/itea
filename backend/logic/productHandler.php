@@ -88,7 +88,7 @@ class ProductHandler
         return ['filePath' => $filename];
     }
 
-    private function create(array $data): ?array
+    private function create(array $data): array
     {
         if (($_SESSION['role'] ?? '') !== 'admin') {
             return ['code' => 403, 'error' => 'Unauthorized'];
@@ -107,7 +107,7 @@ class ProductHandler
             return ['code' => 400, 'error' => 'Missing required fields'];
         }
 
-        $this->productDataHandler->insertProduct($product);
+        $this->productDataHandler->createProduct($product);
         return ['message' => 'Product created successfully', 'name' => $product->name];
     }
 
