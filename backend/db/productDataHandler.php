@@ -56,7 +56,7 @@ class ProductDataHandler
         );
     }
 
-    public function insertProduct(Product $product): void
+    public function createProduct(Product $product): void
     {
         $stmt = $this->db->prepare(
             "INSERT INTO product (category_id, name, description, price, rating, file_path) VALUES (?, ?, ?, ?, ?, ?)"

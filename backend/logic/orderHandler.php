@@ -11,13 +11,18 @@ require_once __DIR__ . '/../models/order.class.php';
 //Test
 class OrderHandler
 {
-    private OrderDataHandler $orderDataHandler;
+    private OrderDataHandler   $orderDataHandler;
     private ProductDataHandler $productDataHandler;
+    private ?VoucherDataHandler $voucherDataHandler;
 
-    public function __construct(OrderDataHandler $orderDataHandler, ProductDataHandler $productDataHandler)
-    {
-        $this->orderDataHandler = $orderDataHandler;
+    public function __construct(
+        OrderDataHandler $orderDataHandler,
+        ProductDataHandler $productDataHandler,
+        ?VoucherDataHandler $voucherDataHandler = null
+    ) {
+        $this->orderDataHandler   = $orderDataHandler;
         $this->productDataHandler = $productDataHandler;
+        $this->voucherDataHandler = $voucherDataHandler;
     }
 
     public function handle(
@@ -132,10 +137,31 @@ class OrderHandler
             ];
         }
 
+        // Gutschein anwenden falls übergeben – erst hier wird er tatsächlich eingelöst
+        $initialPrice     = $total;
+        $voucher          = null;
+        $voucherDiscount  = null;
+        $voucherRemaining = null;
+
+        $voucherCode = trim($data['appliedVoucherCode'] ?? '');
+        if ($voucherCode && $this->voucherDataHandler) {
+            $voucher = $this->voucherDataHandler->getVoucherByCode($voucherCode);
+            if ($voucher && !$voucher->redeemed && new DateTime($voucher->valid_until) > new DateTime()) {
+                $originalTotal    = $total;
+                $voucherRemaining = round(max(0.0, $voucher->remaining_value - $total), 2);
+                $total            = $this->voucherDataHandler->redeemVoucher($voucher, $total);
+                $voucherDiscount  = round($originalTotal - $total, 2);
+            }
+        }
+
         $order = new Order([
-            'user_id'           => (int)$userId,
-            'payment_method_id' => $paymentMethodId,
-            'total_price'       => $total,
+            'user_id'                 => (int)$userId,
+            'payment_method_id'       => $paymentMethodId,
+            'initial_price'           => $initialPrice,
+            'total_price'             => $total,
+            'voucher_id'              => $voucher?->id,
+            'voucher_discount'        => $voucherDiscount,
+            'voucher_remaining_value' => $voucherRemaining,
         ]);
         $order->items = $items;
 

@@ -198,7 +198,7 @@ class DataHandler
 
     // ── Sprint 4: Gutscheine ──────────────────────────────────────
 
-    // public function createCoupon(array $data): bool { ... }
-    // public function getCouponByCode(string $code): ?array { ... }
-    // public function redeemCoupon(string $code, int $userId): bool { ... }
+    // public function createvoucher(array $data): bool { ... }
+    // public function getvoucherByCode(string $code): ?array { ... }
+    // public function redeemvoucher(string $code, int $userId): bool { ... }
 }

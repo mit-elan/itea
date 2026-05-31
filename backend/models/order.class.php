@@ -6,6 +6,10 @@ class Order
     public int $userId;
     public ?int $paymentMethodId;
     public ?int $voucherId;
+    public ?string $voucherCode;
+    public ?float $voucherDiscount;
+    public ?float $voucherRemainingValue;
+    public float $initialPrice;
     public float $totalPrice;
     public string $invoiceNumber;
     public string $date;
@@ -23,6 +27,9 @@ class Order
         $this->userId = $data['user_id'] ?? 0;
         $this->paymentMethodId = $data['payment_method_id'] ?? null;
         $this->voucherId = $data['voucher_id'] ?? null;
+        $this->voucherDiscount = $data['voucher_discount'] ?? null;
+        $this->voucherRemainingValue = $data['voucher_remaining_value'] ?? null;
+        $this->initialPrice = (float)($data['initial_price'] ?? $data['total_price'] ?? 0);
         $this->totalPrice = $data['total_price'] ?? 0;
         $this->invoiceNumber = $data['invoice_number'] ?? '';
         $this->date = $data['date'] ?? '';
@@ -39,7 +46,11 @@ class Order
         return [
             'id' => $this->id,
             'user_id' => $this->userId,
+            'initial_price' => $this->initialPrice,
             'total_price' => $this->totalPrice,
+            'voucher_code'            => $this->voucherCode,
+            'voucher_discount'        => $this->voucherDiscount,
+            'voucher_remaining_value' => $this->voucherRemainingValue,
             'invoice_number' => $this->invoiceNumber,
             'date' => $this->date,
             'items' => $this->items,
