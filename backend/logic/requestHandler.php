@@ -16,8 +16,10 @@ require_once __DIR__ . '/orderHandler.php';
 require_once __DIR__ . '/cartHandler.php';
 require_once __DIR__ . '/paymentHandler.php';
 require_once __DIR__ . '/voucherHandler.php';
+require_once __DIR__ . '/adminHandler.php';
 
 require_once __DIR__ . '/../db/orderDataHandler.php';
+require_once __DIR__ . '/../db/adminDataHandler.php';
 
 class RequestHandler
 {
@@ -27,6 +29,9 @@ class RequestHandler
     private CartHandler $cartHandler;
     private PaymentHandler $paymentHandler;
     private VoucherHandler $voucherHandler;
+    private AdminHandler $adminHandler;
+
+
     public function __construct(DBaccess $db)
     {
         $this->userHandler    = new UserHandler(new DataHandler($db), new CartDataHandler($db), new PaymentDataHandler($db));
@@ -35,7 +40,7 @@ class RequestHandler
         $this->cartHandler    = new CartHandler(new CartDataHandler($db), new ProductDataHandler($db));
         $this->paymentHandler = new PaymentHandler(new PaymentDataHandler($db));
         $this->voucherHandler  = new VoucherHandler(new VoucherDataHandler($db), new ProductDataHandler($db));
-       //$this->adminHandler   = new AdminHandler(new AdminDataHandler($db));
+        $this->adminHandler   = new AdminHandler(new AdminDataHandler($db));
     }
 
     public function dispatch(
@@ -50,7 +55,7 @@ class RequestHandler
             'cart'     => $this->cartHandler->handle($method, $data),
             'payment'  => $this->paymentHandler->handle($method, $data),
             'vouchers' => $this->voucherHandler->handle($method, $data),
-            //'admin'    => $this->adminHandler->handle($method, $data),
+            'admin'    => $this->adminHandler->handle($method, $data),
             default    => null,
         };
     }

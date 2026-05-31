@@ -27,7 +27,7 @@ interface User {
   city: string;
   email: string;
   username: string;
-  password: string;
+  password?: string;
   role: string;
   active: boolean;
 }
@@ -36,4 +36,36 @@ interface PaymentMethod {
   paymentName: string;
   paymentType: string; // "0" = Credit-/Debitcard, "1" = Bank Account
   cardNumber: string;
+}
+
+interface OrderSummary {
+  id: number;
+  date: string;
+  total_price: number;
+  invoice_number: string;
+}
+
+interface OrderDetails {
+  id: number;
+  user_id: number;
+  payment_method_id?: number;
+  voucher_id?: number;
+  date: string;
+  total_price: number;
+  invoice_number: string;
+  first_name: string;
+  last_name: string;
+  address: string;
+  zip: string;
+  city: string;
+  email: string;
+  username: string;
+}
+
+interface OrderItem {
+  name: string;
+  price: number;
+  file_path: string;
+  quantity: number;
+  unit_price: number;
 }
