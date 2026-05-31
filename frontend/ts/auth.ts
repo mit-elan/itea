@@ -72,7 +72,12 @@ $(document).ready(function () {
           .show();
 
         // Rolle und User-ID werden vom Backend geliefert und dort in der Session gespeichert
-        window.location.href = "/itea/frontend/index.php";
+        if (response.role === "admin") {
+          window.location.href = "/itea/frontend/sites/admin/dashboard.php";
+          return;
+        } else {
+          window.location.href = "/itea/frontend/index.php";
+        }
       },
       error: function (xhr) {
         $("#login-message")
@@ -265,7 +270,6 @@ function ibanCheck(iban: string): boolean {
 }
 
 function checkLoginStatus(): JQuery.jqXHR {
-  //
   return $.ajax({
     url: "/itea/backend/serviceHandler.php?handler=users&method=status",
     type: "GET",
@@ -274,60 +278,14 @@ function checkLoginStatus(): JQuery.jqXHR {
 }
 
 function updateNavigation(response: any): void {
-  $(".customer-link").hide();
-  $(".admin-link").hide();
-  $("#login-link").show();
-  $("#register-link").show();
   $("#products-link").show();
   $("#cart-link").show();
   $("#cart-count").text(response.cartCount);
 
   if (response.loggedIn && response.role === "customer") {
     $("#login-link").hide();
-    $("#register-link").hide();
     $(".customer-link").show();
     return;
   }
-
-  if (response.loggedIn && response.role === "admin") {
-    $("#login-link").hide();
-    $("#register-link").hide();
-    $("#products-link").hide();
-    $("#cart-link").hide();
-    $(".admin-link").show();
-  }
 }
 
-/*
-function checkLoginStatus(): void {
-  $.ajax({
-    url: "/itea/backend/serviceHandler.php?handler=users&method=status",
-    type: "GET",
-    dataType: "json",
-    success: function (response) {
-      $(".customer-link").hide();
-      $(".admin-link").hide();
-
-      $("#login-link").show();
-      $("#register-link").show();
-      $("#products-link").show();
-      $("#cart-link").show();
-
-      if (response.loggedIn && response.role === "customer") {
-        $("#login-link").hide();
-        $("#register-link").hide();
-        $(".customer-link").show();
-        return;
-      }
-
-      if (response.loggedIn && response.role === "admin") {
-        $("#login-link").hide();
-        $("#register-link").hide();
-        $("#products-link").hide();
-        $("#cart-link").hide();
-        $(".admin-link").show();
-      }
-    },
-  });
-}
-*/

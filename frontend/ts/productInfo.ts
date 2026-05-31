@@ -24,8 +24,7 @@ $(document).ready(function () {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=products&method=getById",
       method: "GET",
-      contentType: "application/json",
-      data: JSON.stringify({ id: Number(productId) }),
+      data: { id: Number(productId) },
       dataType: "json",
       success: function (data: Product) {
         if (!data || (Array.isArray(data) && data.length === 0)) {

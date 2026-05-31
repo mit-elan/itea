@@ -6,4 +6,4 @@
  */
 // TODO Sprint 3: createProduct(), editProduct(), deleteProduct()
 // TODO Sprint 3: listCustomers(), setCustomerActive()
-// TODO Sprint 4: createCoupon(), listCoupons()
+// TODO Sprint 4: createvoucher(), listvouchers()

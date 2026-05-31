@@ -16,14 +16,18 @@ class OrderDataHandler
     {
         $stmt = $this->db->prepare(
             "INSERT INTO `order`
-         (user_id, total_price)
-         VALUES (?, ?)"
+         (user_id, initial_price, total_price, voucher_id, voucher_discount, payment_method_id)
+         VALUES (?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->bind_param(
-            "id",
+            "iddidi",
             $order->userId,
-            $order->totalPrice
+            $order->initialPrice,
+            $order->totalPrice,
+            $order->voucherId,
+            $order->voucherDiscount,
+            $order->paymentMethodId
         );
 
         $stmt->execute();
@@ -115,6 +119,8 @@ class OrderDataHandler
                 o.user_id,
                 o.payment_method_id,
                 o.voucher_id,
+                o.initial_price,
+                o.voucher_discount,
                 o.date,
                 o.total_price,
                 o.invoice_number,
@@ -124,9 +130,15 @@ class OrderDataHandler
                 u.address,
                 u.zip,
                 u.city,
-                u.email
+                u.email,
+
+                v.code AS voucher_code,
+                v.remaining_value AS voucher_remaining_value
 
          FROM `order` o
+
+         LEFT JOIN vouchers v
+            ON o.voucher_id = v.id
 
          JOIN user u
             ON o.user_id = u.id
@@ -161,7 +173,9 @@ class OrderDataHandler
         $order->zip = $orderData['zip'];
         $order->city = $orderData['city'];
         $order->email = $orderData['email'];
-
+        $order->voucherDiscount = $orderData['voucher_discount'];
+        $order->voucherRemainingValue = $orderData['voucher_remaining_value'];
+        $order->voucherCode = $orderData['voucher_code'];
         return $order;
     }
 
