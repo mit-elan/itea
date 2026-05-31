@@ -2,6 +2,7 @@
 $(document).ready(function () {
     let userId = null;
     let userIsAllowed = false;
+    let appliedVoucherCode = null;
     checkLoginStatus().then(function (response) {
         updateNavigation(response);
         if (response.loggedIn && response.role === "customer") {
@@ -10,6 +11,32 @@ $(document).ready(function () {
             loadCart();
             loadPaymentMethods();
         }
+    });
+    $("#apply-voucher-button").click(function () {
+        $("#checkout-voucher-error").text("").addClass("d-none");
+        const voucherCode = $(".cart-voucher-input").val();
+        if (!voucherCode) {
+            $("#checkout-voucher-error").text("Please enter a voucher code.").removeClass("d-none");
+            return;
+        }
+        const cartAmount = parseFloat($("#subtotal-value").text().replace("€", ""));
+        $.ajax({
+            url: "/itea/backend/serviceHandler.php?handler=vouchers&method=redeem",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ userId, voucherCode, cartAmount }),
+            success: function (response) {
+                appliedVoucherCode = voucherCode;
+                $("#voucher-value").text(`- €${Number(response.discount).toFixed(2)}`);
+                $("#voucher-row").removeClass("d-none").addClass("d-flex");
+                $("#total-value").text(`€${Number(response.finalAmount).toFixed(2)}`);
+            },
+            error: function (xhr) {
+                var _a;
+                const msg = ((_a = xhr.responseJSON) === null || _a === void 0 ? void 0 : _a.error) || "Unknown error";
+                $("#checkout-voucher-error").text(msg).removeClass("d-none");
+            },
+        });
     });
     function loadCart() {
         $.ajax({
@@ -107,24 +134,31 @@ $(document).ready(function () {
             $paymentContainer.append($method);
         });
     }
+    $("#remove-voucher").on("click", function () {
+        appliedVoucherCode = null;
+        $("#voucher-row").addClass("d-none").removeClass("d-flex");
+        $("#checkout-voucher-error").text("").addClass("d-none");
+        $("#total-value").text($("#subtotal-value").text());
+    });
     $("#order-button").on("click", function (e) {
         e.preventDefault();
         placeOrder();
     });
     function placeOrder() {
+        $("#checkout-order-error").text("").addClass("d-none");
         const paymentMethodId = $("input[name='payment']:checked").val();
         if (!paymentMethodId) {
-            alert("Please select a payment method.");
+            $("#checkout-order-error").text("Please select a payment method.").removeClass("d-none");
             return;
         }
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=orders&method=placeOrder",
             type: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ userId, paymentMethodId }),
+            data: JSON.stringify({ userId, paymentMethodId, appliedVoucherCode }),
             success: function (response) {
                 if (response.error) {
-                    alert("Failed to place order: " + response.error);
+                    $("#checkout-order-error").text(response.error).removeClass("d-none");
                     return;
                 }
                 window.location.href =
@@ -134,7 +168,6 @@ $(document).ready(function () {
             },
             error: function (err) {
                 console.error("Error placing order: ", err);
-                alert("Failed to place order.");
             },
         });
     }

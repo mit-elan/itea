@@ -109,6 +109,23 @@ function generateInvoicePdf() {
 
     `;
     });
+    let voucherHtml = "";
+    if (order.voucher_code) {
+        voucherHtml = `
+      <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #eee; text-align: right;">
+        <p style="margin: 0 0 6px 0; font-size: 14px; color: #555;">
+          <strong>Subtotal:</strong> € ${Number(order.initial_price).toFixed(2)}
+        </p>
+        <p style="margin: 0 0 6px 0; font-size: 14px;">
+          <strong>Voucher ${order.voucher_code}:</strong>
+          <span style="color: #d9534f; margin-left: 6px;">- € ${Number(order.voucher_discount).toFixed(2)}</span>
+        </p>
+        <p style="margin: 0; font-size: 12px; color: #666;">
+          Remaining Voucher Amount: € ${Number(order.voucher_remaining_value).toFixed(2)}
+        </p>
+      </div>
+    `;
+    }
     const invoice = document.createElement("div");
     invoice.innerHTML = `
 
@@ -231,6 +248,8 @@ function generateInvoicePdf() {
         </tbody>
 
       </table>
+
+      ${voucherHtml}
 
       <div style="margin-top:40px; text-align:right;">
 

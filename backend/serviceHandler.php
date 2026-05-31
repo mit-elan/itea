@@ -15,11 +15,12 @@ require_once __DIR__ . '/db/cartDataHandler.php';
 require_once __DIR__ . '/db/orderDataHandler.php';
 require_once __DIR__ . '/db/paymentDataHandler.php';
 require_once __DIR__ . '/db/productDataHandler.php';
+require_once __DIR__ . '/db/voucherDataHandler.php';
 
 require_once __DIR__ . '/logic/requestHandler.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); // In Produktion sollte dies auf die tatsächliche Domain eingeschränkt werden
+header('Access-Control-Allow-Origin: *');
 
 $handler = $_GET['handler'] ?? $_POST['handler'] ?? '';
 $method  = $_GET['method']  ?? $_POST['method']  ?? '';

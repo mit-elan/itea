@@ -4,96 +4,125 @@
 
 <main class="cart-page py-5">
     <div class="container">
-        <!-- Header -->
-        <div class="cart-header mb-5 text-center">
-            <h1 class="cart-title">Order Summary</h1>
+
+        <div class="mb-5 text-center">
+            <h1 class="cart-title">Final Review & Order</h1>
         </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <!-- Der zentrale Rechnungs-Block -->
-                <div class="cart-summary p-4 p-md-5">
+        <div class="checkout-container shadow-sm">
 
-                    <!-- 1. Container für die Produkte -->
-                    <h2 class="h5 fw-bold mb-4 text-uppercase border-bottom pb-2">Your Items</h2>
-                    <div id="cart-items-container"></div> <!-- ← NEU, hardcodierte Produkte löschen -->
-
-                    <!-- 2. Subtotal Wert -->
-                    <div class="cart-summary-row d-flex justify-content-between mb-2">
-                        <span>Subtotal</span>
-                        <span id="subtotal-value">€0.00</span> <!-- ← id hinzufügen -->
-                    </div>
-
-                    <div class="cart-actions">
-                        <div class="cart-coupon">
-                            <input type="text" class="cart-coupon-input" placeholder="Voucher code">
-                            <button class="btn cart-coupon-button">Apply voucher</button>
-                        </div>
-                    </div>
-
-
-                    <!-- 3. Voucher Applied (standardmäßig versteckt) -->
-                    <div class="cart-summary-row d-flex justify-content-between mb-2 text-success fw-bold" id="voucher-row" style="display:none !important">
-                        <span>Voucher Applied</span>
-                        <span id="voucher-value">- €0.00</span>
-                    </div>
-
-                    <!-- 4. Total Wert -->
-                    <div class="cart-summary-total d-flex justify-content-between mt-4 mb-5">
-                        <span>Total Amount</span>
-                        <span id="total-value"></span> <!-- ← id hinzufügen -->
-                    </div>
-
-                    <!-- 3. Payment Sektion -->
-                    <div class="mb-4">
-                        <h2 class="h5 fw-bold mb-3 text-uppercase">Payment Method</h2>
-                        <div id="payment-methods-container">
-                            <!-- Hier werden die Zahlungsmethoden dynamisch eingefügt -->
-                        </div>
-
-                        <a href="/iTEA/frontend/sites/payment-methods.php"
-                            class="small text-dark d-block mt-2 opacity-75"
-                            style="text-decoration: none;"
-                            onmouseover="this.style.textDecoration='underline'"
-                            onmouseout="this.style.textDecoration='none'">
-                            Payment method missing? Add it in your profile.
-                        </a>
-                    </div>
-
-                    <!-- Button: Zahlungspflichtig bestellen -->
-                    <button type="submit" class="cart-checkout-button w-100 py-3 border-0" id = "order-button">
-                        Place Order
-                    </button>
+            <!-- STEP 1: REVIEW ITEMS -->
+            <div class="checkout-step-header">
+                <span>Review Your Selection</span>
+                <i class="bi bi-bag-check"></i>
+            </div>
+            <div class="checkout-content-block">
+                <div id="cart-items-container">
+                    <!-- Items via Template -->
                 </div>
+            </div>
+
+            <!-- STEP 2: PAYMENT METHOD -->
+            <div class="checkout-step-header">
+                <span>Payment Method</span>
+                <i class="bi bi-credit-card"></i>
+            </div>
+            <div class="checkout-content-block">
+                <div id="payment-methods-container">
+                    <!-- Payment Methods via Template -->
+                </div>
+                <div class="mt-3">
+                    <p class="text-dark small fw-600">
+                        Payment method missing?
+                        <a href="/iTEA/frontend/sites/payment-methods.php" class="text-decoration-underline">
+                            Add it in your profile
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- STEP 3: VOUCHER & TOTALS -->
+            <div class="checkout-step-header">
+                <span>Voucher & Final Amount</span>
+                <i class="bi bi-cash-stack"></i>
+            </div>
+
+            <div class="checkout-footer-bg">
+                <div class="row justify-content-between align-items-center mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-uppercase">Have a voucher?</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control cart-voucher-input rounded-0 border-dark" placeholder="Code">
+                            <button class="btn btn-dark rounded-0 px-4" id="apply-voucher-button">Apply</button>
+                        </div>
+                        <div id="checkout-voucher-error" class="alert alert-danger rounded-0 mt-2 small d-none"></div>
+                    </div>
+                    <div class="col-md-5 mt-4 mt-md-0">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal:</span>
+                            <span id="subtotal-value" class="fw-600">€0.00</span>
+                        </div>
+
+                        <!-- Voucher Row -->
+                        <div id="voucher-row" class="d-none justify-content-between mb-2 text-success fw-bold">
+                            <span>Voucher:</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span id="voucher-value">- €0.00</span>
+                                <button id="remove-voucher" class="btn-close" style="font-size: 0.6rem;"></button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between final-total-row mt-3">
+                            <span>Total:</span>
+                            <span id="total-value">€0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ORDER ERROR MESSAGE -->
+                <div id="checkout-order-error" class="alert alert-danger rounded-0 mb-3 d-none"></div>
+
+                <!-- FINAL ACTION -->
+                <button type="submit" class="btn-place-order rounded-0" id="order-button">
+                    Place Order
+                </button>
             </div>
         </div>
     </div>
 </main>
 
+<!-- TEMPLATES -->
+
 <template id="checkout-item-template">
-    <div class="row align-items-center mb-4">
-        <div class="col-8">
-            <div class="d-flex align-items-center">
-                <div class="cart-item-image-wrapper me-3" style="width: 60px; height: 60px;">
-                    <img src="" alt="" class="cart-item-image">
-                </div>
-                <div>
-                    <h3 class="cart-item-title h6 mb-1"></h3>
-                    <span class="text-muted small cart-item-quantity"></span>
-                </div>
+    <div class="row align-items-center mb-3 pb-3 border-bottom border-light mx-0">
+        <div class="col-2 px-0">
+            <div class="border p-1 bg-white" style="width: 60px; height: 60px;">
+                <img src="" alt="" class="cart-item-image w-100 h-100 object-fit-contain">
             </div>
         </div>
-        <div class="col-4 text-end fw-bold cart-item-subtotal"></div>
+        <div class="col-6">
+            <h3 class="cart-item-title h6 mb-0 fw-bold text-dark"></h3>
+            <span class="text-muted small cart-item-quantity"></span>
+        </div>
+        <div class="col-4 text-end">
+            <span class="cart-item-subtotal fw-600"></span>
+        </div>
     </div>
 </template>
 
 <template id="payment-method-template">
-    <div class="form-check mb-3">
-        <input class="form-check-input" type="radio" name="payment">
-        <label class="form-check-label w-100">
-            <span class="fw-bold d-block payment-type-label"></span>
-            <span class="small text-muted payment-sub-label"></span>
-        </label>
+    <div class="position-relative">
+        <!-- Radio Input hidden but functional -->
+        <input class="payment-radio-hidden" type="radio" name="payment">
+        <div class="payment-option-wrapper">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill text-dark me-3" style="font-size: 1.2rem;"></i>
+                <div>
+                    <span class="fw-bold d-block payment-type-label h6 mb-1"></span>
+                    <span class="small text-muted payment-sub-label"></span>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 

@@ -1,6 +1,6 @@
 <?php
-/** Sprint 4 – Coupon Model */
-class Coupon {
+/** Sprint 4 – voucher Model */
+class voucher {
     public int     $id;
     public string  $code;
     public float   $value;

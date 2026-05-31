@@ -16,18 +16,6 @@
                 <li class="nav-item" id="products-link">
                     <a class="nav-link" href="/itea/frontend/sites/products.php">Products</a>
                 </li>
-
-                <li class="nav-item admin-link" style="display:none;">
-                    <a class="nav-link" href="/itea/frontend/sites/admin-products.php">Edit Products</a>
-                </li>
-
-                <li class="nav-item admin-link" style="display:none;">
-                    <a class="nav-link" href="/itea/frontend/sites/admin-customers.php">Manage Customers</a>
-                </li>
-
-                <li class="nav-item admin-link" style="display:none;">
-                    <a class="nav-link" href="/itea/frontend/sites/admin-coupons.php">Manage Coupons</a>
-                </li>
             </ul>
 
             <ul class="navbar-nav align-items-lg-center">
