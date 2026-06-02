@@ -21,6 +21,11 @@ $(document).ready(function () {
         const orderId = Number($(this).data("order-id"));
         loadOrderDetails(orderId);
     });
+    $(document).on("click", ".remove-order-item-btn", function () {
+        const orderId = Number($(this).data("order-id"));
+        const orderItemId = Number($(this).data("order-item-id"));
+        removeOrderItem(orderId, orderItemId);
+    });
     function loadUsers() {
         $("#user-table-body").empty();
         $.ajax({
@@ -190,12 +195,21 @@ $(document).ready(function () {
                     const itemTotal = Number(item.unit_price) * Number(item.quantity);
                     itemsHtml += `
             <tr>
-              <td>${item.name}</td>
-              <td>${item.quantity}</td>
-              <td>€ ${Number(item.unit_price).toFixed(2)}</td>
-              <td>€ ${itemTotal.toFixed(2)}</td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>€ ${Number(item.unit_price).toFixed(2)}</td>
+                <td>€ ${itemTotal.toFixed(2)}</td>
+                <td class="text-end">
+                <button
+                    class="btn btn-outline-danger btn-sm rounded-0 remove-order-item-btn"
+                    data-order-id="${order.id}"
+                    data-order-item-id="${item.id}"
+                >
+                    Remove
+                </button>
+                </td>
             </tr>
-          `;
+            `;
                 });
                 const html = `
           <div class="mt-4">
@@ -289,6 +303,28 @@ $(document).ready(function () {
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
+        });
+    }
+    function removeOrderItem(orderId, orderItemId) {
+        if (!confirm("Remove this product from the order?")) {
+            return;
+        }
+        $.ajax({
+            url: "/itea/backend/serviceHandler.php?handler=admin&method=removeOrderItem",
+            type: "POST",
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({
+                orderId: orderId,
+                orderItemId: orderItemId,
+            }),
+            success: function (response) {
+                showMessage(response.message || "Order item removed successfully.", "success");
+                loadOrderDetails(orderId);
+            },
+            error: function (xhr) {
+                showBackendError(xhr);
+            },
         });
     }
 });

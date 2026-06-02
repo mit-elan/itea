@@ -1,4 +1,3 @@
-declare const bootstrap: any;
 
 $(document).ready(function () {
   checkLoginStatus().then(function (response: User) {
@@ -28,6 +27,13 @@ $(document).ready(function () {
     const orderId = Number($(this).data("order-id"));
 
     loadOrderDetails(orderId);
+  });
+
+  $(document).on("click", ".remove-order-item-btn", function () {
+    const orderId = Number($(this).data("order-id"));
+    const orderItemId = Number($(this).data("order-item-id"));
+
+    removeOrderItem(orderId, orderItemId);
   });
 
   function loadUsers(): void {
@@ -241,12 +247,21 @@ $(document).ready(function () {
 
           itemsHtml += `
             <tr>
-              <td>${item.name}</td>
-              <td>${item.quantity}</td>
-              <td>€ ${Number(item.unit_price).toFixed(2)}</td>
-              <td>€ ${itemTotal.toFixed(2)}</td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>€ ${Number(item.unit_price).toFixed(2)}</td>
+                <td>€ ${itemTotal.toFixed(2)}</td>
+                <td class="text-end">
+                <button
+                    class="btn btn-outline-danger btn-sm rounded-0 remove-order-item-btn"
+                    data-order-id="${order.id}"
+                    data-order-item-id="${item.id}"
+                >
+                    Remove
+                </button>
+                </td>
             </tr>
-          `;
+            `;
         });
 
         const html = `
@@ -338,18 +353,46 @@ $(document).ready(function () {
   }
 
   function formatDate(dateString: string): string {
-  const date = new Date(dateString.replace(" ", "T"));
+    const date = new Date(dateString.replace(" ", "T"));
 
-  if (isNaN(date.getTime())) {
-    return dateString;
+    if (isNaN(date.getTime())) {
+      return dateString;
+    }
+
+    return date.toLocaleString("de-AT", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
-  return date.toLocaleString("de-AT", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+  function removeOrderItem(orderId: number, orderItemId: number): void {
+  if (!confirm("Remove this product from the order?")) {
+        return;
+    }
+
+    $.ajax({
+        url: "/itea/backend/serviceHandler.php?handler=admin&method=removeOrderItem",
+        type: "POST",
+        contentType: "application/json",
+        dataType: "json",
+        data: JSON.stringify({
+        orderId: orderId,
+        orderItemId: orderItemId,
+        }),
+        success: function (response: { message?: string }) {
+        showMessage(
+            response.message || "Order item removed successfully.",
+            "success"
+        );
+
+        loadOrderDetails(orderId);
+        },
+        error: function (xhr: JQuery.jqXHR) {
+        showBackendError(xhr);
+        },
+    });
+    }
 });
