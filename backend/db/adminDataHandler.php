@@ -208,6 +208,8 @@ class AdminDataHandler
             o.id,
             o.user_id,
             o.date,
+            IF(o.initial_price = 0, o.total_price, o.initial_price) AS subtotal,
+            o.voucher_discount AS voucher,
             o.total_price,
             o.invoice_number,
             u.first_name,

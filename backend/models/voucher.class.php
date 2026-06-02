@@ -1,14 +1,18 @@
 <?php
-class Voucher {
+class Voucher
+{
     public int    $id;
+    public int    $user_id;
     public string $code;
     public float  $value;
     public float  $remaining_value;
     public string $valid_until;
     public bool   $redeemed;
 
-    public function __construct(array $data) {
+    public function __construct(array $data)
+    {
         $this->id              = (int)$data['id'];
+        $this->user_id         = (int)($data['user_id'] ?? 0);
         $this->code            = $data['code'];
         $this->value           = (float)$data['value'];
         $this->remaining_value = (float)($data['remaining_value'] ?? $data['value']);
@@ -16,7 +20,8 @@ class Voucher {
         $this->redeemed        = (bool)($data['redeemed'] ?? false);
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         $now    = new DateTime();
         $expiry = new DateTime($this->valid_until);
 

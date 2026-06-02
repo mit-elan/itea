@@ -30,19 +30,41 @@ class VoucherDataHandler
         $result = $this->db->query(
             "SELECT id, code, value, remaining_value, valid_until, redeemed FROM vouchers ORDER BY valid_until DESC"
         );
+
         if (!$result) return [];
 
         $vouchers = [];
         while ($row = $result->fetch_assoc()) {
             $vouchers[] = new Voucher($row);
         }
+
+
+        return $vouchers;
+    }
+
+    /** @return Voucher[] */
+    public function getVouchersByUserId(int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT id, code, value, remaining_value, valid_until, redeemed FROM vouchers WHERE user_id = ? ORDER BY valid_until DESC"
+        );
+        if (!$stmt) return [];
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $vouchers = [];
+        while ($row = $result->fetch_assoc()) {
+            $vouchers[] = new Voucher($row);
+        }
+
         return $vouchers;
     }
 
     public function getVoucherByCode(string $code): ?Voucher
     {
         $stmt = $this->db->prepare(
-            "SELECT id, code, value, remaining_value, valid_until, redeemed FROM vouchers WHERE code = ?"
+            "SELECT id, user_id, code, value, remaining_value, valid_until, redeemed FROM vouchers WHERE code = ?"
         );
         if (!$stmt) return null;
         $stmt->bind_param("s", $code);
@@ -72,5 +94,15 @@ class VoucherDataHandler
         $stmt->execute();
 
         return $newTotal;
+    }
+
+    public function assignVoucherToUser(Voucher $voucher, int $userId): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE vouchers SET user_id = ? WHERE id = ?"
+        );
+        if (!$stmt) return false;
+        $stmt->bind_param("ii", $userId, $voucher->id);
+        return $stmt->execute();
     }
 }

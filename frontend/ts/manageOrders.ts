@@ -45,6 +45,8 @@ $(document).ready(function () {
                 <div class="text-muted small">${order.email}</div>
               </td>
               <td>${order.invoice_number}</td>
+              <td>€ ${Number(order.subtotal).toFixed(2)}</td>
+              <td>€ ${Number(order.voucher).toFixed(2)}</td>
               <td>€ ${Number(order.total_price).toFixed(2)}</td>
               <td class="text-end pe-4">
                 <button
