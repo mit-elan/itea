@@ -24,6 +24,8 @@ class AdminHandler
             'setUserActive' => $this->setUserActive($data),
             'getUserOrders' => $this->getUserOrders($data),
             'getOrderDetails' => $this->getOrderDetails($data),
+            'getAllOrders' => $this->getAllOrders(),
+            'removeOrderItem' => $this->removeOrderItem($data),
             default => [
                 'code' => 404,
                 'error' => 'Unknown admin method'
@@ -118,56 +120,115 @@ class AdminHandler
     }
 
     private function getUserOrders(array $data): array
-{
-    $authError = $this->requireAdmin();
+    {
+        $authError = $this->requireAdmin();
 
-    if ($authError !== null) {
-        return $authError;
+        if ($authError !== null) {
+            return $authError;
+        }
+
+        $userId = (int) ($data['userId'] ?? $_GET['userId'] ?? 0);
+
+        if ($userId <= 0) {
+            return [
+                'code' => 400,
+                'error' => 'Missing or invalid user id'
+            ];
+        }
+
+        return $this->adminDataHandler->getOrdersByUserId($userId);
     }
 
-    $userId = (int)($data['userId'] ?? $_GET['userId'] ?? 0);
+    private function getOrderDetails(array $data): array
+    {
+        $authError = $this->requireAdmin();
 
-    if ($userId <= 0) {
+        if ($authError !== null) {
+            return $authError;
+        }
+
+        $orderId = (int) ($data['orderId'] ?? $_GET['orderId'] ?? 0);
+
+        if ($orderId <= 0) {
+            return [
+                'code' => 400,
+                'error' => 'Missing or invalid order id'
+            ];
+        }
+
+        $order = $this->adminDataHandler->getOrderById($orderId);
+
+        if (!$order) {
+            return [
+                'code' => 404,
+                'error' => 'Order not found'
+            ];
+        }
+
+        $items = $this->adminDataHandler->getOrderItems($orderId);
+
         return [
-            'code' => 400,
-            'error' => 'Missing or invalid user id'
+            'order' => $order,
+            'items' => $items
         ];
     }
 
-    return $this->adminDataHandler->getOrdersByUserId($userId);
-}
+    private function removeOrderItem(array $data): array
+    {
+        $authError = $this->requireAdmin();
 
-private function getOrderDetails(array $data): array
-{
-    $authError = $this->requireAdmin();
+        if ($authError !== null) {
+            return $authError;
+        }
 
-    if ($authError !== null) {
-        return $authError;
-    }
+        $orderItemId = (int) ($data['orderItemId'] ?? 0);
+        $orderId = (int) ($data['orderId'] ?? 0);
 
-    $orderId = (int)($data['orderId'] ?? $_GET['orderId'] ?? 0);
+        if ($orderItemId <= 0) {
+            return [
+                'code' => 400,
+                'error' => 'Missing or invalid order item id'
+            ];
+        }
 
-    if ($orderId <= 0) {
+        if ($orderId <= 0) {
+            return [
+                'code' => 400,
+                'error' => 'Missing or invalid order id'
+            ];
+        }
+
+        $success = $this->adminDataHandler->removeOrderItem($orderItemId);
+
+        if (!$success) {
+            return [
+                'code' => 500,
+                'error' => 'Failed to remove order item'
+            ];
+        }
+
+        $totalUpdated = $this->adminDataHandler->recalculateOrderTotal($orderId);
+
+        if (!$totalUpdated) {
+            return [
+                'code' => 500,
+                'error' => 'Order item was removed, but order total could not be updated'
+            ];
+        }
+
         return [
-            'code' => 400,
-            'error' => 'Missing or invalid order id'
+            'message' => 'Order item removed successfully'
         ];
     }
 
-    $order = $this->adminDataHandler->getOrderById($orderId);
+    private function getAllOrders(): array
+    {
+        $authError = $this->requireAdmin();
 
-    if (!$order) {
-        return [
-            'code' => 404,
-            'error' => 'Order not found'
-        ];
+        if ($authError !== null) {
+            return $authError;
+        }
+
+        return $this->adminDataHandler->getAllOrders();
     }
-
-    $items = $this->adminDataHandler->getOrderItems($orderId);
-
-    return [
-        'order' => $order,
-        'items' => $items
-    ];
-}
 }
