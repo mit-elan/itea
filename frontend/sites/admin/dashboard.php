@@ -76,7 +76,7 @@
 
             <!-- Manage Vouchers -->
             <div class="col">
-                <a href="/itea/frontend/sites/admin/vouchers.php" class="admin-card-link">
+                <a href="/itea/frontend/sites/admin/voucherManagement.php" class="admin-card-link">
                     <div class="tea-card h-100 text-center">
                         <div class="tea-card-image-wrapper">
                             <i class="bi bi-wallet-fill admin-dashboard-icon"></i>

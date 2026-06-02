@@ -74,10 +74,20 @@ interface OrderItem {
   unit_price: number;
 }
 
+interface Voucher {
+  code: string;
+  value: number;
+  remainingValue: number;
+  expiryDate: string;
+  status: "active" | "redeemed" | "expired";
+}
+
 interface AdminOrderOverview {
   id: number;
   user_id: number;
   date: string;
+  subtotal: number;
+  voucher: number;
   total_price: number;
   invoice_number: string;
   first_name: string;

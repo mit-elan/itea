@@ -40,6 +40,9 @@
                             <a class="dropdown-item" href="/itea/frontend/sites/payment-methods.php">Payment Methods</a>
                         </li>
                         <li>
+                            <a class="dropdown-item" href="/itea/frontend/sites/vouchers.php">Vouchers</a>
+                        </li>
+                        <li>
                             <hr class="dropdown-divider">
                         </li>
                         <li>
