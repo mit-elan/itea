@@ -61,7 +61,7 @@
 
             <!-- Manage Orders -->
             <div class="col">
-                <a href="/itea/frontend/sites/admin/orders.php" class="admin-card-link">
+                <a href="/itea/frontend/sites/admin/manageOrders.php" class="admin-card-link">
                     <div class="tea-card h-100 text-center">
                         <div class="tea-card-image-wrapper">
                             <i class="bi bi-cart-check admin-dashboard-icon"></i>

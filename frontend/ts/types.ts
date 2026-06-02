@@ -1,3 +1,5 @@
+declare const bootstrap: any;
+
 interface Product {
   id: number;
   name: string;
@@ -63,9 +65,23 @@ interface OrderDetails {
 }
 
 interface OrderItem {
+  id: number;
+  product_id: number;
   name: string;
   price: number;
   file_path: string;
   quantity: number;
   unit_price: number;
+}
+
+interface AdminOrderOverview {
+  id: number;
+  user_id: number;
+  date: string;
+  total_price: number;
+  invoice_number: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  username: string;
 }

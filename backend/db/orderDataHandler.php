@@ -191,7 +191,8 @@ class OrderDataHandler
              FROM order_item oi
              JOIN product p
                ON oi.product_id = p.id
-             WHERE oi.order_id = ?"
+             WHERE oi.order_id = ?
+                AND (oi.removed = 0 OR oi.removed IS NULL)"
         );
 
         $stmt->bind_param("i", $orderId);
