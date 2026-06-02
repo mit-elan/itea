@@ -30,41 +30,36 @@
 
                         </div>
 
-                        <div class="row mb-4">
+                        <div class="row mb-4 g-4 align-items-start">
 
-                            <div class="col-md-4">
-
-                                <strong>Date:</strong>
-
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-bold text-uppercase mb-1">Date</div>
                                 <div id="order-date"></div>
-
                             </div>
 
-                            <div class="col-md-4">
-
-                                <strong>Invoice:</strong>
-
-                                <div class="d-flex align-items-center gap-2 mt-1">
-
-                                    <span id="order-invoice">
-                                    </span>
-
+                            <div class="col-md-3">
+                                <div class="text-muted small fw-bold text-uppercase mb-1">Invoice</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span id="order-invoice"></span>
                                     <button id="download-invoice" class="btn btn-outline-dark btn-sm">
-
                                         <i class="bi bi-download"></i>
-
                                     </button>
-
                                 </div>
-
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-2 d-none" id="subtotal-heading">
+                                <div class="text-muted small fw-bold text-uppercase mb-1">Subtotal</div>
+                                <div id="order-subtotal"></div>
+                            </div>
 
-                                <strong>Total:</strong>
+                            <div class="col-md-2 d-none" id="voucher-heading">
+                                <div class="text-muted small fw-bold text-uppercase mb-1">Voucher</div>
+                                <div id="order-voucher"></div>
+                            </div>
 
-                                <div id="order-total"></div>
-
+                            <div class="col-md-2">
+                                <div class="text-muted small fw-bold text-uppercase mb-1">Total</div>
+                                <div id="order-total" class="fw-bold"></div>
                             </div>
 
                         </div>

@@ -48,6 +48,17 @@ function loadOrderDetails(): void {
 
       $("#order-date").text(response.order.date);
 
+      if (response.order.voucher_code) {
+        $("#subtotal-heading").removeClass("d-none");
+         $("#voucher-heading").removeClass("d-none");
+        $("#order-voucher").text(
+          `- € ${Number(response.order.voucher_discount).toFixed(2)}`,
+        );
+        $("#order-subtotal").text(
+          `€ ${Number(response.order.initial_price).toFixed(2)}`,
+        );
+      }
+
       $("#order-invoice").text(response.order.invoice_number);
 
       $("#order-total").text(
