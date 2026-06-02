@@ -23,7 +23,9 @@
                                 <th class="ps-4 border-0">Order</th>
                                 <th class="border-0">Date</th>
                                 <th class="border-0">Customer</th>
-                                <th class="border-0">Invoice</th>
+                                <th class="border-0">Invoice Nr.</th>
+                                <th class="border-0">Subtotal</th>
+                                <th class="border-0">Voucher</th>
                                 <th class="border-0">Total</th>
                                 <th class="text-end pe-4 border-0">Action</th>
                             </tr>

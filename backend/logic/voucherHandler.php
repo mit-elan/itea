@@ -22,8 +22,12 @@ class VoucherHandler
                 return $this->create($data);
             case 'getAll':
                 return $this->getAll();
+            case 'getByUserId':
+                return $this->getByUserId();
             case 'apply':
                 return $this->applyVoucher($data);
+            case 'addToProfile':
+                return $this->addToProfile($data);
             default:
                 return null;
         }
@@ -73,13 +77,63 @@ class VoucherHandler
         );
     }
 
+    private function getByUserId(): array
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return ['code' => 401, 'error' => 'Please log in to view your vouchers'];
+        }
+
+        $vouchers = $this->voucherDataHandler->getVouchersByUserId($_SESSION['user_id']);
+
+        return array_map(
+            fn(Voucher $voucher) => $voucher->toArray(),
+            $vouchers
+        );
+    }
+
+    private function addToProfile(array $data): array
+    {
+        if (!isset($_SESSION['user_id'])) {
+            return ['code' => 401, 'error' => 'Please log in to add a voucher to your profile'];
+        }
+
+        $code = trim($data['code'] ?? '');
+        if (empty($code)) {
+            return ['code' => 400, 'error' => 'Missing voucher code'];
+        }
+
+        $voucher = $this->voucherDataHandler->getVoucherByCode($code);
+        if (!$voucher) {
+            return ['code' => 404, 'error' => 'Voucher not found'];
+        }
+
+        if ($voucher->user_id !== 0) {
+            return ['code' => 400, 'error' => 'Voucher is already assigned to another user'];
+        }
+
+        if ($voucher->redeemed) {
+            return ['code' => 400, 'error' => 'Voucher has already been redeemed'];
+        }
+
+        if (new DateTime($voucher->valid_until) <= new DateTime()) {
+            return ['code' => 400, 'error' => 'Voucher has expired'];
+        }
+
+        $this->voucherDataHandler->assignVoucherToUser(
+            $voucher,
+            $_SESSION['user_id']
+        );
+
+        return ['message' => 'Voucher added to profile successfully'];
+    }
+
     private function applyVoucher(array $data): array
     {
         if (!isset($_SESSION['user_id'])) {
             return ['code' => 401, 'error' => 'Please log in to apply a voucher'];
         }
 
-        $code = trim($data['voucherCode'] ?? '');
+        $code = trim($data['code'] ?? '');
         if (empty($code)) {
             return ['code' => 400, 'error' => 'Missing voucher code'];
         }

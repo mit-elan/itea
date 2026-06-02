@@ -1,6 +1,6 @@
 <?php include __DIR__ . '/../../layouts/header.php'; ?>
 <?php include __DIR__ . '/../../layouts/adminNav.php'; ?>
-<script src="/itea/frontend/js/vouchers.js"></script>
+<script src="/itea/frontend/js/voucher.js"></script>
 
 <main class="products-page py-5">
     <div class="container">

@@ -1,14 +1,3 @@
-/**
- * checkout.ts – Bestellabschluss, Zahlungsauswahl, Gutschein
- * Sprint 2: SCRUM-60, SCRUM-61
- */
-interface Cart {
-  id: number;
-  file_path: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
 interface PaymentMethodResponse {
   id: number;
   label: string;
@@ -18,34 +7,28 @@ interface PaymentMethodResponse {
 
 $(document).ready(function () {
   let userId: number | null = null;
-  let userIsAllowed: boolean = false;
   let appliedVoucherCode: string | null = null;
 
   checkLoginStatus().then(function (response) {
     updateNavigation(response);
     if (response.loggedIn && response.role === "customer") {
       userId = response.userId;
-      userIsAllowed = true;
       loadCart();
       loadPaymentMethods();
+      loadSavedVouchers();
     }
   });
 
-  $("#apply-voucher-button").click(function () {
+  function applyVoucher(code: string): void {
     $("#checkout-voucher-error").text("").addClass("d-none");
-    const voucherCode = $(".cart-voucher-input").val();
-    if (!voucherCode) {
-      $("#checkout-voucher-error").text("Please enter a voucher code.").removeClass("d-none");
-      return;
-    }
     const cartAmount = parseFloat($("#subtotal-value").text().replace("€", ""));
     $.ajax({
-      url: "/itea/backend/serviceHandler.php?handler=vouchers&method=redeem",
+      url: "/itea/backend/serviceHandler.php?handler=vouchers&method=apply",
       type: "POST",
       contentType: "application/json",
-      data: JSON.stringify({ userId, voucherCode, cartAmount }),
+      data: JSON.stringify({ code, cartAmount }),
       success: function (response) {
-        appliedVoucherCode = voucherCode as string;
+        appliedVoucherCode = code;
         $("#voucher-value").text(`- €${Number(response.discount).toFixed(2)}`);
         $("#voucher-row").removeClass("d-none").addClass("d-flex");
         $("#total-value").text(`€${Number(response.finalAmount).toFixed(2)}`);
@@ -53,8 +36,18 @@ $(document).ready(function () {
       error: function (xhr) {
         const msg = xhr.responseJSON?.error || "Unknown error";
         $("#checkout-voucher-error").text(msg).removeClass("d-none");
+        $("input[name='voucher_selection']").prop("checked", false);
       },
     });
+  }
+
+  $("#apply-voucher-button").on("click", function () {
+    const code = ($(".cart-voucher-input").val() as string).trim().toUpperCase();
+    if (!code) {
+      $("#checkout-voucher-error").text("Please enter a voucher code.").removeClass("d-none");
+      return;
+    }
+    applyVoucher(code);
   });
 
   function loadCart() {
@@ -183,8 +176,68 @@ $(document).ready(function () {
     });
   }
 
+  function loadSavedVouchers() {
+    $.ajax({
+      url: "/itea/backend/serviceHandler.php?handler=vouchers&method=getByUserId",
+      type: "GET",
+      dataType: "json",
+      success: function (vouchers: Voucher[]) {
+        renderCheckoutVouchers(vouchers);
+      },
+      error: function (err) {
+        console.error("Error loading saved vouchers", err);
+      },
+    });
+  }
+
+  function renderCheckoutVouchers(vouchers: Voucher[]): void {
+    const activeVouchers = vouchers.filter((v) => v.status === "active");
+    if (activeVouchers.length === 0) {
+      $("#saved-vouchers-section").addClass("d-none");
+      return;
+    }
+
+    $("#saved-vouchers-section").removeClass("d-none");
+
+    const $container = $("#saved-vouchers-container");
+    $container.empty();
+
+    const voucherTemplate = document.getElementById(
+      "voucher-selection-template"
+    ) as HTMLTemplateElement;
+
+    activeVouchers.forEach((voucher) => {
+      const inputId = `voucher-${voucher.code}`;
+      const $item = $(
+        document.importNode(voucherTemplate.content, true)
+          .firstElementChild as HTMLElement
+      );
+
+      $item.find("input").attr("id", inputId).attr("value", voucher.code);
+      $item.find("label").attr("for", inputId);
+      $item.find(".voucher-code-label").text(voucher.code);
+      $item.find(".voucher-expiry-label").text(
+        `Expires: ${new Date(voucher.expiryDate).toLocaleDateString("de-DE", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })}`
+      );
+      $item
+        .find(".voucher-amount-label")
+        .text(`€ ${voucher.remainingValue.toFixed(2)}`);
+
+      $container.append($item);
+    });
+
+    $container.on("change", "input[name='voucher_selection']", function () {
+      applyVoucher($(this).val() as string);
+    });
+  }
+
   $("#remove-voucher").on("click", function () {
     appliedVoucherCode = null;
+    $("input[name='voucher_selection']").prop("checked", false);
     $("#voucher-row").addClass("d-none").removeClass("d-flex");
     $("#checkout-voucher-error").text("").addClass("d-none");
     $("#total-value").text($("#subtotal-value").text());
