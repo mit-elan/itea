@@ -62,7 +62,7 @@ class VoucherHandler
         }
 
         $this->voucherDataHandler->createVoucher($voucher);
-        return ['message' => 'Voucher created successfully'];
+        return ['message' => 'Voucher created successfully', 'voucherCode' => $voucher->code];
     }
 
     private function getAll(): array
@@ -108,7 +108,7 @@ class VoucherHandler
         }
 
         if ($voucher->user_id !== 0) {
-            return ['code' => 400, 'error' => 'Voucher is already assigned to another user'];
+            return ['code' => 400, 'error' => 'Voucher is already in use'];
         }
 
         if ($voucher->redeemed) {
@@ -124,7 +124,7 @@ class VoucherHandler
             $_SESSION['user_id']
         );
 
-        return ['message' => 'Voucher added to profile successfully'];
+        return ['message' => 'Voucher added to profile successfully', 'voucherCode' => $voucher->code];
     }
 
     private function applyVoucher(array $data): array
@@ -157,6 +157,9 @@ class VoucherHandler
         }
         if ($voucher->redeemed) {
             return ['code' => 400, 'error' => 'Voucher has already been redeemed'];
+        }
+        if ($voucher->user_id !== 0 && $voucher->user_id !== (int)$_SESSION['user_id']) {
+            return ['code' => 403, 'error' => 'Voucher is already in use'];
         }
         if (new DateTime($voucher->valid_until) <= new DateTime()) {
             return ['code' => 400, 'error' => 'Voucher has expired'];

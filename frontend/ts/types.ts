@@ -80,6 +80,7 @@ interface Voucher {
   remainingValue: number;
   expiryDate: string;
   status: "active" | "redeemed" | "expired";
+  userId: number | null;
 }
 
 interface AdminOrderOverview {

@@ -29,16 +29,20 @@ $(document).ready(function () {
                 var _a;
                 const msg = ((_a = xhr.responseJSON) === null || _a === void 0 ? void 0 : _a.error) || "Unknown error";
                 $("#checkout-voucher-error").text(msg).removeClass("d-none");
-                $("input[name='voucher_selection']").prop("checked", false);
             },
         });
     }
     $("#apply-voucher-button").on("click", function () {
-        const code = $(".cart-voucher-input").val().trim().toUpperCase();
+        const code = $(".cart-voucher-input").val()
+            .trim()
+            .toUpperCase();
         if (!code) {
-            $("#checkout-voucher-error").text("Please enter a voucher code.").removeClass("d-none");
+            $("#checkout-voucher-error")
+                .text("Please enter a voucher code.")
+                .removeClass("d-none");
             return;
         }
+        $("input[name='voucher_selection']").prop("checked", false);
         applyVoucher(code);
     });
     function loadCart() {
@@ -178,6 +182,8 @@ $(document).ready(function () {
             $container.append($item);
         });
         $container.on("change", "input[name='voucher_selection']", function () {
+            $(".cart-voucher-input").val("");
+            $("#checkout-voucher-error").text("").addClass("d-none");
             applyVoucher($(this).val());
         });
     }
@@ -196,7 +202,9 @@ $(document).ready(function () {
         $("#checkout-order-error").text("").addClass("d-none");
         const paymentMethodId = $("input[name='payment']:checked").val();
         if (!paymentMethodId) {
-            $("#checkout-order-error").text("Please select a payment method.").removeClass("d-none");
+            $("#checkout-order-error")
+                .text("Please select a payment method.")
+                .removeClass("d-none");
             return;
         }
         $.ajax({
