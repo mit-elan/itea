@@ -28,7 +28,7 @@ class VoucherDataHandler
     public function getVouchers(): array
     {
         $result = $this->db->query(
-            "SELECT id, code, value, remaining_value, valid_until, redeemed FROM vouchers ORDER BY valid_until DESC"
+            "SELECT id, code, value, remaining_value, valid_until, redeemed, user_id FROM vouchers ORDER BY valid_until DESC"
         );
 
         if (!$result) return [];
@@ -64,7 +64,7 @@ class VoucherDataHandler
     public function getVoucherByCode(string $code): ?Voucher
     {
         $stmt = $this->db->prepare(
-            "SELECT id, user_id, code, value, remaining_value, valid_until, redeemed FROM vouchers WHERE code = ?"
+            "SELECT id, code, value, remaining_value, valid_until, redeemed, user_id FROM vouchers WHERE code = ?"
         );
         if (!$stmt) return null;
         $stmt->bind_param("s", $code);

@@ -36,17 +36,21 @@ $(document).ready(function () {
       error: function (xhr) {
         const msg = xhr.responseJSON?.error || "Unknown error";
         $("#checkout-voucher-error").text(msg).removeClass("d-none");
-        $("input[name='voucher_selection']").prop("checked", false);
       },
     });
   }
 
   $("#apply-voucher-button").on("click", function () {
-    const code = ($(".cart-voucher-input").val() as string).trim().toUpperCase();
+    const code = ($(".cart-voucher-input").val() as string)
+      .trim()
+      .toUpperCase();
     if (!code) {
-      $("#checkout-voucher-error").text("Please enter a voucher code.").removeClass("d-none");
+      $("#checkout-voucher-error")
+        .text("Please enter a voucher code.")
+        .removeClass("d-none");
       return;
     }
+    $("input[name='voucher_selection']").prop("checked", false);
     applyVoucher(code);
   });
 
@@ -203,14 +207,14 @@ $(document).ready(function () {
     $container.empty();
 
     const voucherTemplate = document.getElementById(
-      "voucher-selection-template"
+      "voucher-selection-template",
     ) as HTMLTemplateElement;
 
     activeVouchers.forEach((voucher) => {
       const inputId = `voucher-${voucher.code}`;
       const $item = $(
         document.importNode(voucherTemplate.content, true)
-          .firstElementChild as HTMLElement
+          .firstElementChild as HTMLElement,
       );
 
       $item.find("input").attr("id", inputId).attr("value", voucher.code);
@@ -221,7 +225,7 @@ $(document).ready(function () {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
-        })}`
+        })}`,
       );
       $item
         .find(".voucher-amount-label")
@@ -231,6 +235,8 @@ $(document).ready(function () {
     });
 
     $container.on("change", "input[name='voucher_selection']", function () {
+      $(".cart-voucher-input").val("");
+      $("#checkout-voucher-error").text("").addClass("d-none");
       applyVoucher($(this).val() as string);
     });
   }
@@ -252,7 +258,9 @@ $(document).ready(function () {
     $("#checkout-order-error").text("").addClass("d-none");
     const paymentMethodId = $("input[name='payment']:checked").val();
     if (!paymentMethodId) {
-      $("#checkout-order-error").text("Please select a payment method.").removeClass("d-none");
+      $("#checkout-order-error")
+        .text("Please select a payment method.")
+        .removeClass("d-none");
       return;
     }
 

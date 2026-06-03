@@ -146,12 +146,31 @@ class OrderHandler
         $voucherCode = trim($data['appliedVoucherCode'] ?? '');
         if ($voucherCode && $this->voucherDataHandler) {
             $voucher = $this->voucherDataHandler->getVoucherByCode($voucherCode);
-            if ($voucher && !$voucher->redeemed && new DateTime($voucher->valid_until) > new DateTime()) {
-                $originalTotal    = $total;
-                $voucherRemaining = round(max(0.0, $voucher->remaining_value - $total), 2);
-                $total            = $this->voucherDataHandler->redeemVoucher($voucher, $total);
-                $voucherDiscount  = round($originalTotal - $total, 2);
+
+            if (!$voucher) {
+                return ['code' => 404, 'error' => 'Voucher not found'];
             }
+
+            if ($voucher->user_id !== 0 && $voucher->user_id !== $userId) {
+                return ['code' => 400, 'error' => 'Voucher already in use'];
+            }
+
+            if ($voucher->redeemed) {
+                return ['code' => 400, 'error' => 'Voucher has already been redeemed'];
+            }
+
+            if (new DateTime($voucher->valid_until) <= new DateTime()) {
+                return ['code' => 400, 'error' => 'Voucher has expired'];
+            }
+
+            if ($voucher->user_id === 0) {
+                $this->voucherDataHandler->assignVoucherToUser($voucher, $userId);
+            }
+
+            $originalTotal    = $total;
+            $voucherRemaining = round(max(0.0, $voucher->remaining_value - $total), 2);
+            $total            = $this->voucherDataHandler->redeemVoucher($voucher, $total);
+            $voucherDiscount  = round($originalTotal - $total, 2);
         }
 
         $order = new Order([
