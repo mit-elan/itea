@@ -227,10 +227,20 @@ main {
     margin-top: -17%;
 }
 
-.hero-title {
-    font-size: 3rem;
+/* Consolidated title styles - shared by all page titles */
+.hero-title,
+.products-title,
+.cart-title,
+.cart-item-title,
+.cart-summary-title,
+.tea-card-title {
     font-weight: 600;
     letter-spacing: -0.02em;
+    color: var(--color-dark);
+}
+
+.hero-title {
+    font-size: 3rem;
     line-height: 1.1;
     margin-bottom: 1rem;
 }
@@ -253,8 +263,6 @@ main {
 
 .products-title {
     font-size: 2.2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
 }
 
 .products-search {
@@ -335,10 +343,7 @@ main {
 
 .tea-card-title {
     font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
     margin-bottom: 0.9rem;
-    color: var(--color-dark);
 }
 
 .tea-card-description {
@@ -388,8 +393,6 @@ main {
 
 .cart-title {
     font-size: 2.8rem;
-    font-weight: 600;
-    letter-spacing: -0.03em;
     margin-bottom: 0;
 }
 
@@ -463,10 +466,7 @@ main {
 
 .cart-item-title {
     font-size: 1.2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
     margin-bottom: 0.5rem;
-    color: var(--color-dark);
 }
 
 .cart-item-price,
@@ -528,10 +528,7 @@ main {
 
 .cart-summary-title {
     font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
     margin-bottom: 1.75rem;
-    color: var(--color-dark);
 }
 
 .cart-summary-divider {
