@@ -239,3 +239,19 @@ function updateNavigation(response) {
         return;
     }
 }
+/**
+ * Validates user has required role before executing callback
+ * Redirects to home page if user lacks permission
+ */
+function requireRole(requiredRole, callback) {
+    checkLoginStatus().then(function (response) {
+        if (response.loggedIn && response.role === requiredRole) {
+            if (callback) {
+                callback();
+            }
+        }
+        else {
+            window.location.href = "/itea/frontend/index.php";
+        }
+    });
+}
