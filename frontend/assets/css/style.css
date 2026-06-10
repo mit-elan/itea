@@ -8,7 +8,7 @@
 ========================= */
 :root {
     /* Primary colors */
-    --color-dark: #111111;
+    --color-dark: #961919;
     --color-light: #ffffff;
 
     /* Secondary colors */
@@ -567,17 +567,8 @@ main {
     border: var(--border-standard);
 }
 
-.selection-wrapper {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border: var(--border-light-subtle);
-    background: var(--color-light);
-    margin-bottom: 0.5rem;
-    transition: background-color var(--transition-standard);
-}
-
-.selection-wrapper:hover {
+/* Form check hover effect for payment/voucher selection */
+.form-check.border:hover {
     background-color: var(--color-bg-light);
 }
 
