@@ -64,4 +64,5 @@
 </div>
 
 <?php include __DIR__ . '/../../layouts/footer.php'; ?>
-<script src="/itea/frontend/js/manageUsers.js"></script>
+<script src="/itea/frontend/js/auth.js"></script>
+<script src="/itea/frontend/js/adminManageUsers.js"></script>

@@ -229,6 +229,24 @@ function checkLoginStatus() {
         dataType: "json",
     });
 }
+/**
+ * Role-based access guard: redirects to home if user doesn't have required role
+ * Used on protected pages (e.g., admin dashboard)
+ *
+ * @param requiredRole Role required to access the page (e.g., "admin")
+ * @param onAuthorized Optional callback executed only if user has required role
+ */
+function requireRole(requiredRole, onAuthorized) {
+    checkLoginStatus().then(function (response) {
+        if (response.role !== requiredRole) {
+            window.location.href = "/itea/frontend/index.php";
+            return;
+        }
+        if (onAuthorized) {
+            onAuthorized();
+        }
+    });
+}
 function updateNavigation(response) {
     $("#products-link").show();
     $("#cart-link").show();
@@ -238,20 +256,4 @@ function updateNavigation(response) {
         $(".customer-link").show();
         return;
     }
-}
-/**
- * Validates user has required role before executing callback
- * Redirects to home page if user lacks permission
- */
-function requireRole(requiredRole, callback) {
-    checkLoginStatus().then(function (response) {
-        if (response.loggedIn && response.role === requiredRole) {
-            if (callback) {
-                callback();
-            }
-        }
-        else {
-            window.location.href = "/itea/frontend/index.php";
-        }
-    });
 }

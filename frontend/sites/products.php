@@ -2,6 +2,7 @@
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
 <script src="/itea/frontend/js/auth.js"></script>
 <script type="module" src="/itea/frontend/js/products.js"></script>
+<script type="module" src="/itea/frontend/js/cart.js"></script>
 
 <!-- Fixed drop zone that appears during drag and fades out with the success message
      #drag-drop-zone-fixed = Container (on/off)

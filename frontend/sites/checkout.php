@@ -29,7 +29,7 @@
             </div>
             <div class="checkout-content-block">
                 <div id="payment-methods-container">
-                    <div class="form-check d-flex align-items-center p-3 border mb-2 bg-light">
+                    <div class="selection-wrapper">
                         <input class="form-check-input me-3" type="radio" name="payment" id="mock-pay-1" checked>
                         <label class="form-check-label d-flex justify-content-between w-100" for="mock-pay-1">
                             <div>
@@ -129,7 +129,7 @@
 </template>
 
 <template id="payment-method-template">
-    <div class="form-check d-flex align-items-center p-3 border mb-2 bg-light">
+    <div class="selection-wrapper">
         <input class="form-check-input me-3" type="radio" name="payment">
         <label class="form-check-label d-flex justify-content-between w-100">
             <div>
@@ -141,7 +141,7 @@
 </template>
 
 <template id="voucher-selection-template">
-    <div class="form-check d-flex align-items-center p-3 border mb-2 bg-light">
+    <div class="selection-wrapper">
         <input class="form-check-input me-3" type="radio" name="voucher_selection">
         <label class="form-check-label d-flex justify-content-between align-items-center w-100">
             <div>
