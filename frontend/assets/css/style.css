@@ -84,8 +84,7 @@ main {
    Consolidated button & input styles
 ========================= */
 
-/* Standard bordered input/button style */
-.input-bordered,
+/* Standard bordered input style */
 .cart-quantity-input,
 .cart-voucher-input {
     border: var(--border-standard);
@@ -94,7 +93,6 @@ main {
     color: var(--color-dark);
 }
 
-.input-bordered:focus,
 .cart-quantity-input:focus,
 .cart-voucher-input:focus {
     outline: none;
@@ -103,7 +101,6 @@ main {
 }
 
 /* Standard outlined button style */
-.button-outlined,
 .tea-card-button {
     background-color: transparent;
     border: var(--border-standard);
@@ -114,14 +111,12 @@ main {
     transition: all var(--transition-standard);
 }
 
-.button-outlined:hover,
 .tea-card-button:hover {
     background-color: var(--color-dark);
     color: var(--color-light);
 }
 
 /* Standard filled button style */
-.button-filled,
 .cart-voucher-button,
 .cart-checkout-button,
 .btn-place-order {
@@ -133,7 +128,6 @@ main {
     transition: all var(--transition-standard);
 }
 
-.button-filled:hover,
 .cart-voucher-button:hover,
 .cart-checkout-button:hover,
 .btn-place-order:hover {
@@ -141,7 +135,6 @@ main {
     color: var(--color-light);
 }
 
-.button-filled:focus,
 .cart-voucher-button:focus,
 .cart-checkout-button:focus,
 .btn-place-order:focus {
@@ -400,10 +393,6 @@ main {
     margin-bottom: 0;
 }
 
-.cart-items-section {
-    background-color: transparent;
-}
-
 .cart-table-header {
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
@@ -480,13 +469,6 @@ main {
     color: var(--color-dark);
 }
 
-.cart-item-description {
-    font-size: 0.98rem;
-    line-height: 1.5;
-    color: var(--color-text-secondary);
-    margin-bottom: 0;
-}
-
 .cart-item-price,
 .cart-item-subtotal {
     font-size: 1.15rem;
@@ -504,10 +486,6 @@ main {
     height: 48px;
     text-align: center;
     font-weight: 600;
-}
-
-.cart-actions {
-    margin-top: 2rem;
 }
 
 .cart-voucher {
@@ -554,16 +532,6 @@ main {
     letter-spacing: -0.02em;
     margin-bottom: 1.75rem;
     color: var(--color-dark);
-}
-
-.cart-summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    font-size: 1.05rem;
-    color: var(--color-dark);
-    margin-bottom: 1rem;
 }
 
 .cart-summary-divider {
@@ -645,24 +613,6 @@ main {
     border-bottom: 1px solid var(--color-light-tertiary);
 }
 
-.payment-option-wrapper {
-    border: var(--border-light-subtle);
-    padding: 1.25rem;
-    margin-bottom: 0.75rem;
-    transition: all var(--transition-standard);
-    cursor: pointer;
-}
-
-.payment-option-wrapper:hover {
-    background-color: var(--color-bg-lighter);
-}
-
-.form-check-input:checked+.payment-option-wrapper {
-    border-color: var(--color-dark);
-    background-color: var(--color-light);
-    box-shadow: inset 0 0 0 1px var(--color-dark);
-}
-
 .checkout-footer-bg {
     background-color: var(--color-bg-light);
     padding: 2.5rem 1.5rem;
@@ -681,13 +631,6 @@ main {
     text-transform: uppercase;
     letter-spacing: 0.1em;
     width: 100%;
-}
-
-.payment-radio-hidden {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
 }
 
 /* =========================
@@ -864,113 +807,4 @@ main {
 
 .account-toggle.show::after {
     content: "▼";
-}
-
-/* =========================
-   RESPONSIVE DESIGN
-========================= */
-
-@media (max-width: 991.98px) {
-    .hero-modern {
-        height: auto;
-        min-height: 78vh;
-        padding: 4rem 0;
-    }
-
-    .hero-modern-content {
-        max-width: 520px;
-        margin-right: 0;
-        margin-top: 0;
-    }
-
-    .products-search {
-        max-width: 100%;
-    }
-
-    .cart-item,
-    .cart-table-header {
-        grid-template-columns: 1fr;
-    }
-
-    .cart-table-header {
-        display: none;
-    }
-
-    .cart-item {
-        gap: 1rem;
-    }
-}
-
-@media (max-width: 767.98px) {
-    body {
-        padding-top: 66px;
-    }
-
-    .hero-title {
-        font-size: 2.4rem;
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-
-    .products-title {
-        font-size: 1.8rem;
-    }
-
-    .category-chip {
-        width: 100%;
-        text-align: left;
-    }
-
-    .tea-card-title {
-        font-size: 1.55rem;
-    }
-
-    .tea-card-body {
-        padding: 1.2rem;
-    }
-
-    .cart-title {
-        font-size: 2.2rem;
-    }
-
-    .cart-item {
-        padding: 1.25rem;
-    }
-
-    .cart-item-main {
-        align-items: flex-start;
-    }
-
-    .cart-item-image-wrapper {
-        width: 72px;
-        height: 72px;
-    }
-
-    .cart-item-title {
-        font-size: 1.05rem;
-    }
-
-    .cart-item-price,
-    .cart-item-quantity,
-    .cart-item-subtotal {
-        padding-left: 0;
-    }
-
-    .cart-voucher {
-        flex-direction: column;
-    }
-
-    .cart-voucher-input {
-        border-right: var(--border-standard);
-    }
-
-    .cart-summary {
-        padding: 1.5rem;
-    }
-
-    .cart-summary-title {
-        font-size: 1.7rem;
-    }
 }
