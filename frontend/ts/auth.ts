@@ -289,3 +289,19 @@ function updateNavigation(response: any): void {
   }
 }
 
+/**
+ * Validates user has required role before executing callback
+ * Redirects to home page if user lacks permission
+ */
+function requireRole(requiredRole: string, callback?: () => void): void {
+  checkLoginStatus().then(function (response: any) {
+    if (response.loggedIn && response.role === requiredRole) {
+      if (callback) {
+        callback();
+      }
+    } else {
+      window.location.href = "/itea/frontend/index.php";
+    }
+  });
+}
+
