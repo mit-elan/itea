@@ -3,8 +3,23 @@
 <script src="/itea/frontend/js/products.js"></script>
 <script src="/itea/frontend/js/cart.js"></script>
 
-
-
+<!-- Fixed drop zone that appears during drag and fades out with the success message
+     #drag-drop-zone-fixed = Container (Ein/Aus)
+     .drag-drop-zone-default/success/error = Inhalte (Welche Message anzeigen) -->
+<div id="drag-drop-zone-fixed">
+  <div class="drag-drop-zone-default">
+    <i class="bi bi-bag-plus"></i>
+    <span>Drop here to add to cart</span>
+  </div>
+  <div class="drag-drop-zone-success" style="display: none;">
+    <i class="bi bi-check-circle-fill"></i>
+    <span>Product added to cart</span>
+  </div>
+  <div class="drag-drop-zone-error" style="display: none;">
+    <i class="bi bi-exclamation-circle-fill"></i>
+    <span>Failed to add to cart. Please try again.</span>
+  </div>
+</div>
 
 <main class="products-page py-5">
     <div class="container">
@@ -14,7 +29,6 @@
                 <h1 class="products-title mb-0">Products</h1>
                 <input type="text" class="form-control products-search" id="search-input" placeholder="Search tea...">
             </div>
-            <!-- Frage: lassen wir das mit hard code? -->
             <div class="category-filter d-flex flex-wrap gap-3">
                 <button type="button" class="category-chip active" data-category="all" id="button-all">All Tea</button>
                 <button type="button" class="category-chip" data-category="black" id="button-black">Black Tea</button>
@@ -24,16 +38,19 @@
             </div>
         </section>
 
-        <section class="products-grid">
-            <div class="row g-4" id="product-list"></div>
-            <p class="no-results text-center mt-4" style="display: none;" id="no-products">There are currently no products in stock for this category. Please come back later.</p>
-        </section>
+        <div class="row g-4" id="product-list"></div>
+        <p class="no-results text-center mt-4" style="display:none;" id="no-products">
+            There are currently no products in stock for this category. Please come back later.
+        </p>
     </div>
 </main>
 
 <template id="product-card-template">
-    <div class="col-md-6 col-xl-4 product-item">
-        <a class="product-link text-decoration-none text-dark">
+    <div class="col-lg-4 col-md-6 product-item">
+        <div class="drag-handle" title="Drag into cart">
+            <i class="bi bi-grip-vertical"></i>
+        </div>
+        <a class="product-link text-decoration-none text-dark d-block">
             <article class="tea-card h-100">
                 <div class="tea-card-image-wrapper">
                     <img src="" class="tea-card-image" alt="">
