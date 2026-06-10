@@ -1,10 +1,63 @@
+/* ========================================
+   ITEA PROJECT - STYLESHEET
+   ======================================== */
+
+/* =========================
+   CSS VARIABLES & COLORS
+========================= */
+:root {
+    /* Primary colors */
+    --color-dark: #000000;
+    --color-light: #ffffff;
+
+    /* Secondary colors */
+    --color-light-secondary: #f8f5f0;
+    --color-light-tertiary: #f1eee6;
+    --color-light-quaternary: #f6f4ef;
+
+    /* Text colors */
+    --color-text-primary: #1f1f1f;
+    --color-text-secondary: #5f5f5f;
+    --color-text-tertiary: #2a2a2a;
+    --color-text-muted: #4b4b4b;
+
+    /* Background colors */
+    --color-bg-warm: #f3f1eb;
+    --color-bg-light: #fbfaf8;
+    --color-bg-lighter: #faf9f6;
+
+    /* Accent colors */
+    --color-accent-gold: #b8903c;
+    --color-accent-gold-light: #c8b27a;
+
+    /* Status colors */
+    --color-success: #4caf50;
+    --color-error: #f44336;
+    --color-success-dark: #2e7d32;
+
+    /* Standard borders and effects */
+    --border-standard: 2px solid var(--color-dark);
+    --border-light: 1px solid #ddd7c8;
+    --border-light-subtle: 1px solid #e6e2d8;
+    --box-shadow-subtle: 0 2px 10px rgba(0, 0, 0, 0.035);
+    --box-shadow-medium: 0 16px 34px rgba(0, 0, 0, 0.08);
+    --box-shadow-drag: 0 6px 16px rgba(0, 0, 0, 0.25);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-standard: 0.2s ease;
+}
+
+/* =========================
+   BASE STYLES
+========================= */
 a {
-    color: #1f1f1f;
+    color: var(--color-text-primary);
     text-decoration: underline;
 }
 
 a:hover {
-    color: #1f1f1f;
+    color: var(--color-text-primary);
 }
 
 html,
@@ -17,52 +70,118 @@ body {
     flex-direction: column;
     padding-top: 70px;
     font-family: 'Montserrat', sans-serif;
-    background-color: #ffffff;
-    color: #1f1f1f;
+    background-color: var(--color-light);
+    color: var(--color-text-primary);
 }
 
 main {
     flex: 1;
 }
 
+/* =========================
+   BASE UTILITY CLASSES
+   Consolidated button & input styles
+========================= */
+
+/* Standard bordered input style */
+.cart-quantity-input,
+.cart-voucher-input {
+    border: var(--border-standard);
+    border-radius: 0;
+    background-color: var(--color-light);
+    color: var(--color-dark);
+}
+
+.cart-quantity-input:focus,
+.cart-voucher-input:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: var(--color-dark);
+}
+
+/* Standard outlined button style */
+.tea-card-button {
+    background-color: transparent;
+    border: var(--border-standard);
+    color: var(--color-dark);
+    border-radius: 0;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all var(--transition-standard);
+}
+
+.tea-card-button:hover {
+    background-color: var(--color-dark);
+    color: var(--color-light);
+}
+
+/* Standard filled button style */
+.cart-voucher-button,
+.cart-checkout-button,
+.btn-place-order {
+    background-color: var(--color-dark);
+    color: var(--color-light);
+    border: var(--border-standard);
+    border-radius: 0;
+    font-weight: 600;
+    transition: all var(--transition-standard);
+}
+
+.cart-voucher-button:hover,
+.cart-checkout-button:hover,
+.btn-place-order:hover {
+    opacity: 0.9;
+    color: var(--color-light);
+}
+
+.cart-voucher-button:focus,
+.cart-checkout-button:focus,
+.btn-place-order:focus {
+    box-shadow: none;
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+
 .site-navbar {
-    background-color: #111111;
+    background-color: var(--color-dark);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding-top: 0.9rem;
     padding-bottom: 0.9rem;
 }
 
 .site-navbar .navbar-brand {
-    color: #f8f5f0;
+    color: var(--color-light-secondary);
     font-weight: 600;
     letter-spacing: 0.04em;
 }
 
 .site-navbar .navbar-brand:hover,
 .site-navbar .navbar-brand:focus {
-    color: #ffffff;
+    color: var(--color-light);
 }
 
 .site-navbar .nav-link {
     color: rgba(248, 245, 240, 0.82);
-    transition: color 0.2s ease;
+    transition: color var(--transition-standard);
 }
 
 .site-navbar .nav-link:hover,
 .site-navbar .nav-link:focus {
-    color: #ffffff;
+    color: var(--color-light);
 }
 
 .site-navbar .btn-outline-light {
-    color: #f8f5f0;
+    color: var(--color-light-secondary);
     border-color: rgba(248, 245, 240, 0.65);
 }
 
 .site-navbar .btn-outline-light:hover,
 .site-navbar .btn-outline-light:focus {
-    color: #111111;
-    background-color: #f8f5f0;
-    border-color: #f8f5f0;
+    color: var(--color-dark);
+    background-color: var(--color-light-secondary);
+    border-color: var(--color-light-secondary);
 }
 
 .site-navbar .navbar-toggler {
@@ -76,6 +195,10 @@ main {
 .site-navbar .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28248,245,240,0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
+
+/* =========================
+   HERO SECTION
+========================= */
 
 .hero-modern {
     position: relative;
@@ -103,10 +226,20 @@ main {
     margin-top: -17%;
 }
 
-.hero-title {
-    font-size: 3rem;
+/* Consolidated title styles - shared by all page titles */
+.hero-title,
+.products-title,
+.cart-title,
+.cart-item-title,
+.cart-summary-title,
+.tea-card-title {
     font-weight: 600;
     letter-spacing: -0.02em;
+    color: var(--color-dark);
+}
+
+.hero-title {
+    font-size: 3rem;
     line-height: 1.1;
     margin-bottom: 1rem;
 }
@@ -124,77 +257,72 @@ main {
 ========================= */
 
 .products-page {
-    background-color: #f6f4ef;
+    background-color: var(--color-light-quaternary);
 }
 
 .products-title {
     font-size: 2.2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
 }
 
-/* Search */
 .products-search {
     max-width: 260px;
-    border: 1px solid #ddd7c8;
+    border: var(--border-light);
     border-radius: 0;
-    background-color: #ffffff;
+    background-color: var(--color-light);
     padding: 0.8rem 1rem;
-    color: #2a2a2a;
+    color: var(--color-text-tertiary);
 }
 
 .products-search:focus {
-    border-color: #111111;
+    border-color: var(--color-dark);
     box-shadow: none;
 }
 
-/* Category chips */
+/* Category filter chips */
 .category-filter {
     margin-bottom: 2.5rem;
 }
 
 .category-chip {
     border: 1px solid #e5dfd2;
-    background-color: #ffffff;
-    color: #4b4b4b;
+    background-color: var(--color-light);
+    color: var(--color-text-muted);
     padding: 0.85rem 1.25rem;
     font-size: 0.95rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all var(--transition-standard);
 }
 
 .category-chip:hover {
-    border-color: #c8b27a;
-    background-color: #faf7f1;
-    color: #2a2a2a;
+    border-color: var(--color-accent-gold-light);
+    background-color: var(--color-bg-light);
+    color: var(--color-text-tertiary);
 }
 
 .category-chip.active {
-    background-color: #111111;
-    border-color: #111111;
-    color: #ffffff;
+    background-color: var(--color-dark);
+    border-color: var(--color-dark);
+    color: var(--color-light);
 }
 
-/* Cards */
+/* Product cards */
 .tea-card {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #ffffff;
-    border: 1px solid #e6e2d8;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.035);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: var(--color-light);
+    border: var(--border-light-subtle);
+    box-shadow: var(--box-shadow-subtle);
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard);
 }
 
 .tea-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--box-shadow-medium);
 }
 
-/* Image area */
 .tea-card-image-wrapper {
-    background-color: #f3f1eb;
-    /* subtle warm contrast */
+    background-color: var(--color-bg-warm);
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
@@ -208,23 +336,19 @@ main {
     object-fit: contain;
 }
 
-/* Content */
 .tea-card-body {
     padding: 1.5rem;
 }
 
 .tea-card-title {
     font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
     margin-bottom: 0.9rem;
-    color: #111111;
 }
 
 .tea-card-description {
     font-size: 1rem;
     line-height: 1.5;
-    color: #5f5f5f;
+    color: var(--color-text-secondary);
     margin-bottom: 1.2rem;
     min-height: 4.2rem;
 }
@@ -232,7 +356,7 @@ main {
 .tea-card-rating {
     font-size: 0.95rem;
     letter-spacing: 0.08em;
-    color: #b8903c;
+    color: var(--color-accent-gold);
     margin-bottom: 1.3rem;
 }
 
@@ -242,35 +366,17 @@ main {
     align-items: center;
 }
 
-/* Price */
 .tea-card-price {
     font-size: 1.05rem;
     font-weight: 600;
-    color: #111111;
-}
-
-/* Button */
-.tea-card-button {
-    background-color: transparent;
-    border: 2px solid #111111;
-    color: #111111;
-    border-radius: 0;
-    padding: 0.6rem 1.2rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.tea-card-button:hover {
-    background-color: #111111;
-    color: #ffffff;
+    color: var(--color-dark);
 }
 
 .tea-style-container {
-    background-color: #f3f1eb;
-    border: 1px solid #e6e2d8;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.035);
+    background-color: var(--color-bg-warm);
+    border: var(--border-light-subtle);
+    box-shadow: var(--box-shadow-subtle);
     aspect-ratio: 1 / 1;
-    /* Hält das Bild quadratisch wie in der Übersicht */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -281,42 +387,36 @@ main {
 ========================= */
 
 .cart-page {
-    background-color: #f6f4ef;
+    background-color: var(--color-light-quaternary);
 }
 
 .cart-title {
     font-size: 2.8rem;
-    font-weight: 600;
-    letter-spacing: -0.03em;
     margin-bottom: 0;
-}
-
-.cart-items-section {
-    background-color: transparent;
 }
 
 .cart-table-header {
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
     border: 1px solid #ddd4c1;
-    background-color: #f1eee6;
+    background-color: var(--color-light-tertiary);
     font-weight: 600;
-    color: #111111;
+    color: var(--color-dark);
 }
 
 .voucher-table-header {
-    background-color: #f1eee6;
+    background-color: var(--color-light-tertiary);
     font-weight: 600;
-    color: #111111;
+    color: var(--color-dark);
 }
 
 .cart-item {
     align-items: center;
     padding: 1.75rem 1.5rem;
     margin-bottom: 1.25rem;
-    background-color: #ffffff;
-    border: 1px solid #e6e2d8;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.035);
+    background-color: var(--color-light);
+    border: var(--border-light-subtle);
+    box-shadow: var(--box-shadow-subtle);
 }
 
 .cart-item-main {
@@ -329,13 +429,13 @@ main {
 .cart-remove {
     border: none;
     background: transparent;
-    color: #111111;
+    color: var(--color-dark);
     font-size: 2rem;
     line-height: 1;
     padding: 0;
     width: 2rem;
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--transition-standard);
 }
 
 .cart-remove:hover {
@@ -346,7 +446,7 @@ main {
     width: 90px;
     height: 90px;
     flex-shrink: 0;
-    background-color: #f3f1eb;
+    background-color: var(--color-bg-warm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -365,24 +465,14 @@ main {
 
 .cart-item-title {
     font-size: 1.2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
     margin-bottom: 0.5rem;
-    color: #111111;
-}
-
-.cart-item-description {
-    font-size: 0.98rem;
-    line-height: 1.5;
-    color: #5f5f5f;
-    margin-bottom: 0;
 }
 
 .cart-item-price,
 .cart-item-subtotal {
     font-size: 1.15rem;
     font-weight: 600;
-    color: #111111;
+    color: var(--color-dark);
 }
 
 .cart-item-quantity {
@@ -393,22 +483,8 @@ main {
 .cart-quantity-input {
     width: 86px;
     height: 48px;
-    border: 2px solid #111111;
-    border-radius: 0;
-    background-color: #ffffff;
     text-align: center;
     font-weight: 600;
-    color: #111111;
-}
-
-.cart-quantity-input:focus {
-    outline: none;
-    box-shadow: none;
-    border-color: #111111;
-}
-
-.cart-actions {
-    margin-top: 2rem;
 }
 
 .cart-voucher {
@@ -421,58 +497,37 @@ main {
 .cart-voucher-input {
     flex: 1 1 220px;
     min-height: 54px;
-    border: 2px solid #111111;
     border-right: none;
-    border-radius: 0;
-    background-color: #ffffff;
     padding: 0.85rem 1rem;
-    color: #111111;
-}
-
-.cart-voucher-input:focus {
-    outline: none;
-    box-shadow: none;
 }
 
 .cart-voucher-button {
     min-height: 54px;
-    border: 2px solid #111111;
-    border-radius: 0;
-    background-color: #111111;
-    color: #ffffff;
     padding: 0.85rem 1.5rem;
-    font-weight: 600;
 }
 
-.cart-voucher-button:hover,
-.cart-voucher-button:focus {
-    background-color: #111111;
-    color: #ffffff;
-    box-shadow: none;
+.cart-checkout-button {
+    display: block;
+    width: 100%;
+    padding: 0.95rem 1.25rem;
+    text-align: center;
+    text-decoration: none;
+}
+
+.cart-checkout-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .cart-summary {
-    background-color: #f1eee6;
+    background-color: var(--color-light-tertiary);
     padding: 2rem;
     border: 1px solid #ddd4c1;
 }
 
 .cart-summary-title {
     font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
     margin-bottom: 1.75rem;
-    color: #111111;
-}
-
-.cart-summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    font-size: 1.05rem;
-    color: #111111;
-    margin-bottom: 1rem;
 }
 
 .cart-summary-divider {
@@ -488,77 +543,66 @@ main {
     gap: 1rem;
     font-size: 1.4rem;
     font-weight: 600;
-    color: #111111;
+    color: var(--color-dark);
     margin-bottom: 1.75rem;
 }
 
-.form-check-input:checked {
-    background-color: #111111 !important;
-    border-color: #111111 !important;
-}
-
-.form-check-input:focus {
-    border-color: #111111;
-    box-shadow: 0 0 0 0.25rem rgba(17, 17, 17, 0.1);
-}
+/* =========================
+   FORM ELEMENTS
+========================= */
 
 .form-check-input {
     cursor: pointer;
-    border: 2px solid #111111;
+    border: var(--border-standard) !important;
+    background-color: var(--color-light) !important;
+    width: 1.25em;
+    height: 1.25em;
+    flex-shrink: 0;
+}
+
+.form-check-input:checked {
+    background-color: var(--color-dark) !important;
+    border-color: var(--color-dark) !important;
+}
+
+.form-check-input:focus {
+    border-color: var(--color-dark) !important;
+    box-shadow: 0 0 0 0.25rem rgba(17, 17, 17, 0.1) !important;
 }
 
 .selection-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding: 1rem;
-    border: 1px solid #e6e2d8;
-    background: #fff;
+    border: var(--border-light-subtle);
+    background: var(--color-light);
     margin-bottom: 0.5rem;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-standard);
+    gap: 0.75rem;
 }
 
 .selection-wrapper:hover {
-    background-color: #fbfaf8;
+    background-color: var(--color-bg-light);
 }
 
-
-.cart-checkout-button {
-    display: block;
-    width: 100%;
-    border: 2px solid #111111;
-    border-radius: 0;
-    background-color: #111111;
-    color: #ffffff;
-    padding: 0.95rem 1.25rem;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    transition: all 0.2s ease;
+.selection-wrapper .form-check-label {
+    margin-top: 0.15rem;
+    margin-bottom: 0;
 }
 
-.cart-checkout-button.disabled {
-    opacity: 0.5;
-    background-color: #111111;
-    color: #fff;
-    cursor: not-allowed;
-}
-
-.cart-checkout-button:hover,
-.cart-checkout-button:focus {
-    background-color: #111111;
-    color: #ffffff;
-    opacity: 0.92;
-}
+/* =========================
+   CHECKOUT
+========================= */
 
 .checkout-container {
     max-width: 800px;
     margin: 0 auto;
-    background-color: #ffffff;
-    border: 1px solid #e6e2d8;
+    background-color: var(--color-light);
+    border: var(--border-light-subtle);
 }
 
 .checkout-step-header {
-    background-color: #f1eee6;
+    background-color: var(--color-light-tertiary);
     padding: 1rem 1.5rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -572,194 +616,33 @@ main {
 
 .checkout-content-block {
     padding: 2rem 1.5rem;
-    border-bottom: 1px solid #f1eee6;
+    border-bottom: 1px solid var(--color-light-tertiary);
 }
 
-/* Payment Card Styling */
-.payment-option-wrapper {
-    border: 1px solid #e6e2d8;
-    padding: 1.25rem;
-    margin-bottom: 0.75rem;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.payment-option-wrapper:hover {
-    background-color: #faf9f6;
-}
-
-.form-check-input:checked+.payment-option-wrapper {
-    border-color: #111111;
-    background-color: #ffffff;
-    box-shadow: inset 0 0 0 1px #111111;
-}
-
-/* Voucher & Totals Section */
 .checkout-footer-bg {
-    background-color: #fbfaf8;
+    background-color: var(--color-bg-light);
     padding: 2.5rem 1.5rem;
 }
 
 .final-total-row {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #111111;
-    border-top: 2px solid #111111;
+    color: var(--color-dark);
+    border-top: var(--border-standard);
     padding-top: 1.5rem;
 }
 
-/* Serious Order Button */
 .btn-place-order {
-    background-color: #111111;
-    color: #ffffff;
-    border: none;
     padding: 1.25rem;
-    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     width: 100%;
-    transition: opacity 0.2s;
-}
-
-.btn-place-order:hover {
-    opacity: 0.9;
-    color: #ffffff;
-}
-
-/* Hide default radio but keep functionality */
-.payment-radio-hidden {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 991.98px) {
-    .hero-modern {
-        height: auto;
-        min-height: 78vh;
-        padding: 4rem 0;
-    }
-
-    .hero-modern-content {
-        max-width: 520px;
-        margin-right: 0;
-        margin-top: 0;
-    }
-
-    .products-search {
-        max-width: 100%;
-    }
-
-    .cart-item,
-    .cart-table-header {
-        grid-template-columns: 1fr;
-    }
-
-    .cart-table-header {
-        display: none;
-    }
-
-    .cart-item {
-        gap: 1rem;
-    }
-
-}
-
-@media (max-width: 767.98px) {
-    body {
-        padding-top: 66px;
-    }
-
-    .hero-title {
-        font-size: 2.4rem;
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-
-    .products-title {
-        font-size: 1.8rem;
-    }
-
-    .category-chip {
-        width: 100%;
-        text-align: left;
-    }
-
-    .tea-card-title {
-        font-size: 1.55rem;
-    }
-
-    .tea-card-body {
-        padding: 1.2rem;
-    }
-
-    .cart-title {
-        font-size: 2.2rem;
-    }
-
-    .cart-item {
-        padding: 1.25rem;
-    }
-
-    .cart-item-main {
-        align-items: flex-start;
-    }
-
-    .cart-item-image-wrapper {
-        width: 72px;
-        height: 72px;
-    }
-
-    .cart-item-title {
-        font-size: 1.05rem;
-    }
-
-    .cart-item-price,
-    .cart-item-quantity,
-    .cart-item-subtotal {
-        padding-left: 0;
-    }
-
-    .cart-voucher {
-        flex-direction: column;
-    }
-
-    .cart-voucher-input {
-        border-right: 2px solid #111111;
-    }
-
-    .cart-summary {
-        padding: 1.5rem;
-    }
-
-    .cart-summary-title {
-        font-size: 1.7rem;
-    }
-}
-
-.account-toggle::after {
-    content: "▶";
-    border: none;
-    margin-left: 0.45rem;
-    vertical-align: middle;
-    font-size: 0.75rem;
-}
-
-.account-toggle.show::after {
-    content: "▼";
 }
 
 /* =========================
-   ADMIN DASHBOARD ADDITIONS
+   ADMIN DASHBOARD
 ========================= */
+
 .admin-card-link {
     text-decoration: none;
     color: inherit;
@@ -773,28 +656,20 @@ main {
     text-underline-offset: 3px;
 }
 
-/* Icon-Farbe im Dashboard */
 .admin-dashboard-icon {
     font-size: 4rem;
-    color: #111111;
+    color: var(--color-dark);
 }
 
-/* =========================
-   ADMIN PRODUCT LISTING
-========================= */
-
-/* Specific truncation for description column */
 .admin-description-truncate {
     max-width: 250px;
-    /* Adjust as needed */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #5f5f5f;
+    color: var(--color-text-secondary);
     font-size: 0.9rem;
 }
 
-/* Table Hover Effect */
 .table-hover tbody tr:hover {
     background-color: rgba(243, 241, 235, 0.5);
 }
@@ -802,10 +677,11 @@ main {
 /* =========================
    ADMIN VOUCHER
 ========================= */
+
 .voucher-code {
     font-size: 1.1rem;
-    color: #111111;
-    background: #f3f1eb;
+    color: var(--color-dark);
+    background: var(--color-bg-warm);
     padding: 4px 8px;
 }
 
@@ -813,9 +689,6 @@ main {
    DRAG & DROP
 ========================= */
 
-
-/* Drag handle: small badge in the top-right corner of each product-item.
-   Sits OUTSIDE the <a> tag to avoid triggering link navigation on release. */
 .product-item {
     position: relative;
 }
@@ -823,18 +696,18 @@ main {
 .drag-handle {
     position: absolute;
     top: 10px;
-    right: 22px; /* offset accounts for Bootstrap g-4 gutter (12px padding each side) */
+    right: 22px;
     z-index: 10;
     width: 30px;
     height: 30px;
     background-color: rgba(17, 17, 17, 0.78);
-    color: #ffffff;
+    color: var(--color-light);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: grab;
     border-radius: 4px;
-    transition: background-color 0.15s ease;
+    transition: background-color var(--transition-fast);
     user-select: none;
 }
 
@@ -846,7 +719,7 @@ main {
     cursor: grabbing;
 }
 
-/* Fixed drop zone that appears during drag, floats under the header */
+/* Fixed drop zone that appears during drag */
 #drag-drop-zone-fixed {
     display: none;
     position: fixed;
@@ -854,7 +727,7 @@ main {
     left: 0;
     right: 0;
     z-index: 1000;
-    background-color: #111111;
+    background-color: var(--color-dark);
     padding: 20px;
     min-height: 65px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -875,11 +748,11 @@ main {
     gap: 12px;
     font-size: 1rem;
     font-weight: 600;
-    padding: 4px 0; /* consistent height */
+    padding: 4px 0;
 }
 
 .drag-drop-zone-default {
-    color: #ffffff;
+    color: var(--color-light);
 }
 
 .drag-drop-zone-default i {
@@ -887,33 +760,57 @@ main {
 }
 
 .drag-drop-zone-success {
-    color: #4caf50;
+    color: var(--color-success);
 }
 
 .drag-drop-zone-error {
-    color: #f44336;
+    color: var(--color-error);
 }
 
-/* Highlight when a card is dragged over the fixed dropzone */
+/* Highlight drop zone on hover during drag */
 #drag-drop-zone-fixed.drop-zone-hover {
-    background-color: #2e7d32;
+    background-color: var(--color-success-dark);
     box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
 }
 
-/* Small chip that follows the cursor while dragging a product to the cart */
 .drag-helper {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     max-width: 220px;
     padding: 8px 12px;
-    background-color: #111111;
-    color: #ffffff;
+    background-color: var(--color-dark);
+    color: var(--color-light);
     font-size: 0.82rem;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--box-shadow-drag);
     pointer-events: none;
+}
+
+/* Hide number input spinner arrows, use custom +/- buttons instead */
+#quantity-input::-webkit-outer-spin-button,
+#quantity-input::-webkit-inner-spin-button {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#quantity-input[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.account-toggle::after {
+    content: "▶";
+    border: none;
+    margin-left: 0.45rem;
+    vertical-align: middle;
+    font-size: 0.75rem;
+}
+
+.account-toggle.show::after {
+    content: "▼";
 }

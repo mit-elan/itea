@@ -1,6 +1,7 @@
 <?php include __DIR__ . '/../../layouts/header.php'; ?>
 <?php include __DIR__ . '/../../layouts/adminNav.php'; ?>
-<script src="/itea/frontend/ts/dashboard.js"></script>
+<script src="/itea/frontend/js/auth.js"></script>
+<script src="/itea/frontend/ts/adminDashboard.js"></script>
 
 <!-- Main Content -->
 <main class="products-page py-5">
@@ -31,13 +32,13 @@
 
             <!-- Edit Products -->
             <div class="col">
-                <a href="/itea/frontend/sites/admin/productOverview.php" class="admin-card-link">
+                <a href="/itea/frontend/sites/admin/manageProducts.php" class="admin-card-link">
                     <div class="tea-card h-100 text-center">
                         <div class="tea-card-image-wrapper">
                             <i class="bi bi-pencil-square admin-dashboard-icon"></i>
                         </div>
                         <div class="tea-card-body">
-                            <h3 class="tea-card-title">Edit Products</h3>
+                            <h3 class="tea-card-title">Manage Products</h3>
                             <p class="tea-card-description">Update or delete existing products.</p>
                         </div>
                     </div>

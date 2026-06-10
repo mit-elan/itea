@@ -1,5 +1,6 @@
 <?php include __DIR__ . '/../../layouts/header.php'; ?>
 <?php include __DIR__ . '/../../layouts/adminNav.php'; ?>
+<script src="/itea/frontend/js/auth.js"></script>
 <script src="/itea/frontend/js/voucher.js"></script>
 
 <main class="products-page py-5">
@@ -11,7 +12,6 @@
             </div>
         </div>
 
-        <!-- Voucher erstellen -->
         <div class="card shadow-sm border-0 rounded-0 mb-5">
             <div class="card-body p-4">
                 <h5 class="fw-600 mb-4" style="letter-spacing: -0.02em;">Create New Voucher</h5>
@@ -37,7 +37,6 @@
             </div>
         </div>
 
-        <!-- Voucher-Übersicht -->
         <div class="card shadow-sm border-0 rounded-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -61,7 +60,7 @@
     </div>
 </main>
 
-<!-- Template für dynamisch geladene Zeilen -->
+<!-- Template for dynamically rendered voucher rows -->
 <template id="voucher-row-template">
     <tr>
         <td class="ps-4 py-4">
