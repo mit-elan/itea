@@ -304,6 +304,12 @@ main {
     color: #111111;
 }
 
+.voucher-table-header {
+    background-color: #f1eee6;
+    font-weight: 600;
+    color: #111111;
+}
+
 .cart-item {
     align-items: center;
     padding: 1.75rem 1.5rem;
@@ -486,6 +492,36 @@ main {
     margin-bottom: 1.75rem;
 }
 
+.form-check-input:checked {
+    background-color: #111111 !important;
+    border-color: #111111 !important;
+}
+
+.form-check-input:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 0.25rem rgba(17, 17, 17, 0.1);
+}
+
+.form-check-input {
+    cursor: pointer;
+    border: 2px solid #111111;
+}
+
+.selection-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e6e2d8;
+    background: #fff;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.selection-wrapper:hover {
+    background-color: #fbfaf8;
+}
+
+
 .cart-checkout-button {
     display: block;
     width: 100%;
@@ -633,12 +669,6 @@ main {
         gap: 1rem;
     }
 
-    .cart-item-price,
-    .cart-item-quantity,
-    .cart-item-subtotal {
-        padding-left: 3.25rem;
-    }
-
 }
 
 @media (max-width: 767.98px) {
@@ -777,4 +807,113 @@ main {
     color: #111111;
     background: #f3f1eb;
     padding: 4px 8px;
+}
+
+/* =========================
+   DRAG & DROP
+========================= */
+
+
+/* Drag handle: small badge in the top-right corner of each product-item.
+   Sits OUTSIDE the <a> tag to avoid triggering link navigation on release. */
+.product-item {
+    position: relative;
+}
+
+.drag-handle {
+    position: absolute;
+    top: 10px;
+    right: 22px; /* offset accounts for Bootstrap g-4 gutter (12px padding each side) */
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+    background-color: rgba(17, 17, 17, 0.78);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+    user-select: none;
+}
+
+.drag-handle:hover {
+    background-color: rgba(17, 17, 17, 1);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Fixed drop zone that appears during drag, floats under the header */
+#drag-drop-zone-fixed {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: #111111;
+    padding: 20px;
+    min-height: 65px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#drag-drop-zone-fixed.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drag-drop-zone-default,
+.drag-drop-zone-success,
+.drag-drop-zone-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 4px 0; /* consistent height */
+}
+
+.drag-drop-zone-default {
+    color: #ffffff;
+}
+
+.drag-drop-zone-default i {
+    font-size: 1.3rem;
+}
+
+.drag-drop-zone-success {
+    color: #4caf50;
+}
+
+.drag-drop-zone-error {
+    color: #f44336;
+}
+
+/* Highlight when a card is dragged over the fixed dropzone */
+#drag-drop-zone-fixed.drop-zone-hover {
+    background-color: #2e7d32;
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+}
+
+/* Small chip that follows the cursor while dragging a product to the cart */
+.drag-helper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 220px;
+    padding: 8px 12px;
+    background-color: #111111;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
 }

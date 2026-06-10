@@ -25,14 +25,19 @@ function renderVoucherTable(vouchers: Voucher[]): void {
     const $row = $($("#voucher-row-template").html() || "").clone();
     $row.find(".voucher-code").text(voucher.code);
     $row.find(".voucher-value").text(`€ ${voucher.value.toFixed(2)}`);
-    $row.find(".voucher-remaining-value").text(`€ ${voucher.remainingValue.toFixed(2)}`);
+    $row
+      .find(".voucher-remaining-value")
+      .text(`€ ${voucher.remainingValue.toFixed(2)}`);
     $row.find(".voucher-date").text(
       new Date(voucher.expiryDate).toLocaleDateString("de-DE", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
-      })
+      }),
     );
+    $row
+      .find(".voucher-assigned-user")
+      .text(voucher.userId ? `${voucher.userId}` : "Unassigned");
     const $badge = $row.find(".voucher-status");
     if (voucher.status === "active") {
       $badge.text("Active").addClass("bg-success");
@@ -81,19 +86,23 @@ $(function () {
         contentType: "application/json",
         data: JSON.stringify({ value, validUntil }),
         success: function (response) {
-          if (response.error) {
-            $("#voucher-error").text(response.error).removeClass("d-none");
-            return;
-          }
+          $("#voucher-success")
+            .text(`Voucher ${response.voucherCode} created successfully!`)
+            .removeClass("d-none");
           fetchVouchers(userRole)
             .then((vouchers) => renderVoucherTable(vouchers))
             .catch((err) => console.error("Error loading vouchers", err));
         },
-        error: function (err) {
-          console.error("Error creating voucher:", err);
-          $("#voucher-error")
-            .text("An unexpected error occurred. Please try again.")
-            .removeClass("d-none");
+        //try to read error message from response, if no defined response text  show generic error message
+        error: function (xhr) {
+          let message = "An unexpected error occurred. Please try again.";
+          try {
+            const res = JSON.parse(xhr.responseText);
+            if (res.error) {
+              message = res.error;
+            }
+          } catch (e) {}
+          $("#voucher-error").text(message).removeClass("d-none");
         },
       });
     });
@@ -113,14 +122,25 @@ $(function () {
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify({ code }),
-        success: function () {
+        success: function (response) {
+          $("#voucher-success")
+            .text(
+              `Voucher ${response.voucherCode} added to profile successfully!`,
+            )
+            .removeClass("d-none");
           fetchVouchers(userRole)
             .then((vouchers) => renderVoucherTable(vouchers))
             .catch((err) => console.error("Error loading vouchers", err));
         },
         error: function (xhr) {
-          const msg = xhr.responseJSON?.error || "An unexpected error occurred.";
-          $("#voucher-error").text(msg).removeClass("d-none");
+          let message = "An unexpected error occurred. Please try again.";
+          try {
+            const res = JSON.parse(xhr.responseText);
+            if (res.error) {
+              message = res.error;
+            }
+          } catch (e) {}
+          $("#voucher-error").text(message).removeClass("d-none");
         },
       });
     });

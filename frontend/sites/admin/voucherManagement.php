@@ -31,6 +31,7 @@
                     </div>
                     <div class="col-12">
                         <div id="voucher-error" class="alert alert-danger rounded-0 mb-0 d-none"></div>
+                        <div id="voucher-success" class="alert alert-success rounded-0 mb-0 d-none"></div>
                     </div>
                 </form>
             </div>
@@ -42,11 +43,12 @@
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead>
-                            <tr class="cart-table-header">
+                            <tr class="voucher-table-header">
                                 <th class="ps-4 border-0">Code</th>
                                 <th class="border-0">Value</th>
                                 <th class="border-0">Remaining Value</th>
                                 <th class="border-0">Valid Until</th>
+                                <th class="border-0">Claimed by User</th>
                                 <th class="border-0">Status</th>
                             </tr>
                         </thead>
@@ -56,7 +58,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </main>
 
@@ -69,6 +70,7 @@
         <td><span class="fw-600 voucher-value"></span></td>
         <td><span class="fw-600 voucher-remaining-value"></span></td>
         <td><span class="voucher-date"></span></td>
+        <td><span class="voucher-assigned-user"></span></td>
         <td><span class="badge rounded-0 py-2 px-3 voucher-status"></span></td>
     </tr>
 </template>

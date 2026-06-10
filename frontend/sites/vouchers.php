@@ -17,6 +17,7 @@
 
             <!-- Error Display -->
             <div id="voucher-error" class="alert alert-danger d-none"></div>
+            <div id="voucher-success" class="alert alert-success d-none"></div>
 
             <!-- Add Voucher Form -->
             <div class="card shadow-sm mb-5">
