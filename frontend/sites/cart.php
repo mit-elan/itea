@@ -1,6 +1,7 @@
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
-<script src="/itea/frontend/js/cart.js"></script>
+<script src="/itea/frontend/js/auth.js"></script>
+<script type="module" src="/itea/frontend/js/cart.js"></script>
 
 <main class="cart-page py-5">
     <div class="container">
@@ -8,14 +9,12 @@
             <h1 class="cart-title">Cart</h1>
         </div>
 
-        <!-- Start der Haupt-Row -->
-        <div class="row g-5">
+        <!-- Error message display -->
+        <div id="cart-error" class="alert alert-danger mb-4" style="display:none;"></div>
 
-            <!-- LINKE SPALTE: Produkte & Voucher -->
+        <div class="row g-5">
             <div class="col-lg-8">
                 <section class="cart-items-section">
-
-                    <!-- Tabellen-Header (Spalten müssen mit den Backend-Items übereinstimmen) -->
                     <div class="cart-table-header d-none d-md-block">
                         <div class="row align-items-center m-0">
                             <div class="col-md-6 ps-0">Product</div>
@@ -25,14 +24,11 @@
                         </div>
                     </div>
 
-                    <!-- Hier werden die Produkte aus dem Backend/JS geladen -->
                     <div id="cart-items-container">
-                        <!-- Die Artikel werden hier dynamisch eingefügt -->
                     </div>
                 </section>
             </div>
 
-            <!-- RECHTE SPALTE: Zusammenfassung & Voucher -->
             <div class="col-lg-4">
                 <aside class="cart-summary">
                     <h2 class="cart-summary-title">Cart Summary</h2>
@@ -53,7 +49,7 @@
                 </aside>
             </div>
 
-        </div> <!-- Ende der Haupt-Row -->
+        </div>
     </div>
 </main>
 

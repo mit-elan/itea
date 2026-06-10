@@ -3,19 +3,36 @@
 require_once __DIR__ . '/dbaccess.php';
 require_once __DIR__ . '/../models/voucher.class.php';
 
+/**
+ * VoucherDataHandler
+ *
+ * Manages database operations for vouchers including CRUD operations and redemption tracking.
+ */
 class VoucherDataHandler
 {
     private mysqli $db;
 
+    /**
+     * Initializes the VoucherDataHandler with a database connection.
+     *
+     * @param DBaccess $db Database access object
+     */
     public function __construct(DBaccess $db)
     {
         $this->db = $db->getConnection();
     }
 
 
+    /**
+     * Creates a new voucher record in the database.
+     *
+     * Sets remaining_value equal to the initial value upon creation.
+     *
+     * @param Voucher $voucher The voucher object containing code, value, and valid_until
+     * @return bool True if the insert was successful, false otherwise
+     */
     public function createVoucher(Voucher $voucher): bool
     {
-        // remaining_value ist bei Erstellung immer gleich value
         $stmt = $this->db->prepare(
             "INSERT INTO vouchers (code, value, remaining_value, valid_until) VALUES (?, ?, ?, ?)"
         );
@@ -24,25 +41,39 @@ class VoucherDataHandler
         return $stmt->execute();
     }
 
-    /** @return Voucher[] */
+    /**
+     * Retrieves all vouchers from the database.
+     *
+     * Results are ordered by expiry date in descending order (soonest expiration first).
+     *
+     * @return Voucher[] Array of all voucher objects, or empty array if query fails
+     */
     public function getVouchers(): array
     {
-        $result = $this->db->query(
+        $stmt = $this->db->prepare(
             "SELECT id, code, value, remaining_value, valid_until, redeemed, user_id FROM vouchers ORDER BY valid_until DESC"
         );
-
-        if (!$result) return [];
+        if (!$stmt) return [];
+        $stmt->execute();
+        $result = $stmt->get_result();
 
         $vouchers = [];
         while ($row = $result->fetch_assoc()) {
             $vouchers[] = new Voucher($row);
         }
 
-
         return $vouchers;
     }
 
-    /** @return Voucher[] */
+    /**
+     * Retrieves all vouchers assigned to a specific user.
+     *
+     * Results are ordered by expiry date in descending order (soonest expiration first).
+     * Does not include user_id in the result set.
+     *
+     * @param int $userId The user ID to filter vouchers by
+     * @return Voucher[] Array of voucher objects assigned to the user, or empty array if query fails
+     */
     public function getVouchersByUserId(int $userId): array
     {
         $stmt = $this->db->prepare(
@@ -61,6 +92,12 @@ class VoucherDataHandler
         return $vouchers;
     }
 
+    /**
+     * Retrieves a voucher by its code.
+     *
+     * @param string $code The unique voucher code to search for
+     * @return Voucher|null The voucher object if found, null if not found or query fails
+     */
     public function getVoucherByCode(string $code): ?Voucher
     {
         $stmt = $this->db->prepare(
@@ -74,6 +111,16 @@ class VoucherDataHandler
     }
 
 
+    /**
+     * Redeems a voucher against a cart total and updates its remaining value.
+     *
+     * Calculates the new remaining value after applying the discount to the cart total.
+     * Marks voucher as fully redeemed if remaining value becomes zero or negative.
+     *
+     * @param Voucher $voucher The voucher to redeem
+     * @param float $cartTotal The cart total to apply the discount against
+     * @return float The final amount owed after discount applied (0 if discount exceeds cart total)
+     */
     public function redeemVoucher(Voucher $voucher, float $cartTotal): float
     {
         if ($voucher->remaining_value >= $cartTotal) {
@@ -96,6 +143,13 @@ class VoucherDataHandler
         return $newTotal;
     }
 
+    /**
+     * Assigns a voucher to a specific user.
+     *
+     * @param Voucher $voucher The voucher to assign
+     * @param int $userId The user ID to assign the voucher to
+     * @return bool True if the update was successful, false otherwise
+     */
     public function assignVoucherToUser(Voucher $voucher, int $userId): bool
     {
         $stmt = $this->db->prepare(

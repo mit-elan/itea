@@ -277,6 +277,25 @@ function checkLoginStatus(): JQuery.jqXHR {
   });
 }
 
+/**
+ * Role-based access guard: redirects to home if user doesn't have required role
+ * Used on protected pages (e.g., admin dashboard)
+ *
+ * @param requiredRole Role required to access the page (e.g., "admin")
+ * @param onAuthorized Optional callback executed only if user has required role
+ */
+function requireRole(requiredRole: string, onAuthorized?: () => void): void {
+  checkLoginStatus().then(function (response) {
+    if (response.role !== requiredRole) {
+      window.location.href = "/itea/frontend/index.php";
+      return;
+    }
+    if (onAuthorized) {
+      onAuthorized();
+    }
+  });
+}
+
 function updateNavigation(response: any): void {
   $("#products-link").show();
   $("#cart-link").show();

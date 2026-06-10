@@ -1,6 +1,7 @@
 <?php include __DIR__ . '/../../layouts/header.php'; ?>
 <?php include __DIR__ . '/../../layouts/adminNav.php'; ?>
-<script src="/itea/frontend/js/productUpload.js"></script>
+<script src="/itea/frontend/js/auth.js"></script>
+<script src="/itea/frontend/js/adminProductUpload.js"></script>
 
 <main class="container py-5">
     <div class="row justify-content-center">
@@ -38,6 +39,7 @@
 
                         <div class="col-md-12 mt-3">
                             <label for="description" class="form-label mb-1">Description*</label>
+                            <!-- Textarea with auto-height: expands as user types, capped at 3 lines max -->
                             <textarea class="form-control" id="description" rows="1" style="max-height: calc(3 * 1.5em + 1rem); overflow-y: auto; resize: none;" oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight, parseInt(this.style.maxHeight)) + 'px';" required></textarea>
                         </div>
 
@@ -59,7 +61,7 @@
                         </div>
 
 
-                        <!-- Fehlermeldungen -->
+                        <!-- Error message containers (hidden until validation fails) -->
                         <div class="col-12 mt-3">
                             <div id="field-error" class="alert alert-danger mb-1" style="display:none"></div>
                             <div id="rating-error" class="alert alert-danger mb-1" style="display:none"></div>
