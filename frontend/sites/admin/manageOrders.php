@@ -1,5 +1,6 @@
 <?php include __DIR__ . '/../../layouts/header.php'; ?>
 <?php include __DIR__ . '/../../layouts/adminNav.php'; ?>
+<script src="/itea/frontend/js/auth.js"></script>
 
 <main class="products-page py-5">
     <div class="container">
@@ -60,4 +61,4 @@
 </div>
 
 <?php include __DIR__ . '/../../layouts/footer.php'; ?>
-<script src="/itea/frontend/js/manageOrders.js"></script>
+<script src="/itea/frontend/js/adminManageOrders.js"></script>
