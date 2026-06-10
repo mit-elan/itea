@@ -1,11 +1,11 @@
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
-<script src="/itea/frontend/js/products.js"></script>
-<script src="/itea/frontend/js/cart.js"></script>
+<script src="/itea/frontend/js/auth.js"></script>
+<script type="module" src="/itea/frontend/js/products.js"></script>
 
 <!-- Fixed drop zone that appears during drag and fades out with the success message
-     #drag-drop-zone-fixed = Container (Ein/Aus)
-     .drag-drop-zone-default/success/error = Inhalte (Welche Message anzeigen) -->
+     #drag-drop-zone-fixed = Container (on/off)
+     .drag-drop-zone-default/success/error = Container message -->
 <div id="drag-drop-zone-fixed">
   <div class="drag-drop-zone-default">
     <i class="bi bi-bag-plus"></i>
@@ -40,7 +40,6 @@
 
         <div class="row g-4" id="product-list"></div>
         <p class="no-results text-center mt-4" style="display:none;" id="no-products">
-            There are currently no products in stock for this category. Please come back later.
         </p>
     </div>
 </main>
@@ -55,7 +54,7 @@
                 <div class="tea-card-image-wrapper">
                     <img src="" class="tea-card-image" alt="">
                 </div>
-                <div class="tea-card-body d-flex flex-column">
+                <div class="tea-card-body d-flex flex-column flex-grow-1">
                     <h2 class="tea-card-title"></h2>
                     <p class="tea-card-description"></p>
                     <p class="tea-card-rating mb-3">

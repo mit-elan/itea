@@ -1,7 +1,8 @@
 <?php include __DIR__ . '/../layouts/header.php'; ?>
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
-<script src="/itea/frontend/js/productInfo.js"></script>
-<script src="/itea/frontend/js/cart.js"></script>
+<script src="/itea/frontend/js/auth.js"></script>
+<script type="module" src="/itea/frontend/js/productInfo.js"></script>
+<script type="module" src="/itea/frontend/js/cart.js"></script>
 
 <main class="container my-5">
     <div class="text-center p-5" style="display: none" id="no-tea-found">
