@@ -66,6 +66,33 @@ $(document).ready(function () {
     });
   }
 
+  // Drag & Drop variant: Add to cart with custom callbacks for success/error UI
+  function addToCartViaDrag(
+    productId: number,
+    onSuccess: () => void,
+    onError: () => void
+  ): void {
+    $.ajax({
+      url: "/itea/backend/serviceHandler.php?handler=cart&method=addToCart",
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ productId: productId, quantity: 1 }),
+      success: function (response) {
+        $("#cart-count").text(response.cartCount);
+        onSuccess();
+      },
+      error: function (jqXHR) {
+        const response = JSON.parse(jqXHR.responseText);
+        console.error("Cart error:", response.error);
+        onError();
+      },
+    });
+  }
+
+  // Make both addToCart variants globally available
+  (window as any).addToCart = addToCart;
+  (window as any).addToCartViaDrag = addToCartViaDrag;
+
   function updateCart(productId: number, quantity: number) {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=cart&method=updateCart",
