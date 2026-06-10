@@ -34,11 +34,12 @@ class Voucher
         }
 
         return [
-            'code'       => $this->code,
-            'value'      => $this->value,
+            'code'           => $this->code,
+            'userId'         => $this->user_id ?: null,
+            'value'          => $this->value,
             'remainingValue' => $this->remaining_value,
-            'expiryDate' => $this->valid_until,
-            'status'     => $status,
+            'expiryDate'     => $this->valid_until,
+            'status'         => $status,
         ];
     }
 }

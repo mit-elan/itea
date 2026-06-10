@@ -2,39 +2,6 @@
 <?php include __DIR__ . '/../layouts/nav.php'; ?>
 <script src="/itea/frontend/js/checkout.js"></script>
 
-<style>
-    /* Custom Black Radio Buttons */
-    .form-check-input:checked {
-        background-color: #111111 !important;
-        border-color: #111111 !important;
-    }
-
-    .form-check-input:focus {
-        border-color: #111111;
-        box-shadow: 0 0 0 0.25rem rgba(17, 17, 17, 0.1);
-    }
-
-    .form-check-input {
-        cursor: pointer;
-        border: 2px solid #111111;
-    }
-
-    /* Wrapper styling to align radio buttons nicely */
-    .selection-wrapper {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        border: 1px solid #e6e2d8;
-        background: #fff;
-        margin-bottom: 0.5rem;
-        transition: background-color 0.2s;
-    }
-
-    .selection-wrapper:hover {
-        background-color: #fbfaf8;
-    }
-</style>
-
 <main class="cart-page py-5">
     <div class="container">
 
@@ -62,7 +29,6 @@
             </div>
             <div class="checkout-content-block">
                 <div id="payment-methods-container">
-                    <!-- MOCKUP PAYMENT METHOD -->
                     <div class="selection-wrapper">
                         <input class="form-check-input me-3" type="radio" name="payment" id="mock-pay-1" checked>
                         <label class="form-check-label d-flex justify-content-between w-100" for="mock-pay-1">
