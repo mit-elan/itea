@@ -1,15 +1,13 @@
 <?php
 
 /**
- * Zentrale DB-Service-Klasse.
- * Alle Datenbankzugriffe laufen ausschließlich über diese Klasse.
- * Sprint 0: Grundgerüst – Methoden werden pro Sprint ergänzt.
- * eigener database gateways ordner // und handler trennen
+ * UserDataHandler
+ * Kapselt alle Datenbankzugriffe für User, Authentifizierung und Profilverwaltung.
  */
 
 require_once __DIR__ . '/dbaccess.php';
 
-class DataHandler
+class UserDataHandler
 {
 
     private mysqli $db;
@@ -19,7 +17,6 @@ class DataHandler
         $this->db = $db->getConnection();
     }
 
-    // ── Sprint 1: Produkte ────────────────────────────────────────#
 
     // ── Sprint 1: User / Auth ─────────────────────────────────────
 
