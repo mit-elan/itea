@@ -30,6 +30,7 @@ interface User {
   email: string;
   username: string;
   password?: string;
+  passwordRepeat?: string;
   role: string;
   active: boolean;
 }

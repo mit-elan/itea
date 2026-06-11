@@ -50,8 +50,9 @@ function updateProfile() {
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=users&method=updateProfile",
         type: "POST",
+        contentType: "application/json",
         dataType: "json",
-        data: updatedUser,
+        data: JSON.stringify(updatedUser),
         success: function (response) {
             if (response.error) {
                 $("#account-error").removeClass("d-none").text(response.error);

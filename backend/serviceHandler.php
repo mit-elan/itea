@@ -9,7 +9,7 @@
 require_once __DIR__ . '/db/session.php';
 require_once __DIR__ . '/db/dbaccess.php';
 
-require_once __DIR__ . '/db/dataHandler.php';
+require_once __DIR__ . '/db/userDataHandler.php';
 require_once __DIR__ . '/db/adminDataHandler.php';
 require_once __DIR__ . '/db/cartDataHandler.php';
 require_once __DIR__ . '/db/orderDataHandler.php';

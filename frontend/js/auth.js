@@ -34,12 +34,13 @@ $(document).ready(function () {
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=users&method=login",
             type: "POST",
+            contentType: "application/json",
             dataType: "json",
-            data: {
+            data: JSON.stringify({
                 identifier: identifier,
                 password: password,
                 remember: remember,
-            },
+            }),
             success: function (response) {
                 if (response.error) {
                     $("#login-message")
@@ -113,6 +114,7 @@ $(document).ready(function () {
             email: $("#email").val(),
             username: $("#username").val(),
             password: password,
+            passwordConfirm: passwordConfirm,
             role: "customer",
             active: true,
         };
@@ -160,6 +162,7 @@ $(document).ready(function () {
             url: "/itea/backend/serviceHandler.php?handler=users&method=register",
             type: "POST",
             contentType: "application/json",
+            dataType: "json",
             data: JSON.stringify(Object.assign(Object.assign({}, newUser), newPaymentMethod)),
             success: function (response) {
                 // Falls das Backend trotzdem einen Fehler meldet (z.B. Email existiert schon)
