@@ -3,13 +3,12 @@
  * cart.ts – Warenkorb-Logik (Session-basiert, kein Page-Reload)
  * Sprint 2: SCRUM-60, SCRUM-57
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.addToCartViaDrag = addToCartViaDrag;
 function addToCart(productId, quantity) {
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=cart&method=addToCart",
         type: "POST",
         contentType: "application/json",
+        dataType: "json",
         data: JSON.stringify({ productId, quantity }),
         success: function (response) {
             if (response.error) {
@@ -29,6 +28,7 @@ function addToCartViaDrag(productId, onSuccess, onError) {
         url: "/itea/backend/serviceHandler.php?handler=cart&method=addToCart",
         type: "POST",
         contentType: "application/json",
+        dataType: "json",
         data: JSON.stringify({ productId: productId, quantity: 1 }),
         success: function (response) {
             $("#cart-count").text(response.cartCount);
@@ -36,14 +36,23 @@ function addToCartViaDrag(productId, onSuccess, onError) {
                 onSuccess();
         },
         error: function (jqXHR) {
-            // Assumes error response is JSON; non-JSON error responses will throw here
-            const response = JSON.parse(jqXHR.responseText);
-            console.error("Cart error:", response.error);
+            let errorMessage = "Failed to add product to cart.";
+            try {
+                const response = JSON.parse(jqXHR.responseText);
+                if (response.error) {
+                    errorMessage = response.error;
+                }
+            }
+            catch (e) {
+                // Response was not JSON, keep default error message
+            }
+            console.error("Cart error:", errorMessage);
             if (onError)
                 onError();
         },
     });
 }
+window.addToCartViaDrag = addToCartViaDrag;
 // Tracks guest status to conditionally show login prompt vs. checkout
 let isGuest = false;
 $(document).ready(function () {
@@ -60,13 +69,13 @@ $(document).ready(function () {
     //Produkt in Produktansicht zu Warenkorb hinzufügen
     $(document).on("click", ".button-addToCartList", function (event) {
         event.preventDefault();
-        const productId = $(this).data("id");
+        const productId = Number($(this).data("id"));
         addToCart(productId, 1);
     });
     //Product in Detailansicht zu Warenkorb hinzufügen (inkl. Custom Quantity)
     $("#button-addToCartDetail").on("click", function (e) {
         e.preventDefault();
-        const productId = $(this).data("id");
+        const productId = Number($(this).data("id"));
         const quantity = parseInt($("#quantity-input").val()) || 1;
         if (quantity <= 0) {
             alert("Please insert a valid number of Products");
@@ -79,6 +88,7 @@ $(document).ready(function () {
             url: "/itea/backend/serviceHandler.php?handler=cart&method=updateCart",
             type: "POST",
             contentType: "application/json",
+            dataType: "json",
             data: JSON.stringify({ productId, quantity }),
             success: function (response) {
                 if (response.error) {
@@ -192,7 +202,7 @@ $(document).ready(function () {
         $("#subtotal-value").text("€" + total.toFixed(2));
     }
     $(document).on("change", ".cart-quantity-input", function () {
-        const productId = $(this).data("id");
+        const productId = Number($(this).data("id"));
         let quantity = parseInt($(this).val()) || 1;
         if (quantity <= 0) {
             quantity = 1;
@@ -200,7 +210,7 @@ $(document).ready(function () {
         updateCart(productId, quantity);
     });
     $(document).on("click", ".cart-remove", function () {
-        const productId = $(this).data("id");
+        const productId = Number($(this).data("id"));
         if (confirm("Are you sure you want to delete " +
             $(this).closest(".cart-item").find("img").attr("alt") +
             " from your cart?")) {
