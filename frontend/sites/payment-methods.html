@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iTEA Webshop</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/itea/frontend/assets/css/style.css?v=33">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 mb-1">
+              Payment Methods
+            </h1>
+
+            <p class="text-muted mb-0">
+              Manage your saved payment options
+            </p>
+          </div>
+        </div>
+
+        <div id="payment-error" class="alert alert-danger d-none"></div>
+
+        <div id="payment-list" class="row g-3"></div>
+
+        <div class="card shadow-sm mt-5">
+          <div class="card-body p-4">
+
+            <h4 class="mb-4">
+              Add Payment Method
+            </h4>
+
+            <form id="payment-form">
+              <div class="mb-3">
+                <label class="form-label" for="payment-type">
+                  Payment Type
+                </label>
+
+                <select id="payment-type" class="form-select">
+                  <option value="0">
+                    Credit Card
+                  </option>
+
+                  <option value="1">
+                    Bank Account
+                  </option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="payment-number">
+                  Card Number / IBAN
+                </label>
+
+                <input
+                  type="text"
+                  id="payment-number"
+                  class="form-control">
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label" for="payment-label">
+                  Label
+                </label>
+
+                <input
+                  type="text"
+                  id="payment-label"
+                  class="form-control"
+                  placeholder="e.g. Personal Visa">
+              </div>
+
+              <button type="submit" class="btn btn-dark">
+                Save Payment Method
+              </button>
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/itea/frontend/js/auth.js?v=5"></script>
+  <script src="/itea/frontend/js/layout.js"></script>
+  <script src="/itea/frontend/js/payment-methods.js"></script>
+</body>
+
+</html>
