@@ -11,13 +11,13 @@ require_once __DIR__ . '/../models/cart.class.php';
  **/
 class UserHandler
 {
-    private DataHandler $dh;
+    private UserDataHandler $userDataHandler;
     private CartDataHandler $cartDataHandler;
     private PaymentDataHandler $paymentDataHandler;
 
-    public function __construct(DataHandler $dh, CartDataHandler $cartDataHandler, PaymentDataHandler $paymentDataHandler)
+    public function __construct(UserDataHandler $userDataHandler, CartDataHandler $cartDataHandler, PaymentDataHandler $paymentDataHandler)
     {
-        $this->dh                   = $dh;
+        $this->userDataHandler      = $userDataHandler;
         $this->cartDataHandler      = $cartDataHandler;
         $this->paymentDataHandler    = $paymentDataHandler;
     }
@@ -28,33 +28,33 @@ class UserHandler
         return match ($method) {
 
             // Sprint 1
-            'login' => $this->login(),
-            'register' => $this->register(),
+            'login' => $this->login($data),
+            'register' => $this->register($data),
             'logout' => $this->logout(),
             'status' => $this->status(),
 
             // Sprint 2
             'getProfile' => $this->getProfile(),
-            'updateProfile' => $this->updateProfile(),
+            'updateProfile' => $this->updateProfile($data),
             // 'addPaymentMethod' => $this->addPaymentMethod(),
 
             default => null,
         };
     }
     //Login
-    private function login()
+    private function login(array $data)
     {
         foreach (['identifier', 'password'] as $field) {
-            if (empty($_POST[$field])) {
+            if (empty($data[$field])) {
                 return ['error' => "Field '$field' is required"];
             }
         }
 
-        $identifier = trim($_POST['identifier']);
-        $password = $_POST['password'];
+        $identifier = trim($data['identifier']);
+        $password = $data['password'];
 
         // User kann sich mit username oder email einloggen
-        $userData = $this->dh->getUserByIdentifier($identifier);
+        $userData = $this->userDataHandler->getUserByIdentifier($identifier);
 
         if (!$userData) {
             return ['error' => 'Invalid username/email or password'];
@@ -143,24 +143,24 @@ class UserHandler
     }
 
     //Register
-    private function register()
+    private function register(array $data)
     {
         foreach (['salutation', 'firstname', 'lastname', 'address', 'zip', 'city', 'email', 'username', 'password'] as $field) {
-            if (empty($_POST[$field])) {
+            if (empty($data[$field])) {
                 return ['error' => "Field '$field' is required"];
             }
         }
 
         foreach (['paymentName', 'paymentType', 'cardNumber'] as $field) {
-            if (!isset($_POST[$field]) || $_POST[$field] === '') {
+            if (!isset($data[$field]) || $data[$field] === '') {
                 return ['error' => "Field '$field' is required"];
             }
         }
 
-        $userId = $this->dh->createUser($_POST);
+        $userId = $this->userDataHandler->createUser($data);
 
         if (is_int($userId)) {
-            $this->paymentDataHandler->createPaymentMethod($userId, $_POST);
+            $this->paymentDataHandler->createPaymentMethod($userId, $data);
             return ['message' => 'Registration successful'];
         } elseif ($userId === "doubleEntry") {
             return ['error' => 'Email or username already taken!'];
@@ -199,7 +199,7 @@ class UserHandler
             ];
         }
 
-        $userData = $this->dh->getUserById($_SESSION['user_id']);
+        $userData = $this->userDataHandler->getUserById($_SESSION['user_id']);
 
         if (!$userData) {
             return [
@@ -212,7 +212,7 @@ class UserHandler
         return $user->toArray();
     }
 
-    private function updateProfile()
+    private function updateProfile(array $data)
     {
         if (!isset($_SESSION['user_id'])) {
             return [
@@ -220,7 +220,7 @@ class UserHandler
             ];
         }
 
-        $userData = $this->dh->getUserById(
+        $userData = $this->userDataHandler->getUserById(
             $_SESSION['user_id']
         );
 
@@ -232,7 +232,7 @@ class UserHandler
 
         $user = new User($userData);
 
-        $password = $_POST['password'] ?? '';
+        $password = $data['password'] ?? '';
 
         // Passwort bestätigen
         if (!$user->checkPassword($password)) {
@@ -241,9 +241,9 @@ class UserHandler
             ];
         }
 
-        $success = $this->dh->updateUser(
+        $success = $this->userDataHandler->updateUser(
             $_SESSION['user_id'],
-            $_POST
+            $data
         );
 
         if (!$success) {

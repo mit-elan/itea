@@ -127,7 +127,7 @@ class AdminHandler
             return $authError;
         }
 
-        $userId = (int) ($data['userId'] ?? $_GET['userId'] ?? 0);
+        $userId = (int) ($data['userId'] ?? 0);
 
         if ($userId <= 0) {
             return [
@@ -147,7 +147,7 @@ class AdminHandler
             return $authError;
         }
 
-        $orderId = (int) ($data['orderId'] ?? $_GET['orderId'] ?? 0);
+        $orderId = (int) ($data['orderId'] ?? 0);
 
         if ($orderId <= 0) {
             return [

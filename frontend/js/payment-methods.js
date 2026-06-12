@@ -2,7 +2,7 @@
 $(document).ready(function () {
     loadPaymentMethods();
     $(document).on("click", ".delete-payment", function () {
-        const paymentId = $(this).data("id");
+        const paymentId = Number($(this).data("id"));
         deletePaymentMethod(paymentId);
     });
     $("#payment-form").on("submit", function (e) {
@@ -16,19 +16,13 @@ function loadPaymentMethods() {
         type: "GET",
         dataType: "json",
         success: function (response) {
-            $("#payment-error")
-                .addClass("d-none")
-                .text("");
-            $("#payment-list")
-                .empty();
+            $("#payment-error").addClass("d-none").text("");
+            $("#payment-list").empty();
             if (response.error) {
-                $("#payment-error")
-                    .removeClass("d-none")
-                    .text(response.error);
+                $("#payment-error").removeClass("d-none").text(response.error);
                 return;
             }
-            if (!response.paymentMethods ||
-                response.paymentMethods.length === 0) {
+            if (!response.paymentMethods || response.paymentMethods.length === 0) {
                 $("#payment-list").append(`
           <div class="col-12">
             <div class="alert alert-info mb-0">
@@ -39,15 +33,11 @@ function loadPaymentMethods() {
                 return;
             }
             response.paymentMethods.forEach((payment) => {
-                const type = payment.is_bank_account == 1
-                    ? "Bank Account"
-                    : "Credit Card";
+                const type = payment.is_bank_account == 1 ? "Bank Account" : "Credit Card";
                 const maskedNumber = payment.card_number.length > 4
                     ? "•••• " + payment.card_number.slice(-4)
                     : payment.card_number;
-                const icon = payment.is_bank_account == 1
-                    ? "bi-bank"
-                    : "bi-credit-card";
+                const icon = payment.is_bank_account == 1 ? "bi-bank" : "bi-credit-card";
                 $("#payment-list").append(`
           <div class="col-md-6">
             <div class="card shadow-sm h-100">
@@ -85,50 +75,42 @@ function loadPaymentMethods() {
     });
 }
 function createPaymentMethod() {
-    $("#payment-error")
-        .addClass("d-none")
-        .text("");
+    $("#payment-error").addClass("d-none").text("");
     const paymentData = {
         paymentType: $("#payment-type").val(),
         cardNumber: $("#payment-number").val(),
         paymentName: $("#payment-label").val(),
     };
-    const paymentNumber = String(paymentData.cardNumber)
-        .replace(/[\s-]/g, "");
-    const paymentLabel = String(paymentData.paymentName)
-        .trim();
+    const paymentNumber = String(paymentData.cardNumber).replace(/[\s-]/g, "");
+    const paymentLabel = String(paymentData.paymentName).trim();
     if (!paymentLabel || !paymentNumber) {
         $("#payment-error")
             .removeClass("d-none")
             .text("Please fill in all fields.");
         return;
     }
-    if (paymentData.paymentType === "0" &&
-        !luhnCheck(paymentNumber)) {
-        $("#payment-error")
-            .removeClass("d-none")
-            .text("Invalid card number.");
+    if (paymentData.paymentType === "0" && !luhnCheck(paymentNumber)) {
+        $("#payment-error").removeClass("d-none").text("Invalid card number.");
         return;
     }
-    if (paymentData.paymentType === "1" &&
-        !ibanCheck(paymentNumber)) {
-        $("#payment-error")
-            .removeClass("d-none")
-            .text("Invalid IBAN.");
+    if (paymentData.paymentType === "1" && !ibanCheck(paymentNumber)) {
+        $("#payment-error").removeClass("d-none").text("Invalid IBAN.");
         return;
     }
-    //Architektur umgestellt - hier kommt noch Fehler im Forntend - Anpassung im Handler ausstehend
+    const paymentRequest = {
+        paymentType: String(paymentData.paymentType),
+        cardNumber: paymentNumber,
+        paymentName: paymentLabel,
+    };
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=payment&method=createPaymentMethod",
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify(paymentData),
+        data: JSON.stringify(paymentRequest),
         dataType: "json",
         success: function (response) {
             if (!response.success) {
-                $("#payment-error")
-                    .removeClass("d-none")
-                    .text(response.error);
+                $("#payment-error").removeClass("d-none").text(response.error);
                 return;
             }
             $("#payment-form")[0].reset();
@@ -142,18 +124,18 @@ function createPaymentMethod() {
     });
 }
 function deletePaymentMethod(paymentId) {
+    if (!confirm("Do you really want to delete this payment method?")) {
+        return;
+    }
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=payment&method=deletePaymentMethod",
         type: "POST",
         contentType: "application/json",
-        data: JSON.stringify({ paymentId: paymentId }),
-        // data: { paymentId: paymentId },
         dataType: "json",
+        data: JSON.stringify({ paymentId: paymentId }),
         success: function (response) {
             if (!response.success) {
-                $("#payment-error")
-                    .removeClass("d-none")
-                    .text(response.error);
+                $("#payment-error").removeClass("d-none").text(response.error);
                 return;
             }
             loadPaymentMethods();
