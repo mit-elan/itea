@@ -25,7 +25,14 @@ header('Access-Control-Allow-Origin: *');
 $handler = $_GET['handler'] ?? $_POST['handler'] ?? '';
 $method  = $_GET['method']  ?? $_POST['method']  ?? '';
 
-$data = json_decode(file_get_contents('php://input'), true) ?? [];
+$input = json_decode(file_get_contents('php://input'), true);
+$data = is_array($input) ? $input : [];
+
+// Make query parameters available to handlers through $data.
+// JSON body values override query parameters if the same key exists.
+$data = array_merge($_GET, $data);
+
+unset($data['handler'], $data['method']);
 
 try {
     $requestHandler = new RequestHandler(new DBaccess());
