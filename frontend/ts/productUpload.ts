@@ -6,7 +6,7 @@ $(document).ready(function () {
 
   checkLoginStatus().then(function (response) {
     if (response.role !== "admin") {
-      window.location.href = "/itea/frontend/index.php";
+      window.location.href = "/itea/frontend/index.html";
     }
   });
 
@@ -158,7 +158,7 @@ $(document).ready(function () {
       success: function (response: { name: string; error?: string }) {
         const action = productId ? "updated" : "created";
         const overviewLink = productId
-          ? ` <a href="/itea/frontend/sites/admin/productOverview.php">Back to product overview</a>`
+          ? ` <a href="/itea/frontend/sites/admin/productOverview.html">Back to product overview</a>`
           : "";
         $("#upload-success")
           .html(`Product "${response.name}" ${action} successfully!${overviewLink}`)

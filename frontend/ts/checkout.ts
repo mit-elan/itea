@@ -275,7 +275,7 @@ $(document).ready(function () {
           return;
         }
         window.location.href =
-          "/itea/frontend/sites/order-details.php?id=" +
+          "/itea/frontend/sites/order-details.html?id=" +
           response.orderId +
           "&success=1";
       },

@@ -1,7 +1,7 @@
 $(function () {
   checkLoginStatus().then(function (response) {
     if (response.role !== "admin") {
-      window.location.href = "/itea/frontend/index.php";
+      window.location.href = "/itea/frontend/index.html";
     }
   });
 
@@ -63,7 +63,7 @@ $(function () {
         .find(".product-edit-btn")
         .attr(
           "href",
-          `/itea/frontend/sites/admin/productUpload.php?id=${product.id}`,
+          `/itea/frontend/sites/admin/productUpload.html?id=${product.id}`,
         );
       $row.find(".delete-product-btn").attr("data-id", String(product.id)).attr("data-name", product.name);
 

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iTEA Webshop</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/itea/frontend/assets/css/style.css?v=33">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <!-- Fixed drop zone that appears during drag and fades out with the success message
+       #drag-drop-zone-fixed = Container (on/off)
+       .drag-drop-zone-default/success/error = Container message -->
+  <div id="drag-drop-zone-fixed">
+    <div class="drag-drop-zone-default">
+      <i class="bi bi-bag-plus"></i>
+      <span>Drop here to add to cart</span>
+    </div>
+    <div class="drag-drop-zone-success" style="display: none;">
+      <i class="bi bi-check-circle-fill"></i>
+      <span>Product added to cart</span>
+    </div>
+    <div class="drag-drop-zone-error" style="display: none;">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      <span>Failed to add to cart. Please try again.</span>
+    </div>
+  </div>
+
+  <main class="products-page py-5">
+    <div class="container">
+
+      <section class="products-toolbar mb-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+          <h1 class="products-title mb-0">Products</h1>
+          <input type="text" class="form-control products-search" id="search-input" placeholder="Search tea...">
+        </div>
+        <div class="category-filter d-flex flex-wrap gap-3">
+          <button type="button" class="category-chip active" data-category="all" id="button-all">All Tea</button>
+          <button type="button" class="category-chip" data-category="black" id="button-black">Black Tea</button>
+          <button type="button" class="category-chip" data-category="green" id="button-green">Green Tea</button>
+          <button type="button" class="category-chip" data-category="fruit" id="button-fruit">Fruit Tea</button>
+          <button type="button" class="category-chip" data-category="herbal" id="button-herbal">Herbal Tea</button>
+        </div>
+      </section>
+
+      <div class="row g-4" id="product-list"></div>
+      <p class="no-results text-center mt-4" style="display:none;" id="no-products"></p>
+    </div>
+  </main>
+
+  <template id="product-card-template">
+    <div class="col-lg-4 col-md-6 product-item">
+      <div class="drag-handle" title="Drag into cart">
+        <i class="bi bi-grip-vertical"></i>
+      </div>
+      <a class="product-link text-decoration-none text-dark d-block">
+        <article class="tea-card h-100">
+          <div class="tea-card-image-wrapper">
+            <img src="" class="tea-card-image" alt="">
+          </div>
+          <div class="tea-card-body d-flex flex-column flex-grow-1">
+            <h2 class="tea-card-title"></h2>
+            <p class="tea-card-description"></p>
+            <p class="tea-card-rating mb-3">
+              <span class="stars"></span>
+              <span class="text-muted small review-text"></span>
+            </p>
+            <div class="tea-card-footer mt-auto d-flex justify-content-between align-items-center gap-3">
+              <p class="tea-card-price mb-0"></p>
+              <button class="btn tea-card-button button-addToCartList">Add to cart</button>
+            </div>
+          </div>
+        </article>
+      </a>
+    </div>
+  </template>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/itea/frontend/js/auth.js?v=5"></script>
+  <script src="/itea/frontend/js/layout.js"></script>
+  <script src="/itea/frontend/js/cart.js"></script>
+  <script src="/itea/frontend/js/products.js"></script>
+</body>
+
+</html>
+
