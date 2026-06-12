@@ -58,7 +58,7 @@ $(document).ready(function () {
                 : "(0 reviews)";
             const $card = $(document.importNode(template.content, true).firstElementChild);
             $card.attr("data-category", categoryName);
-            $card.find(".product-link").attr("href", `productInfo.php?id=${product.id}`);
+            $card.find(".product-link").attr("href", `productInfo.html?id=${product.id}`);
             $card.find(".tea-card-image").attr("src", `/itea/backend/productpictures/${product.filePath}`).attr("alt", product.name);
             $card.find(".tea-card-title").text(product.name);
             $card.find(".tea-card-description").text(product.description);

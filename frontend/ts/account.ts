@@ -32,7 +32,7 @@ function loadProfile(): void {
 
     success: function (response) {
       if (response.error) {
-        window.location.href = "/itea/frontend/sites/login.php";
+        window.location.href = "/itea/frontend/sites/login.html";
 
         return;
       }
@@ -81,7 +81,6 @@ function updateProfile(): void {
     contentType: "application/json",
     dataType: "json",
     data: JSON.stringify(updatedUser),
-
     success: function (response) {
       if (response.error) {
         $("#account-error").removeClass("d-none").text(response.error);

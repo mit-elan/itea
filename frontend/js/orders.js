@@ -13,7 +13,7 @@ function loadOrders() {
             $("#orders-content").addClass("d-none");
             $("#orders-list").empty();
             if (response.error) {
-                window.location.href = "/itea/frontend/sites/login.php";
+                window.location.href = "/itea/frontend/sites/login.html";
                 return;
             }
             if (response.length === 0) {
@@ -64,7 +64,7 @@ function loadOrders() {
 
               <div class="d-flex gap-2">
 
-                <a href="/itea/frontend/sites/order-details.php?id=${order.id}"
+                <a href="/itea/frontend/sites/order-details.html?id=${order.id}"
    class="btn btn-dark btn-sm">
 
   View Order

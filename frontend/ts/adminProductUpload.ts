@@ -169,7 +169,7 @@ $(document).ready(function () {
       success: function (response: { name: string; error?: string }) {
         const action = productId ? "updated" : "created";
         const overviewLink = productId
-          ? ` <a href="/itea/frontend/sites/admin/productOverview.php">Back to product overview</a>`
+          ? ` <a href="/itea/frontend/sites/admin/productOverview.html">Back to product overview</a>`
           : "";
         $("#upload-success")
           .html(
