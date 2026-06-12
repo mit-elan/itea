@@ -70,7 +70,7 @@
 
                             <div class="mb-4">
                                 <label class="form-label">
-                                    Confirm Password
+                                    Enter your current password to save changes
                                 </label>
 
                                 <input type="password" class="form-control" id="account-password" required>
