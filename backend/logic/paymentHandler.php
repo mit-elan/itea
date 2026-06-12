@@ -9,10 +9,8 @@ class PaymentHandler
         $this->paymentDataHandler = $paymentDataHandler;
     }
 
-    public function handle(
-        string $method,
-        array $data = []
-    ) {
+    public function handle( string $method, array $data = []) 
+    {
         return match ($method) {
 
             'getByUserId' => $this->getByUserId(),
