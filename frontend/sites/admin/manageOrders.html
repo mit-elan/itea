@@ -1,0 +1,90 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iTEA Webshop</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/itea/frontend/assets/css/style.css?v=33">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="products-page py-5">
+    <div class="container">
+      <div class="row mb-4 align-items-end">
+        <div class="col">
+          <h1 class="products-title mb-0">Order Management</h1>
+          <p class="hero-subtitle mb-0">
+            View all customer orders chronologically and edit order items.
+          </p>
+        </div>
+      </div>
+
+      <div id="order-message" class="alert" role="alert" style="display:none"></div>
+
+      <div class="card shadow-sm border-0 rounded-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="bg-light">
+                <tr class="cart-table-header">
+                  <th class="ps-4 border-0">Order</th>
+                  <th class="border-0">Date</th>
+                  <th class="border-0">Customer</th>
+                  <th class="border-0">Invoice Nr.</th>
+                  <th class="border-0">Subtotal</th>
+                  <th class="border-0">Voucher</th>
+                  <th class="border-0">Total</th>
+                  <th class="text-end pe-4 border-0">Action</th>
+                </tr>
+              </thead>
+
+              <tbody id="orders-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content rounded-0">
+        <div class="modal-header border-bottom">
+          <h2 class="modal-title h5" id="orderDetailsModalLabel">Order Details</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div id="modal-order-details"></div>
+        </div>
+
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-outline-dark rounded-0" data-bs-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/itea/frontend/js/auth.js?v=5"></script>
+  <script src="/itea/frontend/js/layout.js"></script>
+  <script src="/itea/frontend/js/adminManageOrders.js"></script>
+</body>
+
+</html>
+```

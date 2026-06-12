@@ -1,4 +1,12 @@
 "use strict";
+/**
+ * Handles the dedicated admin order management page.
+ * Loads all customer orders, displays order details in a modal,
+ * and allows admins to remove individual items from an order.
+ *
+ * Access control is handled through requireRole("admin"), which redirects
+ * unauthorized users before the page logic is initialized.
+ */
 $(document).ready(function () {
     requireRole("admin", function () {
         loadOrders();

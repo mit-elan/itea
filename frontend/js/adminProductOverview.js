@@ -2,7 +2,7 @@
 $(function () {
     checkLoginStatus().then(function (response) {
         if (response.role !== "admin") {
-            window.location.href = "/itea/frontend/index.php";
+            window.location.href = "/itea/frontend/index.html";
         }
     });
     const categoriesRequest = $.ajax({
@@ -44,7 +44,7 @@ $(function () {
             $row.find(".product-rating").text(rating);
             $row
                 .find(".product-edit-btn")
-                .attr("href", `/itea/frontend/sites/admin/productUpload.php?id=${product.id}`);
+                .attr("href", `/itea/frontend/sites/admin/productUpload.html?id=${product.id}`);
             $row.find(".delete-product-btn").attr("data-id", String(product.id)).attr("data-name", product.name);
             $tbody.append($row);
         });

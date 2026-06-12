@@ -79,7 +79,7 @@ $(document).ready(function () {
     if (isGuest) {
       $("#checkout-button")
         .text("Log in to proceed")
-        .attr("href", "/itea/frontend/sites/login.php");
+        .attr("href", "/itea/frontend/sites/login.html");
     }
   });
 
@@ -165,7 +165,7 @@ $(document).ready(function () {
       if (isGuest) {
         $("#checkout-button")
           .text("Log in to proceed")
-          .attr("href", "/itea/frontend/sites/login.php")
+          .attr("href", "/itea/frontend/sites/login.html")
           .removeClass("disabled")
           .css("pointer-events", "");
         $("#checkout-hint").hide();
@@ -183,12 +183,12 @@ $(document).ready(function () {
       if (isGuest) {
         $("#checkout-button")
           .text("Log in to proceed")
-          .attr("href", "/itea/frontend/sites/login.php")
+          .attr("href", "/itea/frontend/sites/login.html")
           .removeClass("disabled")
           .css("pointer-events", "");
       } else {
         $("#checkout-button")
-          .attr("href", "/itea/frontend/sites/checkout.php")
+          .attr("href", "/itea/frontend/sites/checkout.html")
           .removeClass("disabled")
           .css("pointer-events", "");
       }

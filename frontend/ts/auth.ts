@@ -74,10 +74,10 @@ $(document).ready(function () {
 
         // Rolle und User-ID werden vom Backend geliefert und dort in der Session gespeichert
         if (response.role === "admin") {
-          window.location.href = "/itea/frontend/sites/admin/dashboard.php";
+          window.location.href = "/itea/frontend/sites/admin/dashboard.html";
           return;
         } else {
-          window.location.href = "/itea/frontend/index.php";
+          window.location.href = "/itea/frontend/index.html";
         }
       },
       error: function (xhr) {
@@ -89,21 +89,25 @@ $(document).ready(function () {
     });
   });
 
-  $("#logout-button, #admin-logout-button").on("click", function (event) {
-    event.preventDefault();
+  $(document).on(
+    "click",
+    "#logout-button, #admin-logout-button",
+    function (event) {
+      event.preventDefault();
 
-    $.ajax({
-      url: "/itea/backend/serviceHandler.php?handler=users&method=logout",
-      type: "POST",
-      dataType: "json",
-      success: function () {
-        window.location.href = "/itea/frontend/index.php";
-      },
-      error: function (xhr) {
-        alert("Fehler: " + xhr.responseText);
-      },
-    });
-  });
+      $.ajax({
+        url: "/itea/backend/serviceHandler.php?handler=users&method=logout",
+        type: "POST",
+        dataType: "json",
+        success: function () {
+          window.location.href = "/itea/frontend/index.html";
+        },
+        error: function (xhr) {
+          alert("Fehler: " + xhr.responseText);
+        },
+      });
+    },
+  );
 
   //Register
   $("#register-form").on("submit", function (event) {
@@ -212,7 +216,7 @@ $(document).ready(function () {
         $("#password-error, #field-error, #database-error").text("").hide();
         ($("#register-form")[0] as HTMLFormElement).reset();
         window.location.href =
-          "/itea/frontend/sites/login.php?register=success";
+          "/itea/frontend/sites/login.html?register=success";
       },
 
       error: function (xhr) {
@@ -290,7 +294,7 @@ function checkLoginStatus(): JQuery.jqXHR {
 function requireRole(requiredRole: string, onAuthorized?: () => void): void {
   checkLoginStatus().then(function (response) {
     if (response.role !== requiredRole) {
-      window.location.href = "/itea/frontend/index.php";
+      window.location.href = "/itea/frontend/index.html";
       return;
     }
     if (onAuthorized) {
@@ -310,4 +314,3 @@ function updateNavigation(response: any): void {
     return;
   }
 }
-
