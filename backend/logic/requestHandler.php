@@ -34,7 +34,7 @@ class RequestHandler
 
     public function __construct(DBaccess $db)
     {
-        $this->userHandler    = new UserHandler(new DataHandler($db), new CartDataHandler($db), new PaymentDataHandler($db));
+        $this->userHandler    = new UserHandler(new UserDataHandler($db), new CartDataHandler($db), new PaymentDataHandler($db));
         $this->productHandler = new ProductHandler(new ProductDataHandler($db));
         $this->orderHandler   = new OrderHandler(new OrderDataHandler($db), new ProductDataHandler($db), new VoucherDataHandler($db));
         $this->cartHandler    = new CartHandler(new CartDataHandler($db), new ProductDataHandler($db));

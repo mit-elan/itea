@@ -11,7 +11,7 @@ require_once __DIR__ . '/../models/order.class.php';
 //Test
 class OrderHandler
 {
-    private OrderDataHandler   $orderDataHandler;
+    private OrderDataHandler $orderDataHandler;
     private ProductDataHandler $productDataHandler;
     private ?VoucherDataHandler $voucherDataHandler;
 
@@ -20,7 +20,7 @@ class OrderHandler
         ProductDataHandler $productDataHandler,
         ?VoucherDataHandler $voucherDataHandler = null
     ) {
-        $this->orderDataHandler   = $orderDataHandler;
+        $this->orderDataHandler = $orderDataHandler;
         $this->productDataHandler = $productDataHandler;
         $this->voucherDataHandler = $voucherDataHandler;
     }
@@ -33,7 +33,7 @@ class OrderHandler
         return match ($method) {
             'placeOrder' => $this->placeOrder($data),
             'getOrders' => $this->getOrders(),
-            'getOrderById' => $this->getOrderById(),
+            'getOrderById' => $this->getOrderById($data),
             default => null,
         };
     }
@@ -52,7 +52,7 @@ class OrderHandler
         );
     }
 
-    private function getOrderById(): array
+    private function getOrderById(array $data): array
     {
         if (!isset($_SESSION['user_id'])) {
 
@@ -61,7 +61,13 @@ class OrderHandler
             ];
         }
 
-        $orderId = intval($_GET['id'] ?? 0);
+        $orderId = intval($data['id'] ?? $data['orderId'] ?? 0);
+
+        if (!$orderId) {
+            return [
+                'error' => 'Order ID is missing'
+            ];
+        }
 
         $order = $this->orderDataHandler->getOrderById(
             $orderId,
@@ -97,7 +103,7 @@ class OrderHandler
             ];
         }
 
-        $paymentMethodId = isset($data['paymentMethodId']) ? (int)$data['paymentMethodId'] : 0;
+        $paymentMethodId = isset($data['paymentMethodId']) ? (int) $data['paymentMethodId'] : 0;
         if (!$paymentMethodId) {
             return ['success' => false, 'error' => 'No payment method selected'];
         }
@@ -138,9 +144,9 @@ class OrderHandler
         }
 
         // Gutschein anwenden falls übergeben – erst hier wird er tatsächlich eingelöst
-        $initialPrice     = $total;
-        $voucher          = null;
-        $voucherDiscount  = null;
+        $initialPrice = $total;
+        $voucher = null;
+        $voucherDiscount = null;
         $voucherRemaining = null;
 
         $voucherCode = trim($data['appliedVoucherCode'] ?? '');
@@ -167,19 +173,19 @@ class OrderHandler
                 $this->voucherDataHandler->assignVoucherToUser($voucher, $userId);
             }
 
-            $originalTotal    = $total;
+            $originalTotal = $total;
             $voucherRemaining = round(max(0.0, $voucher->remaining_value - $total), 2);
-            $total            = $this->voucherDataHandler->redeemVoucher($voucher, $total);
-            $voucherDiscount  = round($originalTotal - $total, 2);
+            $total = $this->voucherDataHandler->redeemVoucher($voucher, $total);
+            $voucherDiscount = round($originalTotal - $total, 2);
         }
 
         $order = new Order([
-            'user_id'                 => (int)$userId,
-            'payment_method_id'       => $paymentMethodId,
-            'initial_price'           => $initialPrice,
-            'total_price'             => $total,
-            'voucher_id'              => $voucher?->id,
-            'voucher_discount'        => $voucherDiscount,
+            'user_id' => (int) $userId,
+            'payment_method_id' => $paymentMethodId,
+            'initial_price' => $initialPrice,
+            'total_price' => $total,
+            'voucher_id' => $voucher?->id,
+            'voucher_discount' => $voucherDiscount,
             'voucher_remaining_value' => $voucherRemaining,
         ]);
         $order->items = $items;
