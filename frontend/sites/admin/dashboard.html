@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iTEA Webshop</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/itea/frontend/assets/css/style.css?v=33">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <!-- Main Content -->
+  <main class="products-page py-5">
+    <div class="container">
+      <div class="row mb-5">
+        <div class="col-12 mt-4">
+          <h1 class="products-title">Admin Dashboard</h1>
+          <p class="hero-subtitle">Select a category to manage your shop</p>
+        </div>
+      </div>
+
+      <div class="row g-4 justify-content-center">
+
+        <!-- Upload Products -->
+        <div class="col">
+          <a href="/itea/frontend/sites/admin/productUpload.html" class="admin-card-link">
+            <div class="tea-card h-100 text-center">
+              <div class="tea-card-image-wrapper">
+                <i class="bi bi-plus-circle admin-dashboard-icon"></i>
+              </div>
+              <div class="tea-card-body">
+                <h3 class="tea-card-title">Upload Products</h3>
+                <p class="tea-card-description">Add new tea varieties to the shop.</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Edit Products -->
+        <div class="col">
+          <a href="/itea/frontend/sites/admin/manageProducts.html" class="admin-card-link">
+            <div class="tea-card h-100 text-center">
+              <div class="tea-card-image-wrapper">
+                <i class="bi bi-pencil-square admin-dashboard-icon"></i>
+              </div>
+              <div class="tea-card-body">
+                <h3 class="tea-card-title">Manage Products</h3>
+                <p class="tea-card-description">Update or delete existing products.</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Manage Users -->
+        <div class="col">
+          <a href="/itea/frontend/sites/admin/manageUsers.html" class="admin-card-link">
+            <div class="tea-card h-100 text-center">
+              <div class="tea-card-image-wrapper">
+                <i class="bi bi-people admin-dashboard-icon"></i>
+              </div>
+              <div class="tea-card-body">
+                <h3 class="tea-card-title">Manage Users</h3>
+                <p class="tea-card-description">View customer accounts, manage roles and user permissions.</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Manage Orders -->
+        <div class="col">
+          <a href="/itea/frontend/sites/admin/manageOrders.html" class="admin-card-link">
+            <div class="tea-card h-100 text-center">
+              <div class="tea-card-image-wrapper">
+                <i class="bi bi-cart-check admin-dashboard-icon"></i>
+              </div>
+              <div class="tea-card-body">
+                <h3 class="tea-card-title">Manage Orders</h3>
+                <p class="tea-card-description">Track sales, update orders and view history.</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Manage Vouchers -->
+        <div class="col">
+          <a href="/itea/frontend/sites/admin/voucherManagement.html" class="admin-card-link">
+            <div class="tea-card h-100 text-center">
+              <div class="tea-card-image-wrapper">
+                <i class="bi bi-wallet-fill admin-dashboard-icon"></i>
+              </div>
+              <div class="tea-card-body">
+                <h3 class="tea-card-title">Manage Vouchers</h3>
+                <p class="tea-card-description">Generate new discout codes and review expired or redeemed vouchers. </p>
+              </div>
+            </div>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/itea/frontend/js/auth.js?v=5"></script>
+  <script src="/itea/frontend/js/layout.js"></script>
+  <script src="/itea/frontend/js/adminDashboard.js"></script>
+</body>
+
+</html>

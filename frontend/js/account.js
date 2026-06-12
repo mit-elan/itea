@@ -17,7 +17,7 @@ function loadProfile() {
         dataType: "json",
         success: function (response) {
             if (response.error) {
-                window.location.href = "/itea/frontend/sites/login.php";
+                window.location.href = "/itea/frontend/sites/login.html";
                 return;
             }
             $("#account-content").removeClass("d-none");
