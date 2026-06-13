@@ -1,5 +1,4 @@
 $(document).ready(function () {
-  $("#header-placeholder").load("/itea/frontend/partials/header.html");
   $("#footer-placeholder").load("/itea/frontend/partials/footer.html");
 
   checkLoginStatus().then(function (response) {
