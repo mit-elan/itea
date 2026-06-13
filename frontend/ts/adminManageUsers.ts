@@ -107,7 +107,7 @@ $(document).ready(function () {
       success: function (response: { message?: string }) {
         showMessage(
           response.message || "User status updated successfully.",
-          "success"
+          "success",
         );
 
         loadUsers();
@@ -137,19 +137,21 @@ $(document).ready(function () {
         userId,
       type: "GET",
       dataType: "json",
-      success: function (orders: OrderSummary[]) {
-        if ((orders as any).error) {
-          showMessage((orders as any).error, "danger");
-          showModalError("#modal-user-orders", (orders as any).error);
+      success: function (
+        response: OrderSummary[] | AdminUserOrdersErrorResponse,
+      ) {
+        if (isAdminUserOrdersErrorResponse(response)) {
+          showMessage(response.error, "danger");
+          showModalError("#modal-user-orders", response.error);
           return;
         }
 
-        if (orders.length === 0) {
+        if (response.length === 0) {
           showUserOrdersEmpty(userName);
           return;
         }
 
-        renderUserOrders(orders);
+        renderUserOrders(response);
       },
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
@@ -214,7 +216,10 @@ $(document).ready(function () {
       },
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
-        showModalError("#modal-order-details", "Order details could not be loaded.");
+        showModalError(
+          "#modal-order-details",
+          "Order details could not be loaded.",
+        );
       },
     });
   }
@@ -232,12 +237,16 @@ $(document).ready(function () {
       .text(`${order.address}, ${order.zip} ${order.city}`);
     details.find(".user-order-detail-invoice").text(order.invoice_number);
     details.find(".user-order-detail-date").text(formatDate(order.date));
-    details.find(".user-order-detail-total").text(formatCurrency(order.total_price));
+    details
+      .find(".user-order-detail-total")
+      .text(formatCurrency(order.total_price));
 
     const itemContainer = details.find(".user-order-detail-items-body");
 
     if (items.length === 0) {
-      itemContainer.append(cloneTemplate("user-order-detail-empty-row-template"));
+      itemContainer.append(
+        cloneTemplate("user-order-detail-empty-row-template"),
+      );
     } else {
       items.forEach(function (item: OrderItem) {
         itemContainer.append(createOrderItemRow(order.id, item));
@@ -249,14 +258,16 @@ $(document).ready(function () {
 
   function createOrderItemRow(
     orderId: number,
-    item: OrderItem
+    item: OrderItem,
   ): JQuery<HTMLElement> {
     const row = cloneTemplate("user-order-detail-item-row-template");
     const itemTotal = Number(item.unit_price) * Number(item.quantity);
 
     row.find(".user-order-item-name").text(item.name);
     row.find(".user-order-item-quantity").text(item.quantity);
-    row.find(".user-order-item-unit-price").text(formatCurrency(item.unit_price));
+    row
+      .find(".user-order-item-unit-price")
+      .text(formatCurrency(item.unit_price));
     row.find(".user-order-item-total").text(formatCurrency(itemTotal));
 
     row
@@ -284,7 +295,7 @@ $(document).ready(function () {
       success: function (response: { message?: string }) {
         showMessage(
           response.message || "Order item removed successfully.",
-          "success"
+          "success",
         );
 
         loadOrderDetails(orderId);
@@ -312,7 +323,9 @@ $(document).ready(function () {
   }
 
   function cloneTemplate(templateId: string): JQuery<HTMLElement> {
-    const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+    const template = document.getElementById(
+      templateId,
+    ) as HTMLTemplateElement | null;
 
     if (!template || !template.content.firstElementChild) {
       return $();
@@ -349,6 +362,17 @@ $(document).ready(function () {
       .show();
   }
 
+  function isAdminUserOrdersErrorResponse(
+    response: unknown,
+  ): response is AdminUserOrdersErrorResponse {
+    return (
+      typeof response === "object" &&
+      response !== null &&
+      "error" in response &&
+      typeof (response as AdminUserOrdersErrorResponse).error === "string"
+    );
+  }
+  
   function showBackendError(xhr: JQuery.jqXHR): void {
     let errorMessage = "An unexpected error occurred.";
 

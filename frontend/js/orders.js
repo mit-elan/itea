@@ -12,7 +12,7 @@ function loadOrders() {
             $("#orders-empty").addClass("d-none");
             $("#orders-content").addClass("d-none");
             $("#orders-list").empty();
-            if (response.error) {
+            if (isOrdersErrorResponse(response)) {
                 window.location.href = "/itea/frontend/sites/login.html";
                 return;
             }
@@ -43,6 +43,12 @@ function createOrderCard(order) {
         .find(".view-order-link")
         .attr("href", `/itea/frontend/sites/orderDetails.html?id=${order.id}`);
     return card;
+}
+function isOrdersErrorResponse(response) {
+    return (typeof response === "object" &&
+        response !== null &&
+        "error" in response &&
+        typeof response.error === "string");
 }
 function cloneOrdersTemplate(templateId) {
     const template = document.getElementById(templateId);

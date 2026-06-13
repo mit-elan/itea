@@ -108,17 +108,17 @@ $(document).ready(function () {
                 userId,
             type: "GET",
             dataType: "json",
-            success: function (orders) {
-                if (orders.error) {
-                    showMessage(orders.error, "danger");
-                    showModalError("#modal-user-orders", orders.error);
+            success: function (response) {
+                if (isAdminUserOrdersErrorResponse(response)) {
+                    showMessage(response.error, "danger");
+                    showModalError("#modal-user-orders", response.error);
                     return;
                 }
-                if (orders.length === 0) {
+                if (response.length === 0) {
                     showUserOrdersEmpty(userName);
                     return;
                 }
-                renderUserOrders(orders);
+                renderUserOrders(response);
             },
             error: function (xhr) {
                 showBackendError(xhr);
@@ -182,7 +182,9 @@ $(document).ready(function () {
             .text(`${order.address}, ${order.zip} ${order.city}`);
         details.find(".user-order-detail-invoice").text(order.invoice_number);
         details.find(".user-order-detail-date").text(formatDate(order.date));
-        details.find(".user-order-detail-total").text(formatCurrency(order.total_price));
+        details
+            .find(".user-order-detail-total")
+            .text(formatCurrency(order.total_price));
         const itemContainer = details.find(".user-order-detail-items-body");
         if (items.length === 0) {
             itemContainer.append(cloneTemplate("user-order-detail-empty-row-template"));
@@ -199,7 +201,9 @@ $(document).ready(function () {
         const itemTotal = Number(item.unit_price) * Number(item.quantity);
         row.find(".user-order-item-name").text(item.name);
         row.find(".user-order-item-quantity").text(item.quantity);
-        row.find(".user-order-item-unit-price").text(formatCurrency(item.unit_price));
+        row
+            .find(".user-order-item-unit-price")
+            .text(formatCurrency(item.unit_price));
         row.find(".user-order-item-total").text(formatCurrency(itemTotal));
         row
             .find(".remove-order-item-btn")
@@ -268,6 +272,12 @@ $(document).ready(function () {
             .addClass(`alert-${type}`)
             .text(message)
             .show();
+    }
+    function isAdminUserOrdersErrorResponse(response) {
+        return (typeof response === "object" &&
+            response !== null &&
+            "error" in response &&
+            typeof response.error === "string");
     }
     function showBackendError(xhr) {
         let errorMessage = "An unexpected error occurred.";

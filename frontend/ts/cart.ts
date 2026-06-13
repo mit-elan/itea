@@ -11,6 +11,14 @@ interface Cart {
   quantity: number;
 }
 
+interface Window {
+  addToCartViaDrag: (
+    productId: number,
+    onSuccess?: () => void,
+    onError?: () => void,
+  ) => void;
+}
+
 function addToCart(productId: number, quantity: number) {
   $.ajax({
     url: "/itea/backend/serviceHandler.php?handler=cart&method=addToCart",
@@ -36,7 +44,7 @@ function addToCartViaDrag(
   productId: number,
   onSuccess?: () => void,
   onError?: () => void,
-) {
+): void {
   $.ajax({
     url: "/itea/backend/serviceHandler.php?handler=cart&method=addToCart",
     type: "POST",
@@ -65,7 +73,7 @@ function addToCartViaDrag(
   });
 }
 
-(window as any).addToCartViaDrag = addToCartViaDrag;
+window.addToCartViaDrag = addToCartViaDrag;
 
 // Tracks guest status to conditionally show login prompt vs. checkout
 let isGuest = false;
