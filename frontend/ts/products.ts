@@ -51,7 +51,9 @@ $(document).ready(function () {
   function renderProducts(products: Product[]): void {
     const $container = $("#product-list");
     $container.empty();
-    const template = document.getElementById("product-card-template") as HTMLTemplateElement;
+    const template = document.getElementById(
+      "product-card-template",
+    ) as HTMLTemplateElement;
 
     products.forEach((product) => {
       if (!product.id || !product.name || !product.price) return;
@@ -63,15 +65,25 @@ $(document).ready(function () {
           ? product.rating + " Star-Rating"
           : "(0 reviews)";
 
-      const $card = $(document.importNode(template.content, true).firstElementChild as HTMLElement);
+      const $card = $(
+        document.importNode(template.content, true)
+          .firstElementChild as HTMLElement,
+      );
       $card.attr("data-category", categoryName);
-      $card.find(".product-link").attr("href", `productInfo.html?id=${product.id}`);
-      $card.find(".tea-card-image").attr("src", `/itea/backend/productpictures/${product.filePath}`).attr("alt", product.name);
+      $card
+        .find(".product-link")
+        .attr("href", `productInfo.html?id=${product.id}`);
+      $card
+        .find(".tea-card-image")
+        .attr("src", `/itea/backend/productpictures/${product.filePath}`)
+        .attr("alt", product.name);
       $card.find(".tea-card-title").text(product.name);
       $card.find(".tea-card-description").text(product.description);
       $card.find(".stars").text(stars);
       $card.find(".review-text").text(reviewText);
-      $card.find(".tea-card-price").text(`€${Number(product.price).toFixed(2)}`);
+      $card
+        .find(".tea-card-price")
+        .text(`€${Number(product.price).toFixed(2)}`);
       $card.find(".button-addToCartList").attr("data-id", String(product.id));
       $container.append($card);
     });
@@ -80,11 +92,13 @@ $(document).ready(function () {
   function initDragDrop(): void {
     // Drag a card by its handle. A small custom helper follows the cursor.
     // When drag starts, show the fixed dropzone below the header.
-    ($(".product-item") as any).draggable({
+    $(".product-item").draggable({
       handle: ".drag-handle",
       helper: function (this: HTMLElement) {
         const name = $(this).find(".tea-card-title").text();
-        return $(`<div class="drag-helper"><i class="bi bi-bag-plus"></i> ${name}</div>`);
+        return $(
+          `<div class="drag-helper"><i class="bi bi-bag-plus"></i> ${name}</div>`,
+        );
       },
       cursorAt: { top: 18, left: 18 },
       revert: "invalid",
@@ -106,18 +120,23 @@ $(document).ready(function () {
       },
     });
 
-    ($("#drag-drop-zone-fixed") as any).droppable({
+    $("#drag-drop-zone-fixed").droppable({
       accept: ".product-item",
       tolerance: "pointer",
       hoverClass: "drop-zone-hover",
-      drop: function (_event: Event, ui: any) {
+      drop: function (_event: JQuery.Event, ui: IteaDroppableUi) {
         dropOccurred = true; // Set flag so stop() won't hide the zone
         const productId = ui.draggable.find(".button-addToCartList").data("id");
-        if (productId) (window as any).addToCartViaDrag(productId, showDropConfirmation, showDropError);
+        if (productId) {
+          window.addToCartViaDrag(
+            Number(productId),
+            showDropConfirmation,
+            showDropError,
+          );
+        }
       },
     });
   }
-
 
   // Show a message (success or error) in the drop zone instead of the default, then hide everything.
   // $zone = Container (on/off), $message = Content inside Container

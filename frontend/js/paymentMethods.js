@@ -16,10 +16,11 @@ function loadPaymentMethods() {
         type: "GET",
         dataType: "json",
         success: function (response) {
+            var _a;
             $("#payment-error").addClass("d-none").text("");
             $("#payment-list").empty();
-            if (response.error) {
-                showPaymentError(response.error);
+            if (isPaymentActionErrorResponse(response)) {
+                showPaymentError((_a = response.error) !== null && _a !== void 0 ? _a : "Failed to load payment methods.");
                 return;
             }
             if (!response.paymentMethods || response.paymentMethods.length === 0) {
@@ -37,8 +38,9 @@ function loadPaymentMethods() {
 }
 function createPaymentMethodCard(payment) {
     const card = clonePaymentTemplate("payment-method-card-template");
-    const type = payment.is_bank_account == 1 ? "Bank Account" : "Credit Card";
-    const iconClass = payment.is_bank_account == 1 ? "bi-bank" : "bi-credit-card";
+    const isBankAccount = String(payment.is_bank_account) === "1";
+    const type = isBankAccount ? "Bank Account" : "Credit Card";
+    const iconClass = isBankAccount ? "bi-bank" : "bi-credit-card";
     const maskedNumber = payment.card_number.length > 4
         ? "•••• " + payment.card_number.slice(-4)
         : payment.card_number;
@@ -85,8 +87,9 @@ function createPaymentMethod() {
         data: JSON.stringify(paymentRequest),
         dataType: "json",
         success: function (response) {
+            var _a;
             if (!response.success) {
-                showPaymentError(response.error);
+                showPaymentError((_a = response.error) !== null && _a !== void 0 ? _a : "Failed to create payment method.");
                 return;
             }
             $("#payment-form")[0].reset();
@@ -108,8 +111,9 @@ function deletePaymentMethod(paymentId) {
         dataType: "json",
         data: JSON.stringify({ paymentId: paymentId }),
         success: function (response) {
+            var _a;
             if (!response.success) {
-                showPaymentError(response.error);
+                showPaymentError((_a = response.error) !== null && _a !== void 0 ? _a : "Failed to delete payment method.");
                 return;
             }
             loadPaymentMethods();
@@ -118,6 +122,11 @@ function deletePaymentMethod(paymentId) {
             showPaymentError("Failed to delete payment method.");
         },
     });
+}
+function isPaymentActionErrorResponse(response) {
+    return ("success" in response &&
+        response.success === false &&
+        typeof response.error === "string");
 }
 function clonePaymentTemplate(templateId) {
     const template = document.getElementById(templateId);
