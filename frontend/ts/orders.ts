@@ -8,13 +8,13 @@ function loadOrders(): void {
     type: "GET",
     dataType: "json",
 
-    success: function (response) {
+    success: function (response: OrderSummary[] | OrdersErrorResponse) {
       $("#orders-error").addClass("d-none").text("");
       $("#orders-empty").addClass("d-none");
       $("#orders-content").addClass("d-none");
       $("#orders-list").empty();
 
-      if (response.error) {
+      if (isOrdersErrorResponse(response)) {
         window.location.href = "/itea/frontend/sites/login.html";
         return;
       }
@@ -26,7 +26,7 @@ function loadOrders(): void {
 
       $("#orders-content").removeClass("d-none");
 
-      response.forEach(function (order: any) {
+      response.forEach(function (order: OrderSummary) {
         $("#orders-list").append(createOrderCard(order));
       });
     },
@@ -41,7 +41,7 @@ function loadOrders(): void {
   });
 }
 
-function createOrderCard(order: any): JQuery<HTMLElement> {
+function createOrderCard(order: OrderSummary): JQuery<HTMLElement> {
   const card = cloneOrdersTemplate("order-card-template");
 
   card.find(".order-id").text(order.id);
@@ -54,6 +54,17 @@ function createOrderCard(order: any): JQuery<HTMLElement> {
     .attr("href", `/itea/frontend/sites/orderDetails.html?id=${order.id}`);
 
   return card;
+}
+
+function isOrdersErrorResponse(
+  response: unknown,
+): response is OrdersErrorResponse {
+  return (
+    typeof response === "object" &&
+    response !== null &&
+    "error" in response &&
+    typeof (response as OrdersErrorResponse).error === "string"
+  );
 }
 
 function cloneOrdersTemplate(templateId: string): JQuery<HTMLElement> {

@@ -56,15 +56,23 @@ $(document).ready(function () {
             const reviewText = typeof product.rating === "number" && product.rating > 0
                 ? product.rating + " Star-Rating"
                 : "(0 reviews)";
-            const $card = $(document.importNode(template.content, true).firstElementChild);
+            const $card = $(document.importNode(template.content, true)
+                .firstElementChild);
             $card.attr("data-category", categoryName);
-            $card.find(".product-link").attr("href", `productInfo.html?id=${product.id}`);
-            $card.find(".tea-card-image").attr("src", `/itea/backend/productpictures/${product.filePath}`).attr("alt", product.name);
+            $card
+                .find(".product-link")
+                .attr("href", `productInfo.html?id=${product.id}`);
+            $card
+                .find(".tea-card-image")
+                .attr("src", `/itea/backend/productpictures/${product.filePath}`)
+                .attr("alt", product.name);
             $card.find(".tea-card-title").text(product.name);
             $card.find(".tea-card-description").text(product.description);
             $card.find(".stars").text(stars);
             $card.find(".review-text").text(reviewText);
-            $card.find(".tea-card-price").text(`€${Number(product.price).toFixed(2)}`);
+            $card
+                .find(".tea-card-price")
+                .text(`€${Number(product.price).toFixed(2)}`);
             $card.find(".button-addToCartList").attr("data-id", String(product.id));
             $container.append($card);
         });
@@ -104,8 +112,9 @@ $(document).ready(function () {
             drop: function (_event, ui) {
                 dropOccurred = true; // Set flag so stop() won't hide the zone
                 const productId = ui.draggable.find(".button-addToCartList").data("id");
-                if (productId)
-                    window.addToCartViaDrag(productId, showDropConfirmation, showDropError);
+                if (productId) {
+                    window.addToCartViaDrag(Number(productId), showDropConfirmation, showDropError);
+                }
             },
         });
     }

@@ -26,12 +26,12 @@ $(document).ready(function () {
             url: "/itea/backend/serviceHandler.php?handler=admin&method=getAllOrders",
             type: "GET",
             dataType: "json",
-            success: function (orders) {
-                if (orders.error) {
-                    showMessage(orders.error, "danger");
+            success: function (response) {
+                if (isAdminOrderErrorResponse(response)) {
+                    showMessage(response.error, "danger");
                     return;
                 }
-                orders.forEach(function (order) {
+                response.forEach(function (order) {
                     $("#orders-table-body").append(createOrderRow(order));
                 });
             },
@@ -57,7 +57,9 @@ $(document).ready(function () {
     }
     function loadOrderDetails(orderId, showModal = false) {
         $("#orderDetailsModalLabel").text(`Order #${orderId}`);
-        $("#modal-order-details").empty().append(cloneTemplate("order-details-loading-template"));
+        $("#modal-order-details")
+            .empty()
+            .append(cloneTemplate("order-details-loading-template"));
         if (showModal) {
             const modalElement = document.getElementById("orderDetailsModal");
             if (modalElement) {
@@ -173,6 +175,12 @@ $(document).ready(function () {
             .addClass(`alert-${type}`)
             .text(message)
             .show();
+    }
+    function isAdminOrderErrorResponse(response) {
+        return (typeof response === "object" &&
+            response !== null &&
+            "error" in response &&
+            typeof response.error === "string");
     }
     function showBackendError(xhr) {
         let errorMessage = "An unexpected error occurred.";
