@@ -101,12 +101,45 @@
     </div>
   </main>
 
+  <!-- Template shown when no payment methods exist -->
+  <template id="payment-empty-template">
+    <div class="col-12">
+      <div class="alert alert-info mb-0">
+        No payment methods saved yet.
+      </div>
+    </div>
+  </template>
+
+  <!-- Template for dynamically rendered payment method cards -->
+  <template id="payment-method-card-template">
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="mb-1 payment-label"></h5>
+              <p class="text-muted mb-0 payment-type"></p>
+            </div>
+
+            <i class="bi fs-4 payment-icon"></i>
+          </div>
+
+          <div class="fw-semibold payment-number"></div>
+
+          <button class="btn btn-outline-danger btn-sm mt-3 delete-payment">
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
+
   <div id="footer-placeholder"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/itea/frontend/js/auth.js?v=5"></script>
   <script src="/itea/frontend/js/layout.js"></script>
-  <script src="/itea/frontend/js/payment-methods.js"></script>
+  <script src="/itea/frontend/js/paymentMethods.js"></script>
 </body>
 
 </html>

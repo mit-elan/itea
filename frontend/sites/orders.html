@@ -56,6 +56,51 @@
     </div>
   </main>
 
+  <!-- Template for dynamically rendered customer order cards -->
+  <template id="order-card-template">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 class="mb-1">
+              Order #<span class="order-id"></span>
+            </h5>
+
+            <p class="text-muted mb-0">
+              Placed on <span class="order-date"></span>
+            </p>
+          </div>
+
+          <span class="badge text-bg-success">
+            Ordered
+          </span>
+        </div>
+
+        <div class="mb-3">
+          <strong>Total:</strong>
+          <span class="order-total"></span>
+        </div>
+
+        <div class="mb-4">
+          <strong>Invoice:</strong>
+          <span class="order-invoice"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="#" class="btn btn-dark btn-sm view-order-link">
+            View Order
+          </a>
+
+          <button class="btn btn-outline-secondary btn-sm" disabled>
+            Track Parcel
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </template>
+
   <div id="footer-placeholder"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
