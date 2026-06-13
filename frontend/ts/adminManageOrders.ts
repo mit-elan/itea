@@ -7,7 +7,6 @@
  * unauthorized users before the page logic is initialized.
  */
 
-
 $(document).ready(function () {
   requireRole("admin", function () {
     loadOrders();
@@ -40,30 +39,7 @@ $(document).ready(function () {
         }
 
         orders.forEach(function (order: AdminOrderOverview) {
-          const row = `
-            <tr>
-              <td class="ps-4">#${order.id}</td>
-              <td>${formatDate(order.date)}</td>
-              <td>
-                ${order.first_name} ${order.last_name}
-                <div class="text-muted small">${order.email}</div>
-              </td>
-              <td>${order.invoice_number}</td>
-              <td>€ ${Number(order.subtotal).toFixed(2)}</td>
-              <td>€ ${Number(order.voucher).toFixed(2)}</td>
-              <td>€ ${Number(order.total_price).toFixed(2)}</td>
-              <td class="text-end pe-4">
-                <button
-                  class="btn btn-outline-dark btn-sm rounded-0 view-order-details-btn"
-                  data-order-id="${order.id}"
-                >
-                  Details
-                </button>
-              </td>
-            </tr>
-          `;
-
-          $("#orders-table-body").append(row);
+          $("#orders-table-body").append(createOrderRow(order));
         });
       },
       error: function (xhr: JQuery.jqXHR) {
@@ -72,9 +48,28 @@ $(document).ready(function () {
     });
   }
 
+  function createOrderRow(order: AdminOrderOverview): JQuery<HTMLElement> {
+    const row = cloneTemplate("order-row-template");
+
+    row.find(".order-id").text(`#${order.id}`);
+    row.find(".order-date").text(formatDate(order.date));
+    row
+      .find(".order-customer-name")
+      .text(`${order.first_name} ${order.last_name}`);
+    row.find(".order-customer-email").text(order.email);
+    row.find(".order-invoice").text(order.invoice_number);
+    row.find(".order-subtotal").text(formatCurrency(order.subtotal));
+    row.find(".order-voucher").text(formatCurrency(order.voucher));
+    row.find(".order-total").text(formatCurrency(order.total_price));
+
+    row.find(".view-order-details-btn").data("order-id", order.id);
+
+    return row;
+  }
+
   function loadOrderDetails(orderId: number, showModal: boolean = false): void {
     $("#orderDetailsModalLabel").text(`Order #${orderId}`);
-    $("#modal-order-details").html("<p class='mb-0'>Loading order details...</p>");
+    $("#modal-order-details").empty().append(cloneTemplate("order-details-loading-template"));
 
     if (showModal) {
       const modalElement = document.getElementById("orderDetailsModal");
@@ -98,113 +93,63 @@ $(document).ready(function () {
       }) {
         if (response.error) {
           showMessage(response.error, "danger");
-          $("#modal-order-details").html(
-            `<p class="text-danger">${response.error}</p>`
-          );
+          showOrderDetailsError(response.error);
           return;
         }
 
-        const order = response.order;
-        const items = response.items;
-
-        let itemsHtml = "";
-
-        if (items.length === 0) {
-          itemsHtml = `
-            <tr>
-              <td colspan="5" class="text-muted">
-                No visible products left in this order.
-              </td>
-            </tr>
-          `;
-        }
-
-        items.forEach(function (item: OrderItem) {
-          const itemTotal = Number(item.unit_price) * Number(item.quantity);
-
-          itemsHtml += `
-            <tr>
-              <td>${item.name}</td>
-              <td>${item.quantity}</td>
-              <td>€ ${Number(item.unit_price).toFixed(2)}</td>
-              <td>€ ${itemTotal.toFixed(2)}</td>
-              <td class="text-end">
-                <button
-                  class="btn btn-outline-danger btn-sm rounded-0 remove-order-item-btn"
-                  data-order-id="${order.id}"
-                  data-order-item-id="${item.id}"
-                >
-                  Remove product
-                </button>
-              </td>
-            </tr>
-          `;
-        });
-
-        const html = `
-          <div class="mb-4">
-            <h3 class="h5 mb-3">Order #${order.id}</h3>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <p class="mb-1">
-                  <strong>Customer:</strong>
-                  ${order.first_name} ${order.last_name} (${order.username})
-                </p>
-                <p class="mb-1">
-                  <strong>Email:</strong>
-                  ${order.email}
-                </p>
-                <p class="mb-0">
-                  <strong>Address:</strong>
-                  ${order.address}, ${order.zip} ${order.city}
-                </p>
-              </div>
-
-              <div class="col-md-6">
-                <p class="mb-1">
-                  <strong>Invoice:</strong>
-                  ${order.invoice_number}
-                </p>
-                <p class="mb-1">
-                  <strong>Date:</strong>
-                  ${formatDate(order.date)}
-                </p>
-                <p class="mb-0">
-                  <strong>Total:</strong>
-                  € ${Number(order.total_price).toFixed(2)}
-                </p>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                  <tr>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
-                    <th class="text-end">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsHtml}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-
-        $("#modal-order-details").html(html);
+        renderOrderDetails(response.order, response.items);
       },
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
-        $("#modal-order-details").html(
-          `<p class="text-danger">Order details could not be loaded.</p>`
-        );
+        showOrderDetailsError("Order details could not be loaded.");
       },
     });
+  }
+
+  function renderOrderDetails(order: OrderDetails, items: OrderItem[]): void {
+    const details = cloneTemplate("order-details-template");
+
+    details.find(".order-detail-title").text(`Order #${order.id}`);
+    details
+      .find(".order-detail-customer")
+      .text(`${order.first_name} ${order.last_name} (${order.username})`);
+    details.find(".order-detail-email").text(order.email);
+    details
+      .find(".order-detail-address")
+      .text(`${order.address}, ${order.zip} ${order.city}`);
+    details.find(".order-detail-invoice").text(order.invoice_number);
+    details.find(".order-detail-date").text(formatDate(order.date));
+    details.find(".order-detail-total").text(formatCurrency(order.total_price));
+
+    const itemContainer = details.find(".order-detail-items-body");
+
+    if (items.length === 0) {
+      itemContainer.append(cloneTemplate("order-detail-empty-row-template"));
+    } else {
+      items.forEach(function (item: OrderItem) {
+        itemContainer.append(createOrderItemRow(order.id, item));
+      });
+    }
+
+    $("#modal-order-details").empty().append(details);
+  }
+
+  function createOrderItemRow(
+    orderId: number,
+    item: OrderItem
+  ): JQuery<HTMLElement> {
+    const row = cloneTemplate("order-detail-item-row-template");
+    const itemTotal = Number(item.unit_price) * Number(item.quantity);
+
+    row.find(".order-item-name").text(item.name);
+    row.find(".order-item-quantity").text(item.quantity);
+    row.find(".order-item-unit-price").text(formatCurrency(item.unit_price));
+    row.find(".order-item-total").text(formatCurrency(itemTotal));
+
+    row.find(".remove-order-item-btn").data("order-id", orderId);
+    row.find(".remove-order-item-btn").data("order-item-id", item.id);
+
+    return row;
   }
 
   function removeOrderItem(orderId: number, orderItemId: number): void {
@@ -236,17 +181,35 @@ $(document).ready(function () {
     });
   }
 
+  function showOrderDetailsError(message: string): void {
+    const errorTemplate = cloneTemplate("order-details-error-template");
+
+    errorTemplate.find(".order-details-error-message").text(message);
+
+    $("#modal-order-details").empty().append(errorTemplate);
+  }
+
+  function cloneTemplate(templateId: string): JQuery<HTMLElement> {
+    const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+
+    if (!template || !template.content.firstElementChild) {
+      return $();
+    }
+
+    return $(template.content.firstElementChild.cloneNode(true) as HTMLElement);
+  }
+
+  function formatCurrency(value: number | string | null): string {
+    return `€ ${Number(value ?? 0).toFixed(2)}`;
+  }
+
   function formatDate(dateString: string): string {
     const date = new Date(dateString.replace(" ", "T"));
 
-    if (isNaN(date.getTime())) {
-      return dateString;
-    }
-
-    return date.toLocaleString("de-AT", {
-      year: "numeric",
-      month: "2-digit",
+    return date.toLocaleString("en-GB", {
       day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
