@@ -21,75 +21,36 @@ function loadOrders() {
                 return;
             }
             $("#orders-content").removeClass("d-none");
-            response.forEach((order) => {
-                $("#orders-list").append(`
-
-          <div class="card shadow-sm mb-4">
-
-            <div class="card-body">
-
-              <div class="d-flex justify-content-between align-items-start mb-3">
-
-                <div>
-
-                  <h5 class="mb-1">
-                    Order #${order.id}
-                  </h5>
-
-                  <p class="text-muted mb-0">
-                    Placed on ${order.date}
-                  </p>
-
-                </div>
-
-                <span class="badge text-bg-success">
-                  Ordered
-                </span>
-
-              </div>
-
-              <div class="mb-3">
-
-                <strong>Total:</strong>
-                € ${Number(order.total_price).toFixed(2)}
-
-              </div>
-
-              <div class="mb-4">
-
-                <strong>Invoice:</strong>
-                ${order.invoice_number}
-
-              </div>
-
-              <div class="d-flex gap-2">
-
-                <a href="/itea/frontend/sites/order-details.html?id=${order.id}"
-   class="btn btn-dark btn-sm">
-
-  View Order
-
-</a>
-
-                <button class="btn btn-outline-secondary btn-sm"
-                        disabled>
-
-                  Track Parcel
-
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        `);
+            response.forEach(function (order) {
+                $("#orders-list").append(createOrderCard(order));
             });
         },
         error: function (xhr) {
             console.log(xhr.responseText);
-            $("#orders-error").removeClass("d-none").text("Failed to load orders.");
+            $("#orders-error")
+                .removeClass("d-none")
+                .text("Failed to load orders.");
         },
     });
+}
+function createOrderCard(order) {
+    const card = cloneOrdersTemplate("order-card-template");
+    card.find(".order-id").text(order.id);
+    card.find(".order-date").text(order.date);
+    card.find(".order-total").text(formatOrdersCurrency(order.total_price));
+    card.find(".order-invoice").text(order.invoice_number);
+    card
+        .find(".view-order-link")
+        .attr("href", `/itea/frontend/sites/orderDetails.html?id=${order.id}`);
+    return card;
+}
+function cloneOrdersTemplate(templateId) {
+    const template = document.getElementById(templateId);
+    if (!template || !template.content.firstElementChild) {
+        return $();
+    }
+    return $(template.content.firstElementChild.cloneNode(true));
+}
+function formatOrdersCurrency(value) {
+    return `€ ${Number(value !== null && value !== void 0 ? value : 0).toFixed(2)}`;
 }

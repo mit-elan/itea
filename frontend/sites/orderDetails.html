@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iTEA Webshop</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/itea/frontend/assets/css/style.css?v=33">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+</head>
+
+<body>
+  <div id="nav-placeholder"></div>
+
+  <main class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+
+            <div id="order-success" class="alert alert-success d-none">
+              Order placed successfully!
+            </div>
+
+            <div id="order-error" class="alert alert-danger d-none"></div>
+
+            <div id="order-content" class="d-none">
+
+              <div class="mb-4">
+                <h1 class="h3 mb-2">
+                  Order Details
+                </h1>
+
+                <p class="text-muted mb-0">
+                  Order #<span id="order-id"></span>
+                </p>
+              </div>
+
+              <div class="row mb-4 g-4 align-items-start">
+
+                <div class="col-md-3">
+                  <div class="text-muted small fw-bold text-uppercase mb-1">
+                    Date
+                  </div>
+                  <div id="order-date"></div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="text-muted small fw-bold text-uppercase mb-1">
+                    Invoice
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span id="order-invoice"></span>
+                    <button id="download-invoice" class="btn btn-outline-dark btn-sm">
+                      <i class="bi bi-download"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="col-md-2 d-none" id="subtotal-heading">
+                  <div class="text-muted small fw-bold text-uppercase mb-1">
+                    Subtotal
+                  </div>
+                  <div id="order-subtotal"></div>
+                </div>
+
+                <div class="col-md-2 d-none" id="voucher-heading">
+                  <div class="text-muted small fw-bold text-uppercase mb-1">
+                    Voucher
+                  </div>
+                  <div id="order-voucher"></div>
+                </div>
+
+                <div class="col-md-2">
+                  <div class="text-muted small fw-bold text-uppercase mb-1">
+                    Total
+                  </div>
+                  <div id="order-total" class="fw-bold"></div>
+                </div>
+
+              </div>
+
+              <hr class="my-4">
+
+              <h5 class="mb-3">
+                Ordered Products
+              </h5>
+
+              <div id="order-items"></div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Template for dynamically rendered ordered products -->
+  <template id="order-item-card-template">
+    <div class="card mb-3">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="cart-item-image-wrapper">
+          <img src="" alt="" class="cart-item-image order-item-image">
+        </div>
+
+        <div>
+          <h6 class="mb-1 order-item-name"></h6>
+
+          <div class="text-muted">
+            Quantity: <span class="order-item-quantity"></span>
+          </div>
+
+          <div class="order-item-price"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template for generated invoice PDF content -->
+  <template id="invoice-template">
+    <div style="padding: 50px; font-family: Arial, sans-serif; color: #111;">
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:40px;
+          margin-bottom:50px;
+        ">
+
+        <div>
+          <h1 style="margin:0;">
+            Invoice
+          </h1>
+
+          <h3 style="margin-top:30px; margin-bottom:10px;">
+            iTEA Webshop
+          </h3>
+
+          <p style="margin:0;">
+            Tea Street 12
+          </p>
+
+          <p style="margin:0;">
+            1010 Vienna
+          </p>
+
+          <p style="margin-top:10px;">
+            support@itea.com
+          </p>
+        </div>
+
+        <div style="text-align:right;">
+          <h3 style="margin-top:0; margin-bottom:15px;">
+            Billing Address
+          </h3>
+
+          <p style="margin:0;" class="invoice-customer-name"></p>
+          <p style="margin:0;" class="invoice-customer-address"></p>
+          <p style="margin:0;" class="invoice-customer-city"></p>
+          <p style="margin-top:10px;" class="invoice-customer-email"></p>
+        </div>
+      </div>
+
+      <div style="margin-bottom:40px;">
+        <p style="margin-bottom:5px;">
+          <strong>Invoice Number:</strong>
+          <span class="invoice-number"></span>
+        </p>
+
+        <p style="margin:0;">
+          <strong>Date:</strong>
+          <span class="invoice-date"></span>
+        </p>
+      </div>
+
+      <table
+        style="
+          width:100%;
+          border-collapse:collapse;
+          margin-top:20px;
+        ">
+
+        <thead>
+          <tr style="background:#f5f5f5;">
+            <th style="padding:12px; text-align:left;">
+              Product
+            </th>
+
+            <th style="padding:12px; text-align:left;">
+              Quantity
+            </th>
+
+            <th style="padding:12px; text-align:left;">
+              Unit Price
+            </th>
+
+            <th style="padding:12px; text-align:left;">
+              Total
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="invoice-items"></tbody>
+      </table>
+
+      <div class="invoice-voucher-container"></div>
+
+      <div style="margin-top:40px; text-align:right;">
+        <h2>
+          Total:
+          <span class="invoice-total"></span>
+        </h2>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template for generated invoice item rows -->
+  <template id="invoice-item-row-template">
+    <tr>
+      <td style="padding: 12px; border-bottom: 1px solid #ddd;" class="invoice-item-name"></td>
+      <td style="padding: 12px; border-bottom: 1px solid #ddd;" class="invoice-item-quantity"></td>
+      <td style="padding: 12px; border-bottom: 1px solid #ddd;" class="invoice-item-unit-price"></td>
+      <td style="padding: 12px; border-bottom: 1px solid #ddd;" class="invoice-item-total"></td>
+    </tr>
+  </template>
+
+  <!-- Template for generated invoice voucher information -->
+  <template id="invoice-voucher-template">
+    <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #eee; text-align: right;">
+      <p style="margin: 0 0 6px 0; font-size: 14px; color: #555;">
+        <strong>Subtotal:</strong>
+        <span class="invoice-voucher-subtotal"></span>
+      </p>
+
+      <p style="margin: 0 0 6px 0; font-size: 14px;">
+        <strong>
+          Voucher <span class="invoice-voucher-code"></span>:
+        </strong>
+        <span style="color: #d9534f; margin-left: 6px;" class="invoice-voucher-discount"></span>
+      </p>
+
+      <p style="margin: 0; font-size: 12px; color: #666;">
+        Remaining Voucher Amount:
+        <span class="invoice-voucher-remaining"></span>
+      </p>
+    </div>
+  </template>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/itea/frontend/js/auth.js?v=5"></script>
+  <script src="/itea/frontend/js/layout.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="/itea/frontend/js/orderDetails.js"></script>
+</body>
+
+</html>

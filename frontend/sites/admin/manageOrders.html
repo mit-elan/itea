@@ -77,6 +77,115 @@
     </div>
   </div>
 
+  <!-- Template for dynamically rendered order overview rows -->
+  <template id="order-row-template">
+    <tr>
+      <td class="ps-4 order-id"></td>
+      <td class="order-date"></td>
+      <td>
+        <span class="order-customer-name"></span>
+        <div class="text-muted small order-customer-email"></div>
+      </td>
+      <td class="order-invoice"></td>
+      <td class="order-subtotal"></td>
+      <td class="order-voucher"></td>
+      <td class="order-total"></td>
+      <td class="text-end pe-4">
+        <button class="btn btn-outline-dark btn-sm rounded-0 view-order-details-btn">
+          Details
+        </button>
+      </td>
+    </tr>
+  </template>
+
+  <!-- Template for the order detail modal content -->
+  <template id="order-details-template">
+    <div class="mb-4">
+      <h3 class="h5 mb-3 order-detail-title"></h3>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p class="mb-1">
+            <strong>Customer:</strong>
+            <span class="order-detail-customer"></span>
+          </p>
+          <p class="mb-1">
+            <strong>Email:</strong>
+            <span class="order-detail-email"></span>
+          </p>
+          <p class="mb-0">
+            <strong>Address:</strong>
+            <span class="order-detail-address"></span>
+          </p>
+        </div>
+
+        <div class="col-md-6">
+          <p class="mb-1">
+            <strong>Invoice:</strong>
+            <span class="order-detail-invoice"></span>
+          </p>
+          <p class="mb-1">
+            <strong>Date:</strong>
+            <span class="order-detail-date"></span>
+          </p>
+          <p class="mb-0">
+            <strong>Total:</strong>
+            <span class="order-detail-total"></span>
+          </p>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-light">
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody class="order-detail-items-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template for dynamically rendered order detail item rows -->
+  <template id="order-detail-item-row-template">
+    <tr>
+      <td class="order-item-name"></td>
+      <td class="order-item-quantity"></td>
+      <td class="order-item-unit-price"></td>
+      <td class="order-item-total"></td>
+      <td class="text-end">
+        <button class="btn btn-outline-danger btn-sm rounded-0 remove-order-item-btn">
+          Remove product
+        </button>
+      </td>
+    </tr>
+  </template>
+
+  <!-- Template shown when no visible products are left in an order -->
+  <template id="order-detail-empty-row-template">
+    <tr>
+      <td colspan="5" class="text-muted">
+        No visible products left in this order.
+      </td>
+    </tr>
+  </template>
+
+  <!-- Template shown while order details are loading -->
+  <template id="order-details-loading-template">
+    <p class="mb-0">Loading order details...</p>
+  </template>
+
+  <!-- Template shown when order details cannot be loaded -->
+  <template id="order-details-error-template">
+    <p class="text-danger order-details-error-message"></p>
+  </template>
+
   <div id="footer-placeholder"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
@@ -86,4 +195,3 @@
 </body>
 
 </html>
-
