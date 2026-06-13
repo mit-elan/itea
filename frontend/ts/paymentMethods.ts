@@ -19,12 +19,12 @@ function loadPaymentMethods(): void {
     url: "/itea/backend/serviceHandler.php?handler=payment&method=getPaymentMethods",
     type: "GET",
     dataType: "json",
-    success: function (response) {
+    success: function (response: PaymentMethodsResponse | PaymentActionResponse) {
       $("#payment-error").addClass("d-none").text("");
       $("#payment-list").empty();
 
-      if (response.error) {
-        showPaymentError(response.error);
+      if (isPaymentActionErrorResponse(response)) {
+        showPaymentError(response.error ?? "Failed to load payment methods.");
         return;
       }
 
@@ -33,7 +33,7 @@ function loadPaymentMethods(): void {
         return;
       }
 
-      response.paymentMethods.forEach(function (payment: any) {
+      response.paymentMethods.forEach(function (payment: SavedPaymentMethod) {
         $("#payment-list").append(createPaymentMethodCard(payment));
       });
     },
@@ -44,13 +44,14 @@ function loadPaymentMethods(): void {
   });
 }
 
-function createPaymentMethodCard(payment: any): JQuery<HTMLElement> {
+function createPaymentMethodCard(
+  payment: SavedPaymentMethod,
+): JQuery<HTMLElement> {
   const card = clonePaymentTemplate("payment-method-card-template");
 
-  const type = payment.is_bank_account == 1 ? "Bank Account" : "Credit Card";
-
-  const iconClass =
-    payment.is_bank_account == 1 ? "bi-bank" : "bi-credit-card";
+  const isBankAccount = String(payment.is_bank_account) === "1";
+  const type = isBankAccount ? "Bank Account" : "Credit Card";
+  const iconClass = isBankAccount ? "bi-bank" : "bi-credit-card";
 
   const maskedNumber =
     payment.card_number.length > 4
@@ -110,9 +111,9 @@ function createPaymentMethod(): void {
     contentType: "application/json",
     data: JSON.stringify(paymentRequest),
     dataType: "json",
-    success: function (response) {
+    success: function (response: PaymentActionResponse) {
       if (!response.success) {
-        showPaymentError(response.error);
+        showPaymentError(response.error ?? "Failed to create payment method.");
         return;
       }
 
@@ -137,9 +138,9 @@ function deletePaymentMethod(paymentId: number): void {
     contentType: "application/json",
     dataType: "json",
     data: JSON.stringify({ paymentId: paymentId }),
-    success: function (response) {
+    success: function (response: PaymentActionResponse) {
       if (!response.success) {
-        showPaymentError(response.error);
+        showPaymentError(response.error ?? "Failed to delete payment method.");
         return;
       }
 
@@ -150,6 +151,16 @@ function deletePaymentMethod(paymentId: number): void {
       showPaymentError("Failed to delete payment method.");
     },
   });
+}
+
+function isPaymentActionErrorResponse(
+  response: PaymentMethodsResponse | PaymentActionResponse,
+): response is PaymentActionResponse {
+  return (
+    "success" in response &&
+    response.success === false &&
+    typeof response.error === "string"
+  );
 }
 
 function clonePaymentTemplate(templateId: string): JQuery<HTMLElement> {

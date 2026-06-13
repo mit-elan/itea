@@ -251,9 +251,10 @@ function requireRole(requiredRole, onAuthorized) {
     });
 }
 function updateNavigation(response) {
+    var _a;
     $("#products-link").show();
     $("#cart-link").show();
-    $("#cart-count").text(response.cartCount);
+    $("#cart-count").text((_a = response.cartCount) !== null && _a !== void 0 ? _a : 0);
     if (response.loggedIn && response.role === "customer") {
         $("#login-link").hide();
         $(".customer-link").show();

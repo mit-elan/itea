@@ -51,7 +51,8 @@ function renderVoucherTable(vouchers) {
 }
 $(function () {
     checkLoginStatus().then(function (response) {
-        const userRole = response.role;
+        var _a;
+        const userRole = (_a = response.role) !== null && _a !== void 0 ? _a : "guest";
         fetchVouchers(userRole)
             .then((vouchers) => renderVoucherTable(vouchers))
             .catch((err) => console.error("Error loading vouchers", err));

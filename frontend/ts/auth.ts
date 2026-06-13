@@ -13,6 +13,14 @@ interface LoginResponse {
   role?: string;
   username?: string;
 }
+interface LoginStatusResponse {
+  loggedIn: boolean;
+  role?: "admin" | "customer" | string;
+  username?: string;
+  userId: number | null;
+  cartCount: number;
+  error?: string;
+}
 
 //Login
 $(document).ready(function () {
@@ -276,7 +284,7 @@ function ibanCheck(iban: string): boolean {
   return /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(cleaned);
 }
 
-function checkLoginStatus(): JQuery.jqXHR {
+function checkLoginStatus(): JQuery.jqXHR<LoginStatusResponse> {
   return $.ajax({
     url: "/itea/backend/serviceHandler.php?handler=users&method=status",
     type: "GET",
@@ -303,10 +311,10 @@ function requireRole(requiredRole: string, onAuthorized?: () => void): void {
   });
 }
 
-function updateNavigation(response: any): void {
+function updateNavigation(response: LoginStatusResponse): void {
   $("#products-link").show();
   $("#cart-link").show();
-  $("#cart-count").text(response.cartCount);
+   $("#cart-count").text(response.cartCount ?? 0);
 
   if (response.loggedIn && response.role === "customer") {
     $("#login-link").hide();

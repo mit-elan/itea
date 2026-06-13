@@ -32,13 +32,13 @@ $(document).ready(function () {
       url: "/itea/backend/serviceHandler.php?handler=admin&method=getAllOrders",
       type: "GET",
       dataType: "json",
-      success: function (orders: AdminOrderOverview[]) {
-        if ((orders as any).error) {
-          showMessage((orders as any).error, "danger");
+      success: function (response: AdminOrderOverview[] | AdminOrderErrorResponse) {
+        if (isAdminOrderErrorResponse(response)) {
+          showMessage(response.error, "danger");
           return;
         }
 
-        orders.forEach(function (order: AdminOrderOverview) {
+        response.forEach(function (order: AdminOrderOverview) {
           $("#orders-table-body").append(createOrderRow(order));
         });
       },
@@ -69,7 +69,9 @@ $(document).ready(function () {
 
   function loadOrderDetails(orderId: number, showModal: boolean = false): void {
     $("#orderDetailsModalLabel").text(`Order #${orderId}`);
-    $("#modal-order-details").empty().append(cloneTemplate("order-details-loading-template"));
+    $("#modal-order-details")
+      .empty()
+      .append(cloneTemplate("order-details-loading-template"));
 
     if (showModal) {
       const modalElement = document.getElementById("orderDetailsModal");
@@ -136,7 +138,7 @@ $(document).ready(function () {
 
   function createOrderItemRow(
     orderId: number,
-    item: OrderItem
+    item: OrderItem,
   ): JQuery<HTMLElement> {
     const row = cloneTemplate("order-detail-item-row-template");
     const itemTotal = Number(item.unit_price) * Number(item.quantity);
@@ -169,7 +171,7 @@ $(document).ready(function () {
       success: function (response: { message?: string }) {
         showMessage(
           response.message || "Order item removed successfully.",
-          "success"
+          "success",
         );
 
         loadOrders();
@@ -190,7 +192,9 @@ $(document).ready(function () {
   }
 
   function cloneTemplate(templateId: string): JQuery<HTMLElement> {
-    const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+    const template = document.getElementById(
+      templateId,
+    ) as HTMLTemplateElement | null;
 
     if (!template || !template.content.firstElementChild) {
       return $();
@@ -221,6 +225,15 @@ $(document).ready(function () {
       .addClass(`alert-${type}`)
       .text(message)
       .show();
+  }
+
+  function isAdminOrderErrorResponse(response: unknown): response is AdminOrderErrorResponse {
+    return (
+      typeof response === "object" &&
+      response !== null &&
+      "error" in response &&
+      typeof (response as AdminOrderErrorResponse).error === "string"
+    );
   }
 
   function showBackendError(xhr: JQuery.jqXHR): void {
