@@ -1,12 +1,15 @@
 $(document).ready(function () {
   loadPaymentMethods();
+
   $(document).on("click", ".delete-payment", function () {
     const paymentId = Number($(this).data("id"));
+
     deletePaymentMethod(paymentId);
   });
 
-  $("#payment-form").on("submit", function (e) {
-    e.preventDefault();
+  $("#payment-form").on("submit", function (event) {
+    event.preventDefault();
+
     createPaymentMethod();
   });
 });
@@ -19,71 +22,53 @@ function loadPaymentMethods(): void {
     success: function (response) {
       $("#payment-error").addClass("d-none").text("");
       $("#payment-list").empty();
+
       if (response.error) {
-        $("#payment-error").removeClass("d-none").text(response.error);
+        showPaymentError(response.error);
         return;
       }
 
       if (!response.paymentMethods || response.paymentMethods.length === 0) {
-        $("#payment-list").append(`
-          <div class="col-12">
-            <div class="alert alert-info mb-0">
-              No payment methods saved yet.
-            </div>
-          </div>
-        `);
-
+        $("#payment-list").append(clonePaymentTemplate("payment-empty-template"));
         return;
       }
 
-      response.paymentMethods.forEach((payment: any) => {
-        const type =
-          payment.is_bank_account == 1 ? "Bank Account" : "Credit Card";
-
-        const maskedNumber =
-          payment.card_number.length > 4
-            ? "•••• " + payment.card_number.slice(-4)
-            : payment.card_number;
-
-        const icon =
-          payment.is_bank_account == 1 ? "bi-bank" : "bi-credit-card";
-
-        $("#payment-list").append(`
-          <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <h5 class="mb-1">
-                      ${payment.label}
-                    </h5>
-                    <p class="text-muted mb-0">
-                      ${type}
-                    </p>
-                  </div>
-                  <i class="bi ${icon} fs-4"></i>
-                </div>
-                <div class="fw-semibold">
-                  ${maskedNumber}
-                </div>
-                <button
-                  class="btn btn-outline-danger btn-sm mt-3 delete-payment"
-                  data-id="${payment.id}">
-                  Remove
-                </button>
-              </div>
-            </div>
-          </div>
-        `);
+      response.paymentMethods.forEach(function (payment: any) {
+        $("#payment-list").append(createPaymentMethodCard(payment));
       });
     },
 
     error: function () {
-      $("#payment-error")
-        .removeClass("d-none")
-        .text("Failed to load payment methods.");
+      showPaymentError("Failed to load payment methods.");
     },
   });
+}
+
+function createPaymentMethodCard(payment: any): JQuery<HTMLElement> {
+  const card = clonePaymentTemplate("payment-method-card-template");
+
+  const type = payment.is_bank_account == 1 ? "Bank Account" : "Credit Card";
+
+  const iconClass =
+    payment.is_bank_account == 1 ? "bi-bank" : "bi-credit-card";
+
+  const maskedNumber =
+    payment.card_number.length > 4
+      ? "•••• " + payment.card_number.slice(-4)
+      : payment.card_number;
+
+  card.find(".payment-label").text(payment.label);
+  card.find(".payment-type").text(type);
+  card.find(".payment-number").text(maskedNumber);
+
+  card
+    .find(".payment-icon")
+    .removeClass("bi-bank bi-credit-card")
+    .addClass(iconClass);
+
+  card.find(".delete-payment").data("id", payment.id);
+
+  return card;
 }
 
 function createPaymentMethod(): void {
@@ -96,26 +81,20 @@ function createPaymentMethod(): void {
   };
 
   const paymentNumber = String(paymentData.cardNumber).replace(/[\s-]/g, "");
-
   const paymentLabel = String(paymentData.paymentName).trim();
 
   if (!paymentLabel || !paymentNumber) {
-    $("#payment-error")
-      .removeClass("d-none")
-      .text("Please fill in all fields.");
-
+    showPaymentError("Please fill in all fields.");
     return;
   }
 
   if (paymentData.paymentType === "0" && !luhnCheck(paymentNumber)) {
-    $("#payment-error").removeClass("d-none").text("Invalid card number.");
-
+    showPaymentError("Invalid card number.");
     return;
   }
 
   if (paymentData.paymentType === "1" && !ibanCheck(paymentNumber)) {
-    $("#payment-error").removeClass("d-none").text("Invalid IBAN.");
-
+    showPaymentError("Invalid IBAN.");
     return;
   }
 
@@ -133,8 +112,7 @@ function createPaymentMethod(): void {
     dataType: "json",
     success: function (response) {
       if (!response.success) {
-        $("#payment-error").removeClass("d-none").text(response.error);
-
+        showPaymentError(response.error);
         return;
       }
 
@@ -143,9 +121,7 @@ function createPaymentMethod(): void {
     },
 
     error: function () {
-      $("#payment-error")
-        .removeClass("d-none")
-        .text("Failed to create payment method.");
+      showPaymentError("Failed to create payment method.");
     },
   });
 }
@@ -154,6 +130,7 @@ function deletePaymentMethod(paymentId: number): void {
   if (!confirm("Do you really want to delete this payment method?")) {
     return;
   }
+
   $.ajax({
     url: "/itea/backend/serviceHandler.php?handler=payment&method=deletePaymentMethod",
     type: "POST",
@@ -162,8 +139,7 @@ function deletePaymentMethod(paymentId: number): void {
     data: JSON.stringify({ paymentId: paymentId }),
     success: function (response) {
       if (!response.success) {
-        $("#payment-error").removeClass("d-none").text(response.error);
-
+        showPaymentError(response.error);
         return;
       }
 
@@ -171,9 +147,21 @@ function deletePaymentMethod(paymentId: number): void {
     },
 
     error: function () {
-      $("#payment-error")
-        .removeClass("d-none")
-        .text("Failed to delete payment method.");
+      showPaymentError("Failed to delete payment method.");
     },
   });
+}
+
+function clonePaymentTemplate(templateId: string): JQuery<HTMLElement> {
+  const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+
+  if (!template || !template.content.firstElementChild) {
+    return $();
+  }
+
+  return $(template.content.firstElementChild.cloneNode(true) as HTMLElement);
+}
+
+function showPaymentError(message: string): void {
+  $("#payment-error").removeClass("d-none").text(message);
 }

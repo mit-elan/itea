@@ -1,4 +1,3 @@
-
 $(document).ready(function () {
   // Admin access only - initialize page if authorized
   requireRole("admin", function () {
@@ -41,61 +40,58 @@ $(document).ready(function () {
       dataType: "json",
       success: function (users: User[]) {
         users.forEach(function (user: User) {
-          const statusClass = user.active ? "bg-success" : "bg-danger";
-          const statusText = user.active ? "Active" : "Inactive";
-
-          const buttonClass = user.active
-            ? "btn-outline-danger"
-            : "btn-outline-success";
-
-          const buttonText = user.active ? "Deactivate" : "Activate";
-
-          const disabled = user.role === "admin" ? "disabled" : "";
-
-          const row = `
-            <tr>
-              <td class="ps-4">${user.id}</td>
-              <td>${user.firstname} ${user.lastname}</td>
-              <td>${user.username}</td>
-              <td>${user.email}</td>
-              <td>
-                <span class="badge rounded-0 py-2 px-3 bg-secondary">
-                  ${user.role}
-                </span>
-              </td>
-              <td>
-                <span class="badge rounded-0 py-2 px-3 ${statusClass}">
-                  ${statusText}
-                </span>
-              </td>
-              <td class="text-end pe-4">
-                <button
-                  class="btn btn-outline-dark btn-sm rounded-0 view-orders-btn me-2"
-                  data-user-id="${user.id}"
-                  data-user-name="${user.firstname} ${user.lastname}"
-                >
-                  View Orders
-                </button>
-
-                <button
-                  class="btn btn-sm rounded-0 ${buttonClass} toggle-user-status-btn"
-                  data-user-id="${user.id}"
-                  data-active="${user.active}"
-                  ${disabled}
-                >
-                  ${buttonText}
-                </button>
-              </td>
-            </tr>
-          `;
-
-          $("#user-table-body").append(row);
+          $("#user-table-body").append(createUserRow(user));
         });
       },
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
       },
     });
+  }
+
+  function createUserRow(user: User): JQuery<HTMLElement> {
+    const row = cloneTemplate("user-row-template");
+
+    const statusClass = user.active ? "bg-success" : "bg-danger";
+    const statusText = user.active ? "Active" : "Inactive";
+
+    const buttonClass = user.active
+      ? "btn-outline-danger"
+      : "btn-outline-success";
+
+    const buttonText = user.active ? "Deactivate" : "Activate";
+    const fullName = `${user.firstname} ${user.lastname}`;
+
+    row.find(".user-id").text(user.id);
+    row.find(".user-name").text(fullName);
+    row.find(".user-username").text(user.username);
+    row.find(".user-email").text(user.email);
+    row.find(".user-role").text(user.role);
+
+    row
+      .find(".user-status")
+      .removeClass("bg-success bg-danger")
+      .addClass(statusClass)
+      .text(statusText);
+
+    row
+      .find(".view-orders-btn")
+      .data("user-id", user.id)
+      .data("user-name", fullName);
+
+    row
+      .find(".toggle-user-status-btn")
+      .removeClass("btn-outline-danger btn-outline-success")
+      .addClass(buttonClass)
+      .data("user-id", user.id)
+      .data("active", user.active)
+      .text(buttonText);
+
+    if (user.role === "admin") {
+      row.find(".toggle-user-status-btn").prop("disabled", true);
+    }
+
+    return row;
   }
 
   function setUserActive(userId: number, active: boolean): void {
@@ -111,7 +107,7 @@ $(document).ready(function () {
       success: function (response: { message?: string }) {
         showMessage(
           response.message || "User status updated successfully.",
-          "success",
+          "success"
         );
 
         loadUsers();
@@ -124,7 +120,7 @@ $(document).ready(function () {
 
   function loadUserOrders(userId: number, userName: string): void {
     $("#userOrdersModalLabel").text(`Orders from ${userName}`);
-    $("#modal-user-orders").html("<p class='mb-0'>Loading orders...</p>");
+    showModalLoading("#modal-user-orders", "Loading orders...");
     $("#modal-order-details").empty();
     $("#modal-order-details-wrapper").hide();
 
@@ -144,75 +140,58 @@ $(document).ready(function () {
       success: function (orders: OrderSummary[]) {
         if ((orders as any).error) {
           showMessage((orders as any).error, "danger");
-          $("#modal-user-orders").html(
-            `<p class="text-danger">${(orders as any).error}</p>`,
-          );
+          showModalError("#modal-user-orders", (orders as any).error);
           return;
         }
 
         if (orders.length === 0) {
-          $("#modal-user-orders").html(
-            `<p class="mb-0">No orders found for ${userName}.</p>`,
-          );
+          showUserOrdersEmpty(userName);
           return;
         }
 
-        let html = `
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="bg-light">
-        <tr>
-          <th class="ps-3">Order</th>
-          <th>Date</th>
-          <th>Invoice</th>
-          <th>Total</th>
-          <th class="text-end pe-3">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-`;
-
-        orders.forEach(function (order: OrderSummary) {
-          html += `
-  <tr>
-    <td class="ps-3">#${order.id}</td>
-    <td>${formatDate(order.date)}</td>
-    <td>${order.invoice_number}</td>
-    <td>€ ${Number(order.total_price).toFixed(2)}</td>
-    <td class="text-end pe-3">
-      <button
-        class="btn btn-outline-dark btn-sm rounded-0 view-order-details-btn"
-        data-order-id="${order.id}"
-      >
-        Details
-      </button>
-    </td>
-  </tr>
-`;
-        });
-
-        html += `
-              </tbody>
-            </table>
-          </div>
-        `;
-
-        $("#modal-user-orders").html(html);
+        renderUserOrders(orders);
       },
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
-        $("#modal-user-orders").html(
-          `<p class="text-danger">Orders could not be loaded.</p>`,
-        );
+        showModalError("#modal-user-orders", "Orders could not be loaded.");
       },
     });
   }
 
+  function renderUserOrders(orders: OrderSummary[]): void {
+    const table = cloneTemplate("user-orders-table-template");
+    const tableBody = table.find(".user-orders-table-body");
+
+    orders.forEach(function (order: OrderSummary) {
+      tableBody.append(createUserOrderRow(order));
+    });
+
+    $("#modal-user-orders").empty().append(table);
+  }
+
+  function createUserOrderRow(order: OrderSummary): JQuery<HTMLElement> {
+    const row = cloneTemplate("user-order-row-template");
+
+    row.find(".user-order-id").text(`#${order.id}`);
+    row.find(".user-order-date").text(formatDate(order.date));
+    row.find(".user-order-invoice").text(order.invoice_number);
+    row.find(".user-order-total").text(formatCurrency(order.total_price));
+    row.find(".view-order-details-btn").data("order-id", order.id);
+
+    return row;
+  }
+
+  function showUserOrdersEmpty(userName: string): void {
+    const emptyMessage = cloneTemplate("user-orders-empty-template");
+
+    emptyMessage.find(".user-orders-empty-name").text(userName);
+
+    $("#modal-user-orders").empty().append(emptyMessage);
+  }
+
   function loadOrderDetails(orderId: number): void {
     $("#modal-order-details-wrapper").show();
-    $("#modal-order-details").html(
-      "<p class='mb-0'>Loading order details...</p>",
-    );
+    showModalLoading("#modal-order-details", "Loading order details...");
 
     $.ajax({
       url:
@@ -227,101 +206,138 @@ $(document).ready(function () {
       }) {
         if (response.error) {
           showMessage(response.error, "danger");
-          $("#modal-order-details").html(
-            `<p class="text-danger">${response.error}</p>`,
-          );
+          showModalError("#modal-order-details", response.error);
           return;
         }
 
-        const order = response.order;
-        const items = response.items;
-
-        let itemsHtml = "";
-
-        items.forEach(function (item: OrderItem) {
-          const itemTotal = Number(item.unit_price) * Number(item.quantity);
-
-          itemsHtml += `
-            <tr>
-                <td>${item.name}</td>
-                <td>${item.quantity}</td>
-                <td>€ ${Number(item.unit_price).toFixed(2)}</td>
-                <td>€ ${itemTotal.toFixed(2)}</td>
-                <td class="text-end">
-                <button
-                    class="btn btn-outline-danger btn-sm rounded-0 remove-order-item-btn"
-                    data-order-id="${order.id}"
-                    data-order-item-id="${item.id}"
-                >
-                    Remove
-                </button>
-                </td>
-            </tr>
-            `;
-        });
-
-        const html = `
-          <div class="mt-4">
-            <h3 class="h5 mb-3">Order #${order.id}</h3>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <p class="mb-1">
-                  <strong>Customer:</strong>
-                  ${order.first_name} ${order.last_name} (${order.username})
-                </p>
-                <p class="mb-1">
-                  <strong>Email:</strong>
-                  ${order.email}
-                </p>
-                <p class="mb-0">
-                  <strong>Address:</strong>
-                  ${order.address}, ${order.zip} ${order.city}
-                </p>
-              </div>
-
-              <div class="col-md-6">
-                <p class="mb-1">
-                  <strong>Invoice:</strong>
-                  ${order.invoice_number}
-                </p>
-                <p class="mb-1">
-                  <strong>Date:</strong>
-                  ${order.date}
-                </p>
-                <p class="mb-0">
-                  <strong>Total:</strong>
-                  € ${Number(order.total_price).toFixed(2)}
-                </p>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                  <tr>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsHtml}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-
-        $("#modal-order-details").html(html);
+        renderOrderDetails(response.order, response.items);
       },
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
-        $("#modal-order-details").html(
-          `<p class="text-danger">Order details could not be loaded.</p>`,
-        );
+        showModalError("#modal-order-details", "Order details could not be loaded.");
       },
+    });
+  }
+
+  function renderOrderDetails(order: OrderDetails, items: OrderItem[]): void {
+    const details = cloneTemplate("user-order-details-template");
+
+    details.find(".user-order-detail-title").text(`Order #${order.id}`);
+    details
+      .find(".user-order-detail-customer")
+      .text(`${order.first_name} ${order.last_name} (${order.username})`);
+    details.find(".user-order-detail-email").text(order.email);
+    details
+      .find(".user-order-detail-address")
+      .text(`${order.address}, ${order.zip} ${order.city}`);
+    details.find(".user-order-detail-invoice").text(order.invoice_number);
+    details.find(".user-order-detail-date").text(formatDate(order.date));
+    details.find(".user-order-detail-total").text(formatCurrency(order.total_price));
+
+    const itemContainer = details.find(".user-order-detail-items-body");
+
+    if (items.length === 0) {
+      itemContainer.append(cloneTemplate("user-order-detail-empty-row-template"));
+    } else {
+      items.forEach(function (item: OrderItem) {
+        itemContainer.append(createOrderItemRow(order.id, item));
+      });
+    }
+
+    $("#modal-order-details").empty().append(details);
+  }
+
+  function createOrderItemRow(
+    orderId: number,
+    item: OrderItem
+  ): JQuery<HTMLElement> {
+    const row = cloneTemplate("user-order-detail-item-row-template");
+    const itemTotal = Number(item.unit_price) * Number(item.quantity);
+
+    row.find(".user-order-item-name").text(item.name);
+    row.find(".user-order-item-quantity").text(item.quantity);
+    row.find(".user-order-item-unit-price").text(formatCurrency(item.unit_price));
+    row.find(".user-order-item-total").text(formatCurrency(itemTotal));
+
+    row
+      .find(".remove-order-item-btn")
+      .data("order-id", orderId)
+      .data("order-item-id", item.id);
+
+    return row;
+  }
+
+  function removeOrderItem(orderId: number, orderItemId: number): void {
+    if (!confirm("Remove this product from the order?")) {
+      return;
+    }
+
+    $.ajax({
+      url: "/itea/backend/serviceHandler.php?handler=admin&method=removeOrderItem",
+      type: "POST",
+      contentType: "application/json",
+      dataType: "json",
+      data: JSON.stringify({
+        orderId: orderId,
+        orderItemId: orderItemId,
+      }),
+      success: function (response: { message?: string }) {
+        showMessage(
+          response.message || "Order item removed successfully.",
+          "success"
+        );
+
+        loadOrderDetails(orderId);
+      },
+      error: function (xhr: JQuery.jqXHR) {
+        showBackendError(xhr);
+      },
+    });
+  }
+
+  function showModalLoading(containerSelector: string, message: string): void {
+    const loadingMessage = cloneTemplate("modal-loading-template");
+
+    loadingMessage.find(".modal-loading-message").text(message);
+
+    $(containerSelector).empty().append(loadingMessage);
+  }
+
+  function showModalError(containerSelector: string, message: string): void {
+    const errorMessage = cloneTemplate("modal-error-template");
+
+    errorMessage.find(".modal-error-message").text(message);
+
+    $(containerSelector).empty().append(errorMessage);
+  }
+
+  function cloneTemplate(templateId: string): JQuery<HTMLElement> {
+    const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+
+    if (!template || !template.content.firstElementChild) {
+      return $();
+    }
+
+    return $(template.content.firstElementChild.cloneNode(true) as HTMLElement);
+  }
+
+  function formatCurrency(value: number | string | null): string {
+    return `€ ${Number(value ?? 0).toFixed(2)}`;
+  }
+
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString.replace(" ", "T"));
+
+    if (isNaN(date.getTime())) {
+      return dateString;
+    }
+
+    return date.toLocaleString("de-AT", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   }
 
@@ -347,48 +363,4 @@ $(document).ready(function () {
 
     showMessage(errorMessage, "danger");
   }
-
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString.replace(" ", "T"));
-
-    if (isNaN(date.getTime())) {
-      return dateString;
-    }
-
-    return date.toLocaleString("de-AT", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
-  function removeOrderItem(orderId: number, orderItemId: number): void {
-  if (!confirm("Remove this product from the order?")) {
-        return;
-    }
-
-    $.ajax({
-        url: "/itea/backend/serviceHandler.php?handler=admin&method=removeOrderItem",
-        type: "POST",
-        contentType: "application/json",
-        dataType: "json",
-        data: JSON.stringify({
-        orderId: orderId,
-        orderItemId: orderItemId,
-        }),
-        success: function (response: { message?: string }) {
-        showMessage(
-            response.message || "Order item removed successfully.",
-            "success"
-        );
-
-        loadOrderDetails(orderId);
-        },
-        error: function (xhr: JQuery.jqXHR) {
-        showBackendError(xhr);
-        },
-    });
-    }
 });
