@@ -1,3 +1,17 @@
+/**
+ * Customer orders page
+ * Loads the current customer's order history
+ * and links each order to its detail page.
+ */
+
+interface OrdersErrorResponse {
+  error: string;
+}
+
+interface OrdersBackendErrorResponse {
+  error?: string;
+}
+
 $(document).ready(function () {
   loadOrders();
 });
@@ -9,10 +23,7 @@ function loadOrders(): void {
     dataType: "json",
 
     success: function (response: OrderSummary[] | OrdersErrorResponse) {
-      $("#orders-error").addClass("d-none").text("");
-      $("#orders-empty").addClass("d-none");
-      $("#orders-content").addClass("d-none");
-      $("#orders-list").empty();
+      clearOrdersView();
 
       if (isOrdersErrorResponse(response)) {
         window.location.href = "/itea/frontend/sites/login.html";
@@ -31,8 +42,8 @@ function loadOrders(): void {
       });
     },
 
-    error: function (xhr) {
-      console.log(xhr.responseText);
+    error: function (xhr: JQuery.jqXHR) {
+      console.error("Error loading orders:", getOrdersBackendError(xhr));
 
       $("#orders-error")
         .removeClass("d-none")
@@ -56,6 +67,13 @@ function createOrderCard(order: OrderSummary): JQuery<HTMLElement> {
   return card;
 }
 
+function clearOrdersView(): void {
+  $("#orders-error").addClass("d-none").text("");
+  $("#orders-empty").addClass("d-none");
+  $("#orders-content").addClass("d-none");
+  $("#orders-list").empty();
+}
+
 function isOrdersErrorResponse(
   response: unknown,
 ): response is OrdersErrorResponse {
@@ -68,15 +86,35 @@ function isOrdersErrorResponse(
 }
 
 function cloneOrdersTemplate(templateId: string): JQuery<HTMLElement> {
-  const template = document.getElementById(templateId) as HTMLTemplateElement | null;
+  const template = document.getElementById(
+    templateId,
+  ) as HTMLTemplateElement | null;
 
-  if (!template || !template.content.firstElementChild) {
+  const templateElement = template?.content.firstElementChild;
+
+  if (!templateElement) {
     return $();
   }
 
-  return $(template.content.firstElementChild.cloneNode(true) as HTMLElement);
+  return $(templateElement.cloneNode(true) as HTMLElement);
 }
 
 function formatOrdersCurrency(value: number | string | null): string {
   return `€ ${Number(value ?? 0).toFixed(2)}`;
+}
+
+function getOrdersBackendError(xhr: JQuery.jqXHR): string {
+  const fallbackMessage = "Failed to load orders.";
+
+  if (!xhr.responseText) {
+    return fallbackMessage;
+  }
+
+  try {
+    const response = JSON.parse(xhr.responseText) as OrdersBackendErrorResponse;
+
+    return response.error ?? fallbackMessage;
+  } catch {
+    return xhr.responseText;
+  }
 }

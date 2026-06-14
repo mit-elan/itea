@@ -1,3 +1,10 @@
+/**
+ * Global frontend type declarations
+ * Contains shared data models and external library declarations.
+ */
+
+/* Bootstrap */
+
 interface BootstrapModal {
   show(): void;
   hide(): void;
@@ -13,6 +20,28 @@ interface Bootstrap {
 }
 
 declare const bootstrap: Bootstrap;
+
+/* html2pdf */
+
+interface Html2PdfWorker {
+  from(element: HTMLElement): Html2PdfWorker;
+  save(filename?: string): void;
+}
+
+declare function html2pdf(): Html2PdfWorker;
+
+/* Authentication */
+
+interface LoginStatusResponse {
+  loggedIn: boolean;
+  role?: "admin" | "customer" | "guest" | string;
+  username?: string;
+  userId: number | null;
+  cartCount: number;
+  error?: string;
+}
+
+/* Product and cart models */
 
 interface Product {
   id: number;
@@ -33,6 +62,8 @@ interface Cart {
   quantity: number;
 }
 
+/* User and payment models */
+
 interface User {
   id: number;
   salutation: string;
@@ -51,16 +82,27 @@ interface User {
 
 interface PaymentMethod {
   paymentName: string;
-  paymentType: string; // "0" = Credit-/Debitcard, "1" = Bank Account
+  paymentType: string; // "0" = Credit/Debit Card, "1" = Bank Account
   cardNumber: string;
 }
 
-
-// Types used by orders.ts
-interface OrdersErrorResponse {
-  success?: false;
-  error: string;
+interface SavedPaymentMethod {
+  id: number;
+  label: string;
+  card_number: string;
+  is_bank_account: number | string;
 }
+
+interface PaymentMethodsResponse {
+  paymentMethods: SavedPaymentMethod[];
+}
+
+interface PaymentActionResponse {
+  success: boolean;
+  error?: string;
+}
+
+/* Order models */
 
 interface OrderSummary {
   id: number;
@@ -96,14 +138,7 @@ interface OrderItem {
   unit_price: number;
 }
 
-interface Voucher {
-  code: string;
-  value: number;
-  remainingValue: number;
-  expiryDate: string;
-  status: "active" | "redeemed" | "expired";
-  userId: number | null;
-}
+/* Admin order models */
 
 interface AdminOrderOverview {
   id: number;
@@ -119,20 +154,18 @@ interface AdminOrderOverview {
   username: string;
 }
 
-// Types used by adminManageOrders.ts
 interface AdminOrderErrorResponse {
   success?: false;
   error: string;
 }
 
-
-// Types used by adminManageUsers.ts
 interface AdminUserOrdersErrorResponse {
   success?: false;
   error: string;
 }
 
-// Types used by orderDetails.ts
+/* Order details page models */
+
 interface OrderDetailsOrder {
   id: number;
   date: string;
@@ -169,30 +202,19 @@ interface OrderDetailsErrorResponse {
   error: string;
 }
 
-interface Html2PdfWorker {
-  from(element: HTMLElement): Html2PdfWorker;
-  save(filename?: string): void;
+/* Voucher model */
+
+interface Voucher {
+  code: string;
+  value: number;
+  remainingValue: number;
+  expiryDate: string;
+  status: "active" | "redeemed" | "expired";
+  userId: number | null;
 }
 
-// Types used by paymentMethods.ts
-interface SavedPaymentMethod {
-  id: number;
-  label: string;
-  card_number: string;
-  is_bank_account: number | string;
-}
+/* jQuery UI drag and drop */
 
-interface PaymentMethodsResponse {
-  paymentMethods: SavedPaymentMethod[];
-}
-
-interface PaymentActionResponse {
-  success: boolean;
-  error?: string;
-}
-
-
-// Types used by products.ts for jQuery UI drag and drop
 interface IteaDraggableOptions {
   handle?: string;
   helper?: (this: HTMLElement) => JQuery<HTMLElement>;
@@ -222,14 +244,7 @@ interface JQuery {
   droppable(options: IteaDroppableOptions): JQuery;
 }
 
-// Types in cart.ts
-interface Cart {
-  id: number;
-  file_path: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
+/* Global window extensions */
 
 interface Window {
   addToCartViaDrag: (

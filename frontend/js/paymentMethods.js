@@ -1,10 +1,17 @@
 "use strict";
+/**
+ * Payment methods page
+ * Loads saved payment methods, creates new payment methods,
+ * and allows customers to delete existing payment methods.
+ */
 $(document).ready(function () {
     loadPaymentMethods();
+    // Delete selected payment method
     $(document).on("click", ".delete-payment", function () {
         const paymentId = Number($(this).data("id"));
         deletePaymentMethod(paymentId);
     });
+    // Create a new payment method from the form
     $("#payment-form").on("submit", function (event) {
         event.preventDefault();
         createPaymentMethod();
@@ -31,8 +38,8 @@ function loadPaymentMethods() {
                 $("#payment-list").append(createPaymentMethodCard(payment));
             });
         },
-        error: function () {
-            showPaymentError("Failed to load payment methods.");
+        error: function (xhr) {
+            showPaymentError(getPaymentBackendError(xhr));
         },
     });
 }
@@ -55,28 +62,26 @@ function createPaymentMethodCard(payment) {
     return card;
 }
 function createPaymentMethod() {
+    var _a, _b, _c;
     $("#payment-error").addClass("d-none").text("");
-    const paymentData = {
-        paymentType: $("#payment-type").val(),
-        cardNumber: $("#payment-number").val(),
-        paymentName: $("#payment-label").val(),
-    };
-    const paymentNumber = String(paymentData.cardNumber).replace(/[\s-]/g, "");
-    const paymentLabel = String(paymentData.paymentName).trim();
+    const paymentType = String((_a = $("#payment-type").val()) !== null && _a !== void 0 ? _a : "");
+    const paymentNumber = String((_b = $("#payment-number").val()) !== null && _b !== void 0 ? _b : "").replace(/[\s-]/g, "");
+    const paymentLabel = String((_c = $("#payment-label").val()) !== null && _c !== void 0 ? _c : "").trim();
     if (!paymentLabel || !paymentNumber) {
         showPaymentError("Please fill in all fields.");
         return;
     }
-    if (paymentData.paymentType === "0" && !luhnCheck(paymentNumber)) {
+    // Validate card number or IBAN based on selected payment type
+    if (paymentType === "0" && !luhnCheck(paymentNumber)) {
         showPaymentError("Invalid card number.");
         return;
     }
-    if (paymentData.paymentType === "1" && !ibanCheck(paymentNumber)) {
+    if (paymentType === "1" && !ibanCheck(paymentNumber)) {
         showPaymentError("Invalid IBAN.");
         return;
     }
     const paymentRequest = {
-        paymentType: String(paymentData.paymentType),
+        paymentType: paymentType,
         cardNumber: paymentNumber,
         paymentName: paymentLabel,
     };
@@ -95,8 +100,8 @@ function createPaymentMethod() {
             $("#payment-form")[0].reset();
             loadPaymentMethods();
         },
-        error: function () {
-            showPaymentError("Failed to create payment method.");
+        error: function (xhr) {
+            showPaymentError(getPaymentBackendError(xhr));
         },
     });
 }
@@ -118,8 +123,8 @@ function deletePaymentMethod(paymentId) {
             }
             loadPaymentMethods();
         },
-        error: function () {
-            showPaymentError("Failed to delete payment method.");
+        error: function (xhr) {
+            showPaymentError(getPaymentBackendError(xhr));
         },
     });
 }
@@ -130,11 +135,26 @@ function isPaymentActionErrorResponse(response) {
 }
 function clonePaymentTemplate(templateId) {
     const template = document.getElementById(templateId);
-    if (!template || !template.content.firstElementChild) {
+    const templateElement = template === null || template === void 0 ? void 0 : template.content.firstElementChild;
+    if (!templateElement) {
         return $();
     }
-    return $(template.content.firstElementChild.cloneNode(true));
+    return $(templateElement.cloneNode(true));
 }
 function showPaymentError(message) {
     $("#payment-error").removeClass("d-none").text(message);
+}
+function getPaymentBackendError(xhr) {
+    var _a;
+    const fallbackMessage = "Failed to process payment method request.";
+    if (!xhr.responseText) {
+        return fallbackMessage;
+    }
+    try {
+        const response = JSON.parse(xhr.responseText);
+        return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
+    }
+    catch (_b) {
+        return xhr.responseText;
+    }
 }
