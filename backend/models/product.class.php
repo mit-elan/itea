@@ -1,46 +1,51 @@
 <?php
 
 /**
- * Represents a product in the catalog
- * Handles conversion between database format (snake_case) and API format (camelCase)
+ * Represents a product in the catalog.
+ * Handles conversion between database format and API response format.
  */
-class Product {
-    public int    $id;
-    public int    $categoryId;
+class Product
+{
+    public int $id;
+    public int $categoryId;
     public string $name;
     public string $description;
-    public float  $price;
-    public float  $rating;
+    public float $price;
+    public float $rating;
     public string $filePath;
 
     /**
-     * @param array $data Product data with snake_case keys from database (id, category_id, name, description, price, rating, file_path)
+     * Creates a product from database or request data.
+     *
+     * @param array $data Product data with optional id, category_id, name, description, price, rating, and file_path
      */
-    public function __construct(array $data) {
-        $this->id          = $data['id']          ?? 0;
-        $this->categoryId  = $data['category_id'] ?? 0;
-        $this->name        = $data['name']        ?? '';
+    public function __construct(array $data)
+    {
+        $this->id = (int)($data['id'] ?? 0);
+        $this->categoryId = (int)($data['category_id'] ?? 0);
+        $this->name = $data['name'] ?? '';
         $this->description = $data['description'] ?? '';
-        $this->price       = (float)($data['price']  ?? 0);
-        $this->rating      = (float)($data['rating'] ?? 0);
-        $this->filePath    = $data['file_path']   ?? '';
+        $this->price = (float)($data['price'] ?? 0);
+        $this->rating = (float)($data['rating'] ?? 0);
+        $this->filePath = $data['file_path'] ?? '';
     }
 
     /**
-     * Serializes product to array format for API responses
-     * Converts property names to camelCase for client consumption
+     * Converts the product object into an array for API responses.
+     * Uses camelCase keys for frontend usage.
      *
-     * @return array Product data with camelCase keys
+     * @return array Product data for frontend usage
      */
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
-            'id'          => $this->id,
-            'categoryId'  => $this->categoryId,
-            'name'        => $this->name,
+            'id' => $this->id,
+            'categoryId' => $this->categoryId,
+            'name' => $this->name,
             'description' => $this->description,
-            'price'       => $this->price,
-            'rating'      => $this->rating,
-            'filePath'    => $this->filePath,
+            'price' => $this->price,
+            'rating' => $this->rating,
+            'filePath' => $this->filePath,
         ];
     }
 }

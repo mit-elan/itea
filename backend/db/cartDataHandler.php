@@ -3,12 +3,18 @@
 require_once __DIR__ . '/dbaccess.php';
 require_once __DIR__ . '/../models/cart.class.php';
 
+/**
+ * Data access layer for cart persistence.
+ * Handles saving and loading user carts between session state and database storage.
+ */
 class CartDataHandler
 {
     private mysqli $db;
 
     /**
-     * @param DBaccess $db Database access handler
+     * Initializes the cart data handler with a database connection.
+     *
+     * @param DBaccess $db Database connection handler
      */
     public function __construct(DBaccess $db)
     {
@@ -16,13 +22,16 @@ class CartDataHandler
     }
 
     /**
-     * @param int $userId User ID
-     * @param array $cartItems Cart items to persist
+     * Saves the current cart state for a user.
+     * Existing database cart entries are replaced completely by the provided cart state.
+     *
+     * @param int $userId User identifier
+     * @param array $cartItems Array of Cart objects to persist
      * @return void
      */
     public function saveCartToDb(int $userId, array $cartItems): void
     {
-        // Full cart replacement: delete existing and insert new state (not incremental updates)
+        // Delete existing cart entries before inserting the current cart state
         $stmt = $this->db->prepare(
             "DELETE FROM cart WHERE user_id = ?"
         );
@@ -34,12 +43,19 @@ class CartDataHandler
         }
 
         $stmt = $this->db->prepare(
-            "INSERT INTO cart (user_id, product_id, quantity)
-             VALUES (?, ?, ?)"
+            "INSERT INTO cart (
+                user_id,
+                product_id,
+                quantity
+            ) VALUES (?, ?, ?)"
         );
 
         foreach ($cartItems as $cartItem) {
-            // Skip zero or negative quantities; only persist valid cart state
+            if (!$cartItem instanceof Cart) {
+                continue;
+            }
+
+            // Persist only valid cart entries with a positive quantity
             if ($cartItem->quantity > 0) {
                 $stmt->bind_param(
                     "iii",
@@ -53,25 +69,29 @@ class CartDataHandler
     }
 
     /**
-     * @param int $userId User ID
-     * @return array List of Cart objects
+     * Loads the persisted cart for a user.
+     *
+     * @param int $userId User identifier
+     * @return array Array of Cart objects
      */
     public function loadCartFromDb(int $userId): array
     {
         $stmt = $this->db->prepare(
-            "SELECT product_id, quantity FROM cart WHERE user_id = ?"
+            "SELECT product_id,
+                    quantity
+             FROM cart
+             WHERE user_id = ?"
         );
         $stmt->bind_param("i", $userId);
         $stmt->execute();
 
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-        // Transform database rows to Cart objects (snake_case columns → camelCase constructor params)
         return array_map(
             fn(array $row) => new Cart([
-                'userId'    => $userId,
+                'userId' => $userId,
                 'productId' => $row['product_id'],
-                'quantity'  => $row['quantity'],
+                'quantity' => $row['quantity'],
             ]),
             $rows
         );

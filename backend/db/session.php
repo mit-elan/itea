@@ -1,11 +1,19 @@
 <?php
-/**
- * Zentrale Session-Verwaltung.
- * Wird von serviceHandler.php als erstes eingebunden.
- */
-session_start();
 
-// Gibt den aktuell eingeloggten User zurück oder null.
+/**
+ * Central session management.
+ * This file is included by serviceHandler.php before request handling starts.
+ */
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+/**
+ * Returns the currently logged-in user from the session.
+ *
+ * @return array|null Current user session data or null if no user is logged in
+ */
 function getCurrentUser(): ?array
 {
     if (!isset($_SESSION['user_id'])) {
@@ -19,14 +27,22 @@ function getCurrentUser(): ?array
     ];
 }
 
-//Prüft ob ein User eingeloggt ist.
+/**
+ * Checks whether a user is currently logged in.
+ *
+ * @return bool True if a user session exists
+ */
 function isLoggedIn(): bool
 {
     return isset($_SESSION['user_id']);
 }
 
-// Prüft ob der eingeloggte User ein Admin ist.
+/**
+ * Checks whether the currently logged-in user has the admin role.
+ *
+ * @return bool True if the current user is an admin
+ */
 function isAdmin(): bool
 {
-    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+    return ($_SESSION['role'] ?? '') === 'admin';
 }
