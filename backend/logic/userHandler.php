@@ -4,90 +4,145 @@ require_once __DIR__ . '/../models/user.class.php';
 require_once __DIR__ . '/../models/cart.class.php';
 
 /**
- * UserHandler
- * Sprint 1: Login, Registrierung
- * Sprint 2: Profil bearbeiten, Zahlungsmethoden
- * 
- **/
+ * Business logic handler for user operations
+ * Routes requests to authentication, registration, profile, and session status methods
+ */
 class UserHandler
 {
+    private const HTTP_BAD_REQUEST = 400;
+    private const HTTP_UNAUTHORIZED = 401;
+    private const HTTP_FORBIDDEN = 403;
+    private const HTTP_NOT_FOUND = 404;
+    private const HTTP_CONFLICT = 409;
+    private const HTTP_INTERNAL_SERVER_ERROR = 500;
+
     private UserDataHandler $userDataHandler;
     private CartDataHandler $cartDataHandler;
     private PaymentDataHandler $paymentDataHandler;
 
-    public function __construct(UserDataHandler $userDataHandler, CartDataHandler $cartDataHandler, PaymentDataHandler $paymentDataHandler)
-    {
-        $this->userDataHandler      = $userDataHandler;
-        $this->cartDataHandler      = $cartDataHandler;
-        $this->paymentDataHandler    = $paymentDataHandler;
+    /**
+     * @param UserDataHandler $userDataHandler Data access handler for users
+     * @param CartDataHandler $cartDataHandler Data access handler for cart persistence
+     * @param PaymentDataHandler $paymentDataHandler Data access handler for payment methods
+     */
+    public function __construct(
+        UserDataHandler $userDataHandler,
+        CartDataHandler $cartDataHandler,
+        PaymentDataHandler $paymentDataHandler
+    ) {
+        $this->userDataHandler = $userDataHandler;
+        $this->cartDataHandler = $cartDataHandler;
+        $this->paymentDataHandler = $paymentDataHandler;
     }
 
-
-    public function handle(string $method, array $data = [])
+    /**
+     * Routes user operations to appropriate handler methods
+     *
+     * @param string $method Operation name (login, register, logout, status, getProfile, updateProfile)
+     * @param array $data Request data passed to handler methods
+     * @return array Operation result or error details
+     */
+    public function handle(string $method, array $data = []): array
     {
         return match ($method) {
-
-            // Sprint 1
             'login' => $this->login($data),
             'register' => $this->register($data),
             'logout' => $this->logout(),
             'status' => $this->status(),
-
-            // Sprint 2
             'getProfile' => $this->getProfile(),
             'updateProfile' => $this->updateProfile($data),
-            // 'addPaymentMethod' => $this->addPaymentMethod(),
 
-            default => null,
+            default => $this->errorResponse(
+                self::HTTP_NOT_FOUND,
+                'Unknown user method'
+            ),
         };
     }
-    //Login
-    private function login(array $data)
+
+    /**
+     * Creates a standardized error response and sets the matching HTTP status code
+     *
+     * @param int $code HTTP status code
+     * @param string $message Error message for the API response
+     * @return array Error response
+     */
+    private function errorResponse(int $code, string $message): array
     {
+        http_response_code($code);
+
+        return [
+            'code' => $code,
+            'success' => false,
+            'error' => $message
+        ];
+    }
+
+    /**
+     * Logs in a user by username or email and merges guest cart with persisted cart
+     *
+     * @param array $data Must contain identifier and password
+     * @return array Success response with user data or error details
+     */
+    private function login(array $data): array
+    {
+        // Validate required login fields
         foreach (['identifier', 'password'] as $field) {
             if (empty($data[$field])) {
-                return ['error' => "Field '$field' is required"];
+                return $this->errorResponse(
+                    self::HTTP_BAD_REQUEST,
+                    "Field '$field' is required"
+                );
             }
         }
 
         $identifier = trim($data['identifier']);
         $password = $data['password'];
 
-        // User kann sich mit username oder email einloggen
+        // Load user by username or email
         $userData = $this->userDataHandler->getUserByIdentifier($identifier);
 
         if (!$userData) {
-            return ['error' => 'Invalid username/email or password'];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'Invalid username/email or password'
+            );
         }
 
-        // Aus den DB-Daten wird ein User Model erstellt
+        // Create user model from database data
         $user = new User($userData);
 
-        // Inaktive User dürfen sich nicht einloggen
+        // Prevent inactive users from logging in
         if (!$user->active) {
-            return ['error' => 'This account is inactive'];
+            return $this->errorResponse(
+                self::HTTP_FORBIDDEN,
+                'This account is inactive'
+            );
         }
 
-        // Passwort gegen den gespeicherten Hash prüfen
+        // Validate password against stored password hash
         if (!$user->checkPassword($password)) {
-            return ['error' => 'Invalid username/email or password'];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'Invalid username/email or password'
+            );
         }
 
-        // Session Werte für eingeloggten User setzen
+        // Store logged-in user data in the session
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user->id;
         $_SESSION['username'] = $user->username;
         $_SESSION['role'] = $user->role;
 
-        // Gast-Cart sichern, DB-Cart laden und mergen
+        // Preserve guest cart before loading persisted cart
         $guestCart = $_SESSION['cart'] ?? [];
 
         $dbCart = [];
+
         foreach ($this->cartDataHandler->loadCartFromDb($user->id) as $item) {
             $dbCart[$item->product_id] = $item->quantity;
         }
 
-        // Gast-Items addieren (Gast-Menge hat Vorrang bei Überschneidung)
+        // Merge guest cart into persisted cart by accumulating quantities
         foreach ($guestCart as $productId => $quantity) {
             $dbCart[$productId] = ($dbCart[$productId] ?? 0) + $quantity;
         }
@@ -95,6 +150,7 @@ class UserHandler
         $_SESSION['cart'] = $dbCart;
 
         return [
+            'success' => true,
             'message' => 'Login successful',
             'userId' => $user->id,
             'username' => $user->username,
@@ -102,28 +158,34 @@ class UserHandler
         ];
     }
 
-    //Logout
-    private function logout()
+    /**
+     * Logs out the current user and persists the session cart before destroying the session
+     *
+     * @return array Success response
+     */
+    private function logout(): array
     {
-        // Cart in DB persistieren bevor die Session gelöscht wird
+        // Persist cart to database before clearing the session
         if (isset($_SESSION['user_id']) && !empty($_SESSION['cart'])) {
-            $userId    = (int)$_SESSION['user_id'];
+            $userId = (int)$_SESSION['user_id'];
             $cartItems = [];
+
             foreach ($_SESSION['cart'] as $productId => $quantity) {
                 $cartItems[] = new Cart([
-                    'userId'    => $userId,
+                    'userId' => $userId,
                     'productId' => (int)$productId,
-                    'quantity'  => $quantity,
+                    'quantity' => $quantity,
                 ]);
             }
+
             $this->cartDataHandler->saveCartToDb($userId, $cartItems);
         }
 
-        //Session Daten löschen
+        // Clear session data
         $_SESSION = [];
 
-        // Session Cookie entfernen falls vorhanden
-        if (ini_get("session.use_cookies")) {
+        // Remove session cookie if session cookies are enabled
+        if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
 
             setcookie(
@@ -139,72 +201,139 @@ class UserHandler
 
         session_destroy();
 
-        return ['message' => 'Logout successful'];
+        return [
+            'success' => true,
+            'message' => 'Logout successful'
+        ];
     }
 
-    //Register
-    private function register(array $data)
+    /**
+     * Registers a new customer account and creates the initial payment method
+     *
+     * @param array $data User and payment method registration data
+     * @return array Success response or error details
+     */
+    private function register(array $data): array
     {
-        foreach (['salutation', 'firstname', 'lastname', 'address', 'zip', 'city', 'email', 'username', 'password'] as $field) {
+        // Validate required user fields
+        foreach (
+            [
+                'salutation',
+                'firstname',
+                'lastname',
+                'address',
+                'zip',
+                'city',
+                'email',
+                'username',
+                'password'
+            ] as $field
+        ) {
             if (empty($data[$field])) {
-                return ['error' => "Field '$field' is required"];
+                return $this->errorResponse(
+                    self::HTTP_BAD_REQUEST,
+                    "Field '$field' is required"
+                );
             }
         }
 
+        // Validate required payment method fields
         foreach (['paymentName', 'paymentType', 'cardNumber'] as $field) {
             if (!isset($data[$field]) || $data[$field] === '') {
-                return ['error' => "Field '$field' is required"];
+                return $this->errorResponse(
+                    self::HTTP_BAD_REQUEST,
+                    "Field '$field' is required"
+                );
             }
         }
 
+        // Create user account
         $userId = $this->userDataHandler->createUser($data);
 
         if (is_int($userId)) {
-            $this->paymentDataHandler->createPaymentMethod($userId, $data);
-            return ['message' => 'Registration successful'];
-        } elseif ($userId === "doubleEntry") {
-            return ['error' => 'Email or username already taken!'];
-        } else {
-            return ['error' => 'Registration failed due to a database error'];
+            $paymentCreated = $this->paymentDataHandler->createPaymentMethod(
+                $userId,
+                $data
+            );
+
+            if (!$paymentCreated) {
+                return $this->errorResponse(
+                    self::HTTP_INTERNAL_SERVER_ERROR,
+                    'User was created, but payment method could not be saved'
+                );
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Registration successful'
+            ];
         }
+
+        if ($userId === 'doubleEntry') {
+            return $this->errorResponse(
+                self::HTTP_CONFLICT,
+                'Email or username already taken!'
+            );
+        }
+
+        return $this->errorResponse(
+            self::HTTP_INTERNAL_SERVER_ERROR,
+            'Registration failed due to a database error'
+        );
     }
 
-    private function status()
+    /**
+     * Returns current login status and cart count for navigation and access checks
+     *
+     * @return array Session status response
+     */
+    private function status(): array
     {
         $cartCount = array_sum($_SESSION['cart'] ?? []);
 
         if (!isset($_SESSION['user_id'])) {
             return [
-                'loggedIn'  => false,
-                'role'      => 'guest',
+                'loggedIn' => false,
+                'userId' => null,
+                'role' => 'guest',
                 'cartCount' => $cartCount
             ];
         }
 
         return [
-            'loggedIn'  => true,
-            'userId'    => $_SESSION['user_id'],
-            'username'  => $_SESSION['username'],
-            'role'      => $_SESSION['role'],
+            'loggedIn' => true,
+            'userId' => $_SESSION['user_id'],
+            'username' => $_SESSION['username'],
+            'role' => $_SESSION['role'],
             'cartCount' => $cartCount
         ];
     }
 
-
-    private function getProfile()
+    /**
+     * Retrieves the profile data of the currently logged-in user
+     *
+     * @return array User profile data or error details
+     */
+    private function getProfile(): array
     {
+        // User authentication check
         if (!isset($_SESSION['user_id'])) {
-            return [
-                'error' => 'You must be logged in'
-            ];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'You must be logged in'
+            );
         }
 
-        $userData = $this->userDataHandler->getUserById($_SESSION['user_id']);
+        // Load current user profile
+        $userData = $this->userDataHandler->getUserById(
+            (int)$_SESSION['user_id']
+        );
 
         if (!$userData) {
-            return [
-                'error' => 'User not found'
-            ];
+            return $this->errorResponse(
+                self::HTTP_NOT_FOUND,
+                'User not found'
+            );
         }
 
         $user = new User($userData);
@@ -212,44 +341,56 @@ class UserHandler
         return $user->toArray();
     }
 
-    private function updateProfile(array $data)
+    /**
+     * Updates the profile data of the currently logged-in user after password confirmation
+     *
+     * @param array $data Updated profile data including password confirmation
+     * @return array Success response or error details
+     */
+    private function updateProfile(array $data): array
     {
+        // User authentication check
         if (!isset($_SESSION['user_id'])) {
-            return [
-                'error' => 'You must be logged in'
-            ];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'You must be logged in'
+            );
         }
 
+        // Load current user before updating
         $userData = $this->userDataHandler->getUserById(
-            $_SESSION['user_id']
+            (int)$_SESSION['user_id']
         );
 
         if (!$userData) {
-            return [
-                'error' => 'User not found'
-            ];
+            return $this->errorResponse(
+                self::HTTP_NOT_FOUND,
+                'User not found'
+            );
         }
 
         $user = new User($userData);
-
         $password = $data['password'] ?? '';
 
-        // Passwort bestätigen
+        // Confirm password before allowing profile updates
         if (!$user->checkPassword($password)) {
-            return [
-                'error' => 'Incorrect password'
-            ];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'Incorrect password'
+            );
         }
 
+        // Persist profile changes
         $success = $this->userDataHandler->updateUser(
-            $_SESSION['user_id'],
+            (int)$_SESSION['user_id'],
             $data
         );
 
         if (!$success) {
-            return [
-                'error' => 'Failed to update profile'
-            ];
+            return $this->errorResponse(
+                self::HTTP_INTERNAL_SERVER_ERROR,
+                'Failed to update profile'
+            );
         }
 
         return [
