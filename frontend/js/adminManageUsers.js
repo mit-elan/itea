@@ -1,36 +1,52 @@
 "use strict";
+/**
+ * Admin user management page
+ * Loads all users, manages active/inactive status,
+ * and displays order history with order details.
+ */
 $(document).ready(function () {
-    // Admin access only - initialize page if authorized
+    // Admin access only
     requireRole("admin", function () {
         loadUsers();
     });
+    // Toggle customer active/inactive status
     $("#user-table-body").on("click", ".toggle-user-status-btn", function () {
         const userId = Number($(this).data("user-id"));
         const currentActive = String($(this).data("active")) === "true";
         setUserActive(userId, !currentActive);
     });
+    // Open order history for selected user
     $("#user-table-body").on("click", ".view-orders-btn", function () {
         const userId = Number($(this).data("user-id"));
         const userName = String($(this).data("user-name"));
         loadUserOrders(userId, userName);
     });
+    // Load details for selected order inside the modal
     $(document).on("click", ".view-order-details-btn", function () {
         const orderId = Number($(this).data("order-id"));
         loadOrderDetails(orderId);
     });
+    // Remove selected item from an order
     $(document).on("click", ".remove-order-item-btn", function () {
         const orderId = Number($(this).data("order-id"));
         const orderItemId = Number($(this).data("order-item-id"));
         removeOrderItem(orderId, orderItemId);
     });
+    /**
+     * Loads all users for the admin table.
+     */
     function loadUsers() {
         $("#user-table-body").empty();
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=admin&method=getUsers",
             type: "GET",
             dataType: "json",
-            success: function (users) {
-                users.forEach(function (user) {
+            success: function (response) {
+                if (isAdminUserOrdersErrorResponse(response)) {
+                    showMessage(response.error, "danger");
+                    return;
+                }
+                response.forEach(function (user) {
                     $("#user-table-body").append(createUserRow(user));
                 });
             },
@@ -39,8 +55,11 @@ $(document).ready(function () {
             },
         });
     }
+    /**
+     * Creates one user row from the user template.
+     */
     function createUserRow(user) {
-        const row = cloneTemplate("user-row-template");
+        const row = cloneAdminUserTemplate("user-row-template");
         const statusClass = user.active ? "bg-success" : "bg-danger";
         const statusText = user.active ? "Active" : "Inactive";
         const buttonClass = user.active
@@ -69,11 +88,15 @@ $(document).ready(function () {
             .data("user-id", user.id)
             .data("active", user.active)
             .text(buttonText);
+        // Admin users cannot be deactivated from this view
         if (user.role === "admin") {
             row.find(".toggle-user-status-btn").prop("disabled", true);
         }
         return row;
     }
+    /**
+     * Updates the active status of a user.
+     */
     function setUserActive(userId, active) {
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=admin&method=setUserActive",
@@ -85,7 +108,12 @@ $(document).ready(function () {
                 active: active,
             }),
             success: function (response) {
-                showMessage(response.message || "User status updated successfully.", "success");
+                var _a;
+                if (response.error) {
+                    showMessage(response.error, "danger");
+                    return;
+                }
+                showMessage((_a = response.message) !== null && _a !== void 0 ? _a : "User status updated successfully.", "success");
                 loadUsers();
             },
             error: function (xhr) {
@@ -93,6 +121,9 @@ $(document).ready(function () {
             },
         });
     }
+    /**
+     * Loads all orders for a selected user and opens the order modal.
+     */
     function loadUserOrders(userId, userName) {
         $("#userOrdersModalLabel").text(`Orders from ${userName}`);
         showModalLoading("#modal-user-orders", "Loading orders...");
@@ -126,8 +157,11 @@ $(document).ready(function () {
             },
         });
     }
+    /**
+     * Renders the selected user's orders inside the modal.
+     */
     function renderUserOrders(orders) {
-        const table = cloneTemplate("user-orders-table-template");
+        const table = cloneAdminUserTemplate("user-orders-table-template");
         const tableBody = table.find(".user-orders-table-body");
         orders.forEach(function (order) {
             tableBody.append(createUserOrderRow(order));
@@ -135,19 +169,24 @@ $(document).ready(function () {
         $("#modal-user-orders").empty().append(table);
     }
     function createUserOrderRow(order) {
-        const row = cloneTemplate("user-order-row-template");
+        const row = cloneAdminUserTemplate("user-order-row-template");
         row.find(".user-order-id").text(`#${order.id}`);
-        row.find(".user-order-date").text(formatDate(order.date));
+        row.find(".user-order-date").text(formatAdminUserDate(order.date));
         row.find(".user-order-invoice").text(order.invoice_number);
-        row.find(".user-order-total").text(formatCurrency(order.total_price));
+        row
+            .find(".user-order-total")
+            .text(formatAdminUserCurrency(order.total_price));
         row.find(".view-order-details-btn").data("order-id", order.id);
         return row;
     }
     function showUserOrdersEmpty(userName) {
-        const emptyMessage = cloneTemplate("user-orders-empty-template");
+        const emptyMessage = cloneAdminUserTemplate("user-orders-empty-template");
         emptyMessage.find(".user-orders-empty-name").text(userName);
         $("#modal-user-orders").empty().append(emptyMessage);
     }
+    /**
+     * Loads details for one selected order.
+     */
     function loadOrderDetails(orderId) {
         $("#modal-order-details-wrapper").show();
         showModalLoading("#modal-order-details", "Loading order details...");
@@ -170,8 +209,11 @@ $(document).ready(function () {
             },
         });
     }
+    /**
+     * Renders order details below the selected user's order list.
+     */
     function renderOrderDetails(order, items) {
-        const details = cloneTemplate("user-order-details-template");
+        const details = cloneAdminUserTemplate("user-order-details-template");
         details.find(".user-order-detail-title").text(`Order #${order.id}`);
         details
             .find(".user-order-detail-customer")
@@ -181,13 +223,15 @@ $(document).ready(function () {
             .find(".user-order-detail-address")
             .text(`${order.address}, ${order.zip} ${order.city}`);
         details.find(".user-order-detail-invoice").text(order.invoice_number);
-        details.find(".user-order-detail-date").text(formatDate(order.date));
+        details
+            .find(".user-order-detail-date")
+            .text(formatAdminUserDate(order.date));
         details
             .find(".user-order-detail-total")
-            .text(formatCurrency(order.total_price));
+            .text(formatAdminUserCurrency(order.total_price));
         const itemContainer = details.find(".user-order-detail-items-body");
         if (items.length === 0) {
-            itemContainer.append(cloneTemplate("user-order-detail-empty-row-template"));
+            itemContainer.append(cloneAdminUserTemplate("user-order-detail-empty-row-template"));
         }
         else {
             items.forEach(function (item) {
@@ -197,20 +241,23 @@ $(document).ready(function () {
         $("#modal-order-details").empty().append(details);
     }
     function createOrderItemRow(orderId, item) {
-        const row = cloneTemplate("user-order-detail-item-row-template");
+        const row = cloneAdminUserTemplate("user-order-detail-item-row-template");
         const itemTotal = Number(item.unit_price) * Number(item.quantity);
         row.find(".user-order-item-name").text(item.name);
         row.find(".user-order-item-quantity").text(item.quantity);
         row
             .find(".user-order-item-unit-price")
-            .text(formatCurrency(item.unit_price));
-        row.find(".user-order-item-total").text(formatCurrency(itemTotal));
+            .text(formatAdminUserCurrency(item.unit_price));
+        row.find(".user-order-item-total").text(formatAdminUserCurrency(itemTotal));
         row
             .find(".remove-order-item-btn")
             .data("order-id", orderId)
             .data("order-item-id", item.id);
         return row;
     }
+    /**
+     * Marks one order item as removed and reloads the order details.
+     */
     function removeOrderItem(orderId, orderItemId) {
         if (!confirm("Remove this product from the order?")) {
             return;
@@ -225,7 +272,12 @@ $(document).ready(function () {
                 orderItemId: orderItemId,
             }),
             success: function (response) {
-                showMessage(response.message || "Order item removed successfully.", "success");
+                var _a;
+                if (response.error) {
+                    showMessage(response.error, "danger");
+                    return;
+                }
+                showMessage((_a = response.message) !== null && _a !== void 0 ? _a : "Order item removed successfully.", "success");
                 loadOrderDetails(orderId);
             },
             error: function (xhr) {
@@ -234,26 +286,26 @@ $(document).ready(function () {
         });
     }
     function showModalLoading(containerSelector, message) {
-        const loadingMessage = cloneTemplate("modal-loading-template");
+        const loadingMessage = cloneAdminUserTemplate("modal-loading-template");
         loadingMessage.find(".modal-loading-message").text(message);
         $(containerSelector).empty().append(loadingMessage);
     }
     function showModalError(containerSelector, message) {
-        const errorMessage = cloneTemplate("modal-error-template");
+        const errorMessage = cloneAdminUserTemplate("modal-error-template");
         errorMessage.find(".modal-error-message").text(message);
         $(containerSelector).empty().append(errorMessage);
     }
-    function cloneTemplate(templateId) {
+    function cloneAdminUserTemplate(templateId) {
         const template = document.getElementById(templateId);
         if (!template || !template.content.firstElementChild) {
             return $();
         }
         return $(template.content.firstElementChild.cloneNode(true));
     }
-    function formatCurrency(value) {
+    function formatAdminUserCurrency(value) {
         return `€ ${Number(value !== null && value !== void 0 ? value : 0).toFixed(2)}`;
     }
-    function formatDate(dateString) {
+    function formatAdminUserDate(dateString) {
         const date = new Date(dateString.replace(" ", "T"));
         if (isNaN(date.getTime())) {
             return dateString;
@@ -280,13 +332,14 @@ $(document).ready(function () {
             typeof response.error === "string");
     }
     function showBackendError(xhr) {
+        var _a;
         let errorMessage = "An unexpected error occurred.";
         if (xhr.responseText) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                errorMessage = response.error || errorMessage;
+                errorMessage = (_a = response.error) !== null && _a !== void 0 ? _a : errorMessage;
             }
-            catch (_a) {
+            catch (_b) {
                 errorMessage = xhr.responseText;
             }
         }

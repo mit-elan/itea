@@ -1,8 +1,43 @@
-interface PaymentMethodResponse {
+/**
+ * Checkout page logic
+ * Loads the cart, saved payment methods and vouchers,
+ * applies vouchers and places the final order.
+ */
+
+interface CheckoutPaymentMethodResponse {
   id: number;
   label: string;
   card_number: string;
   is_bank_account: number; // 0 = Card, 1 = Bank Account
+}
+
+interface CheckoutCartResponse {
+  success?: boolean;
+  cartItems: Cart[];
+  error?: string;
+}
+
+interface CheckoutPaymentMethodsResponse {
+  success?: boolean;
+  paymentMethods: CheckoutPaymentMethodResponse[];
+  error?: string;
+}
+
+interface CheckoutVoucherApplyResponse {
+  success?: boolean;
+  discount: number;
+  finalAmount: number;
+  error?: string;
+}
+
+interface CheckoutOrderResponse {
+  success?: boolean;
+  orderId?: number;
+  error?: string;
+}
+
+interface CheckoutBackendErrorResponse {
+  error?: string;
 }
 
 $(document).ready(function () {
@@ -11,148 +46,220 @@ $(document).ready(function () {
 
   checkLoginStatus().then(function (response) {
     updateNavigation(response);
-    if (response.loggedIn && response.role === "customer") {
-      userId = response.userId;
-      loadCart();
-      loadPaymentMethods();
-      loadSavedVouchers();
+
+    if (!response.loggedIn || response.role !== "customer") {
+      window.location.href = "/itea/frontend/sites/login.html";
+      return;
     }
+
+    userId = response.userId;
+
+    loadCart();
+    loadPaymentMethods();
+    loadSavedVouchers();
   });
 
-  function applyVoucher(code: string): void {
-    $("#checkout-voucher-error").text("").addClass("d-none");
-    const cartAmount = parseFloat($("#subtotal-value").text().replace("€", ""));
-    $.ajax({
-      url: "/itea/backend/serviceHandler.php?handler=vouchers&method=apply",
-      type: "POST",
-      contentType: "application/json",
-      data: JSON.stringify({ code, cartAmount }),
-      success: function (response) {
-        appliedVoucherCode = code;
-        $("#voucher-value").text(`- €${Number(response.discount).toFixed(2)}`);
-        $("#voucher-row").removeClass("d-none").addClass("d-flex");
-        $("#total-value").text(`€${Number(response.finalAmount).toFixed(2)}`);
-      },
-      error: function (xhr) {
-        const msg = xhr.responseJSON?.error || "Unknown error";
-        $("#checkout-voucher-error").text(msg).removeClass("d-none");
-      },
-    });
-  }
-
   $("#apply-voucher-button").on("click", function () {
-    const code = ($(".cart-voucher-input").val() as string)
+    const code = getCheckoutInputValue(".cart-voucher-input")
       .trim()
       .toUpperCase();
+
     if (!code) {
       $("#checkout-voucher-error")
         .text("Please enter a voucher code.")
         .removeClass("d-none");
       return;
     }
+
     $("input[name='voucher_selection']").prop("checked", false);
     applyVoucher(code);
   });
 
-  function loadCart() {
+  $("#remove-voucher").on("click", function () {
+    appliedVoucherCode = null;
+
+    $("input[name='voucher_selection']").prop("checked", false);
+    $("#voucher-row").addClass("d-none").removeClass("d-flex");
+    $("#checkout-voucher-error").text("").addClass("d-none");
+    $("#total-value").text($("#subtotal-value").text());
+  });
+
+  $("#order-button").on("click", function (event) {
+    event.preventDefault();
+    placeOrder();
+  });
+
+  function applyVoucher(code: string): void {
+    $("#checkout-voucher-error").text("").addClass("d-none");
+
+    const cartAmount = parseFloat(
+      $("#subtotal-value").text().replace("€", ""),
+    );
+
+    $.ajax({
+      url: "/itea/backend/serviceHandler.php?handler=vouchers&method=apply",
+      type: "POST",
+      contentType: "application/json",
+      dataType: "json",
+      data: JSON.stringify({ code, cartAmount }),
+
+      success: function (response: CheckoutVoucherApplyResponse) {
+        if (response.error) {
+          $("#checkout-voucher-error")
+            .text(response.error)
+            .removeClass("d-none");
+          return;
+        }
+
+        appliedVoucherCode = code;
+
+        $("#voucher-value").text(formatCheckoutDiscount(response.discount));
+        $("#voucher-row").removeClass("d-none").addClass("d-flex");
+        $("#total-value").text(formatCheckoutCurrency(response.finalAmount));
+      },
+
+      error: function (xhr: JQuery.jqXHR) {
+        $("#checkout-voucher-error")
+          .text(getCheckoutBackendError(xhr))
+          .removeClass("d-none");
+      },
+    });
+  }
+
+  function loadCart(): void {
     $.ajax({
       url:
         "/itea/backend/serviceHandler.php?handler=cart&method=loadCart&userId=" +
         userId,
       type: "GET",
       dataType: "json",
-      success: function (response) {
+
+      success: function (response: CheckoutCartResponse) {
         if (response.error) {
           alert("Failed to load cart: " + response.error);
           return;
         }
+
         renderCart(response.cartItems);
       },
-      error: function (err) {
-        console.error("Error loading cart: ", err);
+
+      error: function (xhr: JQuery.jqXHR) {
+        console.error("Error loading cart:", getCheckoutBackendError(xhr));
         alert("Failed to load cart.");
       },
     });
   }
 
-  function renderCart(cartItems: Cart[]) {
-    const $cartContainer = $("#cart-items-container");
-    $cartContainer.empty();
+  function renderCart(cartItems: Cart[]): void {
+    const cartContainer = $("#cart-items-container");
+    cartContainer.empty();
 
     if (!cartItems || cartItems.length === 0) {
-      $cartContainer.append("<p class='text-center'>Your cart is empty.</p>");
+      cartContainer.append(
+        $("<p>")
+          .addClass("text-center")
+          .text("Your cart is empty."),
+      );
       return;
     }
 
     const itemTemplate = document.getElementById(
       "checkout-item-template",
-    ) as HTMLTemplateElement;
+    ) as HTMLTemplateElement | null;
+
+    const itemTemplateElement = itemTemplate?.content.firstElementChild;
+
+    if (!itemTemplateElement) {
+      alert("Checkout item template could not be loaded.");
+      return;
+    }
+
     let total = 0;
 
-    cartItems.forEach(function (item) {
+    cartItems.forEach(function (item: Cart) {
       const subtotal = item.price * item.quantity;
       total += subtotal;
 
-      const $item = $(
-        document.importNode(itemTemplate.content, true)
-          .firstElementChild as HTMLElement,
-      );
+      const cartItem = $(itemTemplateElement.cloneNode(true) as HTMLElement);
 
-      $item
+      cartItem
         .find(".cart-item-image")
         .attr("src", `/itea/backend/productpictures/${item.file_path}`)
         .attr("alt", item.name);
-      $item.find(".cart-item-title").text(item.name);
-      $item.find(".cart-item-quantity").text(`100g x ${item.quantity}`);
-      $item.find(".cart-item-subtotal").text(`€${Number(subtotal).toFixed(2)}`);
 
-      $cartContainer.append($item);
+      cartItem.find(".cart-item-title").text(item.name);
+      cartItem.find(".cart-item-quantity").text(`100g x ${item.quantity}`);
+      cartItem
+        .find(".cart-item-subtotal")
+        .text(formatCheckoutCurrency(subtotal));
+
+      cartContainer.append(cartItem);
     });
 
-    // Nach der Schleife einmal setzen
-    $("#subtotal-value").text("€" + total.toFixed(2));
-    $("#total-value").text("€" + total.toFixed(2));
+    // Set subtotal and total after all cart items have been rendered
+    $("#subtotal-value").text(formatCheckoutCurrency(total));
+    $("#total-value").text(formatCheckoutCurrency(total));
   }
 
-  function loadPaymentMethods() {
+  function loadPaymentMethods(): void {
     $.ajax({
       url:
         "/itea/backend/serviceHandler.php?handler=payment&method=getByUserId&userId=" +
         userId,
       type: "GET",
       dataType: "json",
-      success: function (response) {
+
+      success: function (response: CheckoutPaymentMethodsResponse) {
         if (response.error) {
           alert("Failed to load payment methods: " + response.error);
           return;
         }
+
         renderPaymentMethods(response.paymentMethods);
       },
-      error: function (err) {
-        console.error("Error loading payment methods: ", err);
+
+      error: function (xhr: JQuery.jqXHR) {
+        console.error(
+          "Error loading payment methods:",
+          getCheckoutBackendError(xhr),
+        );
         alert("Failed to load payment methods.");
       },
     });
   }
 
-  function renderPaymentMethods(paymentMethods: PaymentMethodResponse[]) {
-    const $paymentContainer = $("#payment-methods-container");
-    $paymentContainer.empty();
+  function renderPaymentMethods(
+    paymentMethods: CheckoutPaymentMethodResponse[],
+  ): void {
+    const paymentContainer = $("#payment-methods-container");
+    paymentContainer.empty();
 
     if (!paymentMethods || paymentMethods.length === 0) {
-      $paymentContainer.append(
-        "<p class='text-center'>No saved payment methods found.</p>",
+      paymentContainer.append(
+        $("<p>")
+          .addClass("text-center")
+          .text("No saved payment methods found."),
       );
       return;
     }
 
     const paymentTemplate = document.getElementById(
       "payment-method-template",
-    ) as HTMLTemplateElement;
+    ) as HTMLTemplateElement | null;
 
-    paymentMethods.forEach(function (method, index) {
+    const paymentTemplateElement = paymentTemplate?.content.firstElementChild;
+
+    if (!paymentTemplateElement) {
+      alert("Payment method template could not be loaded.");
+      return;
+    }
+
+    paymentMethods.forEach(function (
+      method: CheckoutPaymentMethodResponse,
+      index: number,
+    ) {
       const last4 = method.card_number.slice(-4);
-      const isBankAccount = method.is_bank_account;
+      const isBankAccount = method.is_bank_account === 1;
       const inputId = `pay${index}`;
 
       const typeLabel = isBankAccount ? "Bank Transfer (IBAN)" : "Credit Card";
@@ -160,42 +267,47 @@ $(document).ready(function () {
         ? "DE XXXX XXXX XXXX " + last4
         : "Card ending in " + last4;
 
-      const $method = $(
-        document.importNode(paymentTemplate.content, true)
-          .firstElementChild as HTMLElement,
+      const paymentMethod = $(
+        paymentTemplateElement.cloneNode(true) as HTMLElement,
       );
 
-      $method
+      paymentMethod
         .find("input")
         .attr("id", inputId)
         .attr("value", String(method.id))
         .prop("checked", index === 0);
-      $method.find("label").attr("for", inputId);
-      $method
+
+      paymentMethod.find("label").attr("for", inputId);
+      paymentMethod
         .find(".payment-type-label")
         .text(`${method.label} - ${typeLabel}`);
-      $method.find(".payment-sub-label").text(subLabel);
+      paymentMethod.find(".payment-sub-label").text(subLabel);
 
-      $paymentContainer.append($method);
+      paymentContainer.append(paymentMethod);
     });
   }
 
-  function loadSavedVouchers() {
+  function loadSavedVouchers(): void {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=vouchers&method=getByUserId",
       type: "GET",
       dataType: "json",
+
       success: function (vouchers: Voucher[]) {
         renderCheckoutVouchers(vouchers);
       },
-      error: function (err) {
-        console.error("Error loading saved vouchers", err);
+
+      error: function (xhr: JQuery.jqXHR) {
+        console.error("Error loading saved vouchers:", getCheckoutBackendError(xhr));
       },
     });
   }
 
   function renderCheckoutVouchers(vouchers: Voucher[]): void {
-    const activeVouchers = vouchers.filter((v) => v.status === "active");
+    const activeVouchers = vouchers.filter(function (voucher: Voucher) {
+      return voucher.status === "active";
+    });
+
     if (activeVouchers.length === 0) {
       $("#saved-vouchers-section").addClass("d-none");
       return;
@@ -203,60 +315,56 @@ $(document).ready(function () {
 
     $("#saved-vouchers-section").removeClass("d-none");
 
-    const $container = $("#saved-vouchers-container");
-    $container.empty();
+    const container = $("#saved-vouchers-container");
+    container.empty();
 
     const voucherTemplate = document.getElementById(
       "voucher-selection-template",
-    ) as HTMLTemplateElement;
+    ) as HTMLTemplateElement | null;
 
-    activeVouchers.forEach((voucher) => {
+    const voucherTemplateElement = voucherTemplate?.content.firstElementChild;
+
+    if (!voucherTemplateElement) {
+      console.error("Voucher selection template could not be loaded.");
+      return;
+    }
+
+    activeVouchers.forEach(function (voucher: Voucher) {
       const inputId = `voucher-${voucher.code}`;
-      const $item = $(
-        document.importNode(voucherTemplate.content, true)
-          .firstElementChild as HTMLElement,
+      const voucherItem = $(
+        voucherTemplateElement.cloneNode(true) as HTMLElement,
       );
 
-      $item.find("input").attr("id", inputId).attr("value", voucher.code);
-      $item.find("label").attr("for", inputId);
-      $item.find(".voucher-code-label").text(voucher.code);
-      $item.find(".voucher-expiry-label").text(
+      voucherItem.find("input").attr("id", inputId).attr("value", voucher.code);
+      voucherItem.find("label").attr("for", inputId);
+      voucherItem.find(".voucher-code-label").text(voucher.code);
+      voucherItem.find(".voucher-expiry-label").text(
         `Expires: ${new Date(voucher.expiryDate).toLocaleDateString("de-DE", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
         })}`,
       );
-      $item
+      voucherItem
         .find(".voucher-amount-label")
-        .text(`€ ${voucher.remainingValue.toFixed(2)}`);
+        .text(formatCheckoutCurrency(voucher.remainingValue));
 
-      $container.append($item);
+      container.append(voucherItem);
     });
 
-    $container.on("change", "input[name='voucher_selection']", function () {
+    container.off("change", "input[name='voucher_selection']");
+    container.on("change", "input[name='voucher_selection']", function () {
       $(".cart-voucher-input").val("");
       $("#checkout-voucher-error").text("").addClass("d-none");
-      applyVoucher($(this).val() as string);
+      applyVoucher(String($(this).val()));
     });
   }
 
-  $("#remove-voucher").on("click", function () {
-    appliedVoucherCode = null;
-    $("input[name='voucher_selection']").prop("checked", false);
-    $("#voucher-row").addClass("d-none").removeClass("d-flex");
-    $("#checkout-voucher-error").text("").addClass("d-none");
-    $("#total-value").text($("#subtotal-value").text());
-  });
-
-  $("#order-button").on("click", function (e) {
-    e.preventDefault();
-    placeOrder();
-  });
-
-  function placeOrder() {
+  function placeOrder(): void {
     $("#checkout-order-error").text("").addClass("d-none");
+
     const paymentMethodId = $("input[name='payment']:checked").val();
+
     if (!paymentMethodId) {
       $("#checkout-order-error")
         .text("Please select a payment method.")
@@ -268,20 +376,65 @@ $(document).ready(function () {
       url: "/itea/backend/serviceHandler.php?handler=orders&method=placeOrder",
       type: "POST",
       contentType: "application/json",
-      data: JSON.stringify({ userId, paymentMethodId, appliedVoucherCode }),
-      success: function (response) {
-        if (response.error) {
-          $("#checkout-order-error").text(response.error).removeClass("d-none");
+      dataType: "json",
+      data: JSON.stringify({
+        userId,
+        paymentMethodId,
+        appliedVoucherCode,
+      }),
+
+      success: function (response: CheckoutOrderResponse) {
+        if (response.error || !response.orderId) {
+          $("#checkout-order-error")
+            .text(response.error ?? "Order could not be placed.")
+            .removeClass("d-none");
           return;
         }
+
         window.location.href =
           "/itea/frontend/sites/orderDetails.html?id=" +
           response.orderId +
           "&success=1";
       },
-      error: function (err) {
-        console.error("Error placing order: ", err);
+
+      error: function (xhr: JQuery.jqXHR) {
+        console.error("Error placing order:", getCheckoutBackendError(xhr));
+        $("#checkout-order-error")
+          .text(getCheckoutBackendError(xhr))
+          .removeClass("d-none");
       },
     });
+  }
+
+  function getCheckoutInputValue(selector: string): string {
+    const value = $(selector).val();
+
+    return typeof value === "string" ? value : "";
+  }
+
+  function formatCheckoutCurrency(value: number | string | null): string {
+    return `€${Number(value ?? 0).toFixed(2)}`;
+  }
+
+  function formatCheckoutDiscount(value: number | string | null): string {
+    return `- ${formatCheckoutCurrency(value)}`;
+  }
+
+  function getCheckoutBackendError(xhr: JQuery.jqXHR): string {
+    const fallbackMessage = "Unknown error";
+
+    if (!xhr.responseText) {
+      return fallbackMessage;
+    }
+
+    try {
+      const response = JSON.parse(
+        xhr.responseText,
+      ) as CheckoutBackendErrorResponse;
+
+      return response.error ?? fallbackMessage;
+    } catch {
+      return xhr.responseText;
+    }
   }
 });

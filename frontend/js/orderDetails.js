@@ -1,22 +1,28 @@
 "use strict";
+/**
+ * Order details page
+ * Loads a single order, renders order items,
+ * and generates the invoice PDF for download.
+ */
 let currentOrder = null;
 $(document).ready(function () {
     loadOrderDetails();
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("success") === "1") {
-        $("#order-success").removeClass("d-none");
-    }
+    showOrderSuccessMessage();
     $(document).on("click", "#download-invoice", function () {
         generateInvoicePdf();
     });
 });
+function showOrderSuccessMessage() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "1") {
+        $("#order-success").removeClass("d-none");
+    }
+}
 function loadOrderDetails() {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get("id");
     if (!orderId) {
-        $("#order-error")
-            .removeClass("d-none")
-            .text("No order ID was provided.");
+        showOrderDetailsError("No order ID was provided.");
         return;
     }
     $.ajax({
@@ -26,17 +32,15 @@ function loadOrderDetails() {
         dataType: "json",
         success: function (response) {
             if (isOrderDetailsErrorResponse(response)) {
-                $("#order-error").removeClass("d-none").text(response.error);
+                showOrderDetailsError(response.error);
                 return;
             }
             currentOrder = response;
             renderOrderDetails(response);
         },
         error: function (xhr) {
-            console.log(xhr.responseText);
-            $("#order-error")
-                .removeClass("d-none")
-                .text("Failed to load order details.");
+            console.error("Error loading order details:", getOrderDetailsBackendError(xhr));
+            showOrderDetailsError("Failed to load order details.");
         },
     });
 }
@@ -47,6 +51,7 @@ function renderOrderDetails(response) {
     $("#order-date").text(response.order.date);
     $("#order-invoice").text(response.order.invoice_number);
     $("#order-total").text(formatOrderDetailsCurrency(response.order.total_price));
+    // Show voucher details only if the order used a voucher
     if (response.order.voucher_code) {
         $("#subtotal-heading").removeClass("d-none");
         $("#voucher-heading").removeClass("d-none");
@@ -90,11 +95,14 @@ function createInvoiceElement(orderResponse) {
     invoice.find(".invoice-customer-email").text(order.email);
     invoice.find(".invoice-number").text(order.invoice_number);
     invoice.find(".invoice-date").text(order.date);
-    invoice.find(".invoice-total").text(formatOrderDetailsCurrency(order.total_price));
+    invoice
+        .find(".invoice-total")
+        .text(formatOrderDetailsCurrency(order.total_price));
     const invoiceItems = invoice.find(".invoice-items");
     items.forEach(function (item) {
         invoiceItems.append(createInvoiceItemRow(item));
     });
+    // Add voucher section to invoice only if a voucher was used
     if (order.voucher_code) {
         invoice
             .find(".invoice-voucher-container")
@@ -136,11 +144,29 @@ function isOrderDetailsErrorResponse(response) {
 }
 function cloneOrderDetailsTemplate(templateId) {
     const template = document.getElementById(templateId);
-    if (!template || !template.content.firstElementChild) {
+    const templateElement = template === null || template === void 0 ? void 0 : template.content.firstElementChild;
+    if (!templateElement) {
         return $();
     }
-    return $(template.content.firstElementChild.cloneNode(true));
+    return $(templateElement.cloneNode(true));
 }
 function formatOrderDetailsCurrency(value) {
     return `€ ${Number(value !== null && value !== void 0 ? value : 0).toFixed(2)}`;
+}
+function showOrderDetailsError(message) {
+    $("#order-error").removeClass("d-none").text(message);
+}
+function getOrderDetailsBackendError(xhr) {
+    var _a;
+    const fallbackMessage = "Failed to load order details.";
+    if (!xhr.responseText) {
+        return fallbackMessage;
+    }
+    try {
+        const response = JSON.parse(xhr.responseText);
+        return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
+    }
+    catch (_b) {
+        return xhr.responseText;
+    }
 }

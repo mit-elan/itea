@@ -1,15 +1,26 @@
-const CATEGORY_ID_TO_NAME: { [key: number]: string } = {
-  1: "black",
-  2: "green",
-  3: "fruit",
-  4: "herbal",
-};
+/**
+ * Product listing page
+ * Loads all products, renders product cards,
+ * handles category/search filters and drag-and-drop cart interaction.
+ */
 
-// Flag to prevent the stop event from hiding the zone when a drop just occurred.
-let dropOccurred = false;
+interface ProductsErrorResponse {
+  error?: string;
+}
 
 $(document).ready(function () {
+  const categoryIdToName: Record<number, string> = {
+    1: "black",
+    2: "green",
+    3: "fruit",
+    4: "herbal",
+  };
+
+  // Flag to prevent the stop event from hiding the drop zone when a drop just occurred
+  let dropOccurred = false;
+
   setupFilterLogic();
+
   checkLoginStatus().then(function (response) {
     updateNavigation(response);
     loadProducts();
@@ -19,102 +30,137 @@ $(document).ready(function () {
   $("#search-input").on("input", function () {
     $(".category-chip.active").removeClass("active");
     $("#button-all").addClass("active");
-    const searchTerm = ($(this).val() as string).toLowerCase().trim();
+
+    const searchTerm = String($(this).val() ?? "").toLowerCase().trim();
+
     $("#product-list .product-item").each(function () {
       const title = $(this).find(".tea-card-title").text().toLowerCase();
+
       $(this).toggle(title.includes(searchTerm));
     });
+
+    updateNoProductsMessage();
   });
 
   function loadProducts(): void {
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=products&method=getAll",
-      method: "GET",
+      type: "GET",
       dataType: "json",
-      success: function (data: Product[]) {
+
+      success: function (response: Product[] | ProductsErrorResponse) {
         $("#no-products").hide();
-        if (!data || data.length === 0) {
+
+        if (isProductsErrorResponse(response)) {
+          console.error("Error loading products:", response.error);
+          $("#no-products").show();
+          return;
+        }
+
+        if (!response || response.length === 0) {
           $("#product-list").empty();
           $("#no-products").show();
           return;
         }
-        renderProducts(data);
+
+        renderProducts(response);
         initDragDrop();
       },
-      error: function (err) {
-        console.error("Error loading products: ", err);
+
+      error: function (xhr: JQuery.jqXHR) {
+        console.error("Error loading products:", getProductsBackendError(xhr));
         $("#no-products").show();
       },
     });
   }
 
   function renderProducts(products: Product[]): void {
-    const $container = $("#product-list");
-    $container.empty();
+    const container = $("#product-list");
+    container.empty();
+
     const template = document.getElementById(
       "product-card-template",
-    ) as HTMLTemplateElement;
+    ) as HTMLTemplateElement | null;
 
-    products.forEach((product) => {
-      if (!product.id || !product.name || !product.price) return;
+    const templateElement = template?.content.firstElementChild;
 
-      const categoryName = CATEGORY_ID_TO_NAME[product.categoryId];
+    if (!templateElement) {
+      console.error("Product card template could not be loaded.");
+      $("#no-products").show();
+      return;
+    }
+
+    products.forEach(function (product: Product) {
+      if (!product.id || !product.name || !product.price) {
+        return;
+      }
+
+      const categoryName = categoryIdToName[product.categoryId] ?? "unknown";
       const stars = "★".repeat(Math.floor(product.rating || 0)).padEnd(5, "☆");
       const reviewText =
         typeof product.rating === "number" && product.rating > 0
           ? product.rating + " Star-Rating"
           : "(0 reviews)";
 
-      const $card = $(
-        document.importNode(template.content, true)
-          .firstElementChild as HTMLElement,
-      );
-      $card.attr("data-category", categoryName);
-      $card
+      const card = $(templateElement.cloneNode(true) as HTMLElement);
+
+      card.attr("data-category", categoryName);
+
+      card
         .find(".product-link")
         .attr("href", `productInfo.html?id=${product.id}`);
-      $card
+
+      card
         .find(".tea-card-image")
         .attr("src", `/itea/backend/productpictures/${product.filePath}`)
         .attr("alt", product.name);
-      $card.find(".tea-card-title").text(product.name);
-      $card.find(".tea-card-description").text(product.description);
-      $card.find(".stars").text(stars);
-      $card.find(".review-text").text(reviewText);
-      $card
-        .find(".tea-card-price")
-        .text(`€${Number(product.price).toFixed(2)}`);
-      $card.find(".button-addToCartList").attr("data-id", String(product.id));
-      $container.append($card);
+
+      card.find(".tea-card-title").text(product.name);
+      card.find(".tea-card-description").text(product.description);
+      card.find(".stars").text(stars);
+      card.find(".review-text").text(reviewText);
+      card.find(".tea-card-price").text(formatProductsCurrency(product.price));
+      card.find(".button-addToCartList").attr("data-id", String(product.id));
+
+      container.append(card);
     });
   }
 
   function initDragDrop(): void {
     // Drag a card by its handle. A small custom helper follows the cursor.
-    // When drag starts, show the fixed dropzone below the header.
+    // When dragging starts, show the fixed drop zone below the header.
     $(".product-item").draggable({
       handle: ".drag-handle",
+
       helper: function (this: HTMLElement) {
         const name = $(this).find(".tea-card-title").text();
-        return $(
-          `<div class="drag-helper"><i class="bi bi-bag-plus"></i> ${name}</div>`,
-        );
+
+        return $("<div>")
+          .addClass("drag-helper")
+          .append($("<i>").addClass("bi bi-bag-plus"))
+          .append(" " + name);
       },
+
       cursorAt: { top: 18, left: 18 },
       revert: "invalid",
       zIndex: 9999,
+
       start: function () {
-        dropOccurred = false; // Reset the flag on each new drag start
-        const $zone = $("#drag-drop-zone-fixed");
-        $zone.addClass("active").fadeIn(200);
+        // Reset the flag on each new drag start
+        dropOccurred = false;
+
+        const zone = $("#drag-drop-zone-fixed");
+        zone.addClass("active").fadeIn(200);
       },
+
       stop: function () {
-        const $zone = $("#drag-drop-zone-fixed");
+        const zone = $("#drag-drop-zone-fixed");
+
         // Only hide the zone if no drop just occurred.
-        // If a drop occurred, showDropConfirmation() will handle hiding after error/success message fades.
-        if (!dropOccurred && $zone.hasClass("active")) {
-          $zone.fadeOut(200, function () {
-            $zone.removeClass("active");
+        // If a drop occurred, showDropConfirmation() or showDropError() handles hiding.
+        if (!dropOccurred && zone.hasClass("active")) {
+          zone.fadeOut(200, function () {
+            zone.removeClass("active");
           });
         }
       },
@@ -124,9 +170,13 @@ $(document).ready(function () {
       accept: ".product-item",
       tolerance: "pointer",
       hoverClass: "drop-zone-hover",
+
       drop: function (_event: JQuery.Event, ui: IteaDroppableUi) {
-        dropOccurred = true; // Set flag so stop() won't hide the zone
+        // Set flag so stop() will not hide the zone immediately
+        dropOccurred = true;
+
         const productId = ui.draggable.find(".button-addToCartList").data("id");
+
         if (productId) {
           window.addToCartViaDrag(
             Number(productId),
@@ -138,18 +188,18 @@ $(document).ready(function () {
     });
   }
 
-  // Show a message (success or error) in the drop zone instead of the default, then hide everything.
-  // $zone = Container (on/off), $message = Content inside Container
-  function showDropMessage($message: JQuery): void {
-    const $default = $(".drag-drop-zone-default");
-    const $zone = $("#drag-drop-zone-fixed"); // The outer container
+  // Show a success or error message inside the drop zone and then hide it.
+  // zone = outer container, message = content inside the container
+  function showDropMessage(message: JQuery<HTMLElement>): void {
+    const defaultMessage = $(".drag-drop-zone-default");
+    const zone = $("#drag-drop-zone-fixed");
 
-    $default.hide();
-    $message.fadeIn(200).delay(2000).fadeOut(300);
+    defaultMessage.hide();
+    message.fadeIn(200).delay(2000).fadeOut(300);
 
-    $zone.delay(2000).fadeOut(300, function () {
-      $zone.removeClass("active");
-      $default.show();
+    zone.delay(2000).fadeOut(300, function () {
+      zone.removeClass("active");
+      defaultMessage.show();
       dropOccurred = false;
     });
   }
@@ -166,6 +216,7 @@ $(document).ready(function () {
     $(".category-chip").on("click", function () {
       $(".category-chip").removeClass("active");
       $(this).addClass("active");
+
       const filterValue = $(this).attr("data-category");
 
       if (filterValue === "all") {
@@ -175,8 +226,44 @@ $(document).ready(function () {
         $(`.product-item[data-category="${filterValue}"]`).show();
       }
 
-      const visibleCards = $(".product-item:visible").length;
-      $("#no-products").toggle(visibleCards === 0);
+      updateNoProductsMessage();
     });
+  }
+
+  function updateNoProductsMessage(): void {
+    const visibleCards = $(".product-item:visible").length;
+
+    $("#no-products").toggle(visibleCards === 0);
+  }
+
+  function formatProductsCurrency(value: number | string | null): string {
+    return `€${Number(value ?? 0).toFixed(2)}`;
+  }
+
+  function isProductsErrorResponse(
+    response: unknown,
+  ): response is ProductsErrorResponse {
+    return (
+      typeof response === "object" &&
+      response !== null &&
+      "error" in response &&
+      typeof (response as ProductsErrorResponse).error === "string"
+    );
+  }
+
+  function getProductsBackendError(xhr: JQuery.jqXHR): string {
+    const fallbackMessage = "Failed to load products.";
+
+    if (!xhr.responseText) {
+      return fallbackMessage;
+    }
+
+    try {
+      const response = JSON.parse(xhr.responseText) as ProductsErrorResponse;
+
+      return response.error ?? fallbackMessage;
+    } catch {
+      return xhr.responseText;
+    }
   }
 });
