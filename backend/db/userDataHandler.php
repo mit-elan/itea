@@ -1,30 +1,34 @@
 <?php
 
-/**
- * UserDataHandler
- * Kapselt alle Datenbankzugriffe für User, Authentifizierung und Profilverwaltung.
- */
-
 require_once __DIR__ . '/dbaccess.php';
 
+/**
+ * Data access layer for user persistence, authentication, and profile management.
+ * Handles all database operations related to user accounts.
+ */
 class UserDataHandler
 {
-
     private mysqli $db;
 
+    /**
+     * Initializes the user data handler with a database connection.
+     *
+     * @param DBaccess $db Database connection handler
+     */
     public function __construct(DBaccess $db)
     {
         $this->db = $db->getConnection();
     }
 
-
-    // ── Sprint 1: User / Auth ─────────────────────────────────────
-
-    // Für Login: User über Username oder E-Mail identifizieren
-    public function getUserByIdentifier(
-        string $identifier
-    ): ?array {
-
+    /**
+     * Retrieves a user by username or email address.
+     * The username comparison is case-sensitive, while the email comparison follows the database collation.
+     *
+     * @param string $identifier Username or email address
+     * @return array|null User data if found, null otherwise
+     */
+    public function getUserByIdentifier(string $identifier): ?array
+    {
         $stmt = $this->db->prepare(
             "SELECT id,
                     salutation,
@@ -51,6 +55,7 @@ class UserDataHandler
         );
 
         $stmt->execute();
+
         $user = $stmt
             ->get_result()
             ->fetch_assoc();
@@ -58,11 +63,14 @@ class UserDataHandler
         return $user ?: null;
     }
 
-    // Für bereits eingeloggte user: Userdaten über Session-ID holen
-    public function getUserById(
-        int $id
-    ): ?array {
-
+    /**
+     * Retrieves a user by their database ID.
+     *
+     * @param int $id User identifier
+     * @return array|null User data if found, null otherwise
+     */
+    public function getUserById(int $id): ?array
+    {
         $stmt = $this->db->prepare(
             "SELECT id,
                     salutation,
@@ -83,17 +91,23 @@ class UserDataHandler
 
         $stmt->bind_param("i", $id);
         $stmt->execute();
+
         $user = $stmt
             ->get_result()
             ->fetch_assoc();
+
         return $user ?: null;
     }
 
-    public function updateUser(
-        int $id,
-        array $data
-    ): bool {
-
+    /**
+     * Updates profile data for an existing user.
+     *
+     * @param int $id User identifier
+     * @param array $data Updated profile data with firstname, lastname, email, address, zip, and city
+     * @return bool True if the update query executed successfully
+     */
+    public function updateUser(int $id, array $data): bool
+    {
         $stmt = $this->db->prepare(
             "UPDATE user
              SET first_name = ?,
@@ -119,13 +133,17 @@ class UserDataHandler
         return $stmt->execute();
     }
 
-    public function createUser(
-        array $data
-    ): string|int {
-
+    /**
+     * Creates a new customer user account.
+     * The password is hashed before it is stored.
+     *
+     * @param array $data Registration data with salutation, firstname, lastname, address, zip, city, email, username, and password
+     * @return int|string New user ID on success, doubleEntry for duplicate data, or databaseError on database failure
+     */
+    public function createUser(array $data): string|int
+    {
         $stmt = $this->db->prepare(
-            "INSERT INTO user
-            (
+            "INSERT INTO user (
                 salutation,
                 first_name,
                 last_name,
@@ -146,9 +164,8 @@ class UserDataHandler
             PASSWORD_DEFAULT
         );
 
-        $active = 1;
-
         $role = 'customer';
+        $active = 1;
 
         $stmt->bind_param(
             "ssssssssssi",
@@ -166,36 +183,15 @@ class UserDataHandler
         );
 
         try {
-
             $stmt->execute();
 
             return $stmt->insert_id;
-
         } catch (mysqli_sql_exception $e) {
-
-            if ($e->getCode() == 1062) {
+            if ($e->getCode() === 1062) {
                 return "doubleEntry";
             }
 
             return "databaseError";
         }
     }
-    // ── Sprint 2: Warenkorb / Payment ────────────────────────────
-
-     // Ersetzt den gespeicherten DB-Cart eines Users komplett durch den Session-Cart.
-    // Wird beim Logout aufgerufen.
-
-    // ── Sprint 3: Admin ───────────────────────────────────────────
-
-    // public function createProduct(array $data): bool { ... }
-    // public function updateProduct(int $id, array $data): bool { ... }
-    // public function deleteProduct(int $id): bool { ... }
-    // public function getAllUsers(): array { ... }
-    // public function setUserActive(int $id, bool $active): bool { ... }
-
-    // ── Sprint 4: Gutscheine ──────────────────────────────────────
-
-    // public function createvoucher(array $data): bool { ... }
-    // public function getvoucherByCode(string $code): ?array { ... }
-    // public function redeemvoucher(string $code, int $userId): bool { ... }
 }
