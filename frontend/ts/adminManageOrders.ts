@@ -1,11 +1,43 @@
 /**
- * Handles the dedicated admin order management page.
+ * Handles the admin order management page.
  * Loads all customer orders, displays order details in a modal,
  * and allows admins to remove individual items from an order.
- *
- * Access control is handled through requireRole("admin"), which redirects
- * unauthorized users before the page logic is initialized.
  */
+
+
+interface AdminOrderOverview {
+  id: number;
+  user_id: number;
+  date: string;
+  subtotal: number;
+  voucher: number;
+  total_price: number;
+  invoice_number: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  username: string;
+}
+interface AdminOrderDetailsResponse {
+  order: OrderDetails;
+  items: OrderItem[];
+  error?: string;
+}
+
+interface AdminRemoveOrderItemResponse {
+  success?: boolean;
+  message?: string;
+  error?: string;
+}
+
+interface AdminOrderErrorResponse {
+  success?: false;
+  error: string;
+}
+
+interface BackendErrorResponse {
+  error?: string;
+}
 
 $(document).ready(function () {
   requireRole("admin", function () {
@@ -25,6 +57,9 @@ $(document).ready(function () {
     removeOrderItem(orderId, orderItemId);
   });
 
+  /**
+   * Loads all orders for the admin order overview.
+   */
   function loadOrders(): void {
     $("#orders-table-body").empty();
 
@@ -32,7 +67,10 @@ $(document).ready(function () {
       url: "/itea/backend/serviceHandler.php?handler=admin&method=getAllOrders",
       type: "GET",
       dataType: "json",
-      success: function (response: AdminOrderOverview[] | AdminOrderErrorResponse) {
+
+      success: function (
+        response: AdminOrderOverview[] | AdminOrderErrorResponse,
+      ) {
         if (isAdminOrderErrorResponse(response)) {
           showMessage(response.error, "danger");
           return;
@@ -42,14 +80,21 @@ $(document).ready(function () {
           $("#orders-table-body").append(createOrderRow(order));
         });
       },
+
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
       },
     });
   }
 
+  /**
+   * Creates a table row for one order overview entry.
+   *
+   * @param order Admin order overview data
+   * @returns Table row element
+   */
   function createOrderRow(order: AdminOrderOverview): JQuery<HTMLElement> {
-    const row = cloneTemplate("order-row-template");
+    const row = cloneAdminOrderTemplate("order-row-template");
 
     row.find(".order-id").text(`#${order.id}`);
     row.find(".order-date").text(formatDate(order.date));
@@ -67,11 +112,17 @@ $(document).ready(function () {
     return row;
   }
 
+  /**
+   * Loads details for one order and optionally opens the details modal.
+   *
+   * @param orderId Order identifier
+   * @param showModal Whether the details modal should be opened
+   */
   function loadOrderDetails(orderId: number, showModal: boolean = false): void {
     $("#orderDetailsModalLabel").text(`Order #${orderId}`);
     $("#modal-order-details")
       .empty()
-      .append(cloneTemplate("order-details-loading-template"));
+      .append(cloneAdminOrderTemplate("order-details-loading-template"));
 
     if (showModal) {
       const modalElement = document.getElementById("orderDetailsModal");
@@ -88,11 +139,8 @@ $(document).ready(function () {
         orderId,
       type: "GET",
       dataType: "json",
-      success: function (response: {
-        order: OrderDetails;
-        items: OrderItem[];
-        error?: string;
-      }) {
+
+      success: function (response: AdminOrderDetailsResponse) {
         if (response.error) {
           showMessage(response.error, "danger");
           showOrderDetailsError(response.error);
@@ -101,6 +149,7 @@ $(document).ready(function () {
 
         renderOrderDetails(response.order, response.items);
       },
+
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
         showOrderDetailsError("Order details could not be loaded.");
@@ -108,8 +157,14 @@ $(document).ready(function () {
     });
   }
 
+  /**
+   * Renders order details inside the modal.
+   *
+   * @param order Order detail data
+   * @param items Order item data
+   */
   function renderOrderDetails(order: OrderDetails, items: OrderItem[]): void {
-    const details = cloneTemplate("order-details-template");
+    const details = cloneAdminOrderTemplate("order-details-template");
 
     details.find(".order-detail-title").text(`Order #${order.id}`);
     details
@@ -126,7 +181,9 @@ $(document).ready(function () {
     const itemContainer = details.find(".order-detail-items-body");
 
     if (items.length === 0) {
-      itemContainer.append(cloneTemplate("order-detail-empty-row-template"));
+      itemContainer.append(
+        cloneAdminOrderTemplate("order-detail-empty-row-template"),
+      );
     } else {
       items.forEach(function (item: OrderItem) {
         itemContainer.append(createOrderItemRow(order.id, item));
@@ -136,11 +193,18 @@ $(document).ready(function () {
     $("#modal-order-details").empty().append(details);
   }
 
+  /**
+   * Creates a table row for one order item.
+   *
+   * @param orderId Order identifier
+   * @param item Order item data
+   * @returns Table row element
+   */
   function createOrderItemRow(
     orderId: number,
     item: OrderItem,
   ): JQuery<HTMLElement> {
-    const row = cloneTemplate("order-detail-item-row-template");
+    const row = cloneAdminOrderTemplate("order-detail-item-row-template");
     const itemTotal = Number(item.unit_price) * Number(item.quantity);
 
     row.find(".order-item-name").text(item.name);
@@ -154,6 +218,12 @@ $(document).ready(function () {
     return row;
   }
 
+  /**
+   * Removes one item from an order and reloads the overview and detail view.
+   *
+   * @param orderId Order identifier
+   * @param orderItemId Order item identifier
+   */
   function removeOrderItem(orderId: number, orderItemId: number): void {
     if (!confirm("Remove this product line from the order?")) {
       return;
@@ -168,30 +238,48 @@ $(document).ready(function () {
         orderId: orderId,
         orderItemId: orderItemId,
       }),
-      success: function (response: { message?: string }) {
+
+      success: function (response: AdminRemoveOrderItemResponse) {
+        if (response.error) {
+          showMessage(response.error, "danger");
+          return;
+        }
+
         showMessage(
-          response.message || "Order item removed successfully.",
+          response.message ?? "Order item removed successfully.",
           "success",
         );
 
         loadOrders();
         loadOrderDetails(orderId, false);
       },
+
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
       },
     });
   }
 
+  /**
+   * Shows an error message inside the order details modal.
+   *
+   * @param message Error message to display
+   */
   function showOrderDetailsError(message: string): void {
-    const errorTemplate = cloneTemplate("order-details-error-template");
+    const errorTemplate = cloneAdminOrderTemplate("order-details-error-template");
 
     errorTemplate.find(".order-details-error-message").text(message);
 
     $("#modal-order-details").empty().append(errorTemplate);
   }
 
-  function cloneTemplate(templateId: string): JQuery<HTMLElement> {
+  /**
+   * Clones a template element by ID.
+   *
+   * @param templateId Template element ID
+   * @returns Cloned template content
+   */
+  function cloneAdminOrderTemplate(templateId: string): JQuery<HTMLElement> {
     const template = document.getElementById(
       templateId,
     ) as HTMLTemplateElement | null;
@@ -203,10 +291,22 @@ $(document).ready(function () {
     return $(template.content.firstElementChild.cloneNode(true) as HTMLElement);
   }
 
+  /**
+   * Formats a numeric value as Euro currency.
+   *
+   * @param value Numeric value
+   * @returns Formatted currency string
+   */
   function formatCurrency(value: number | string | null): string {
     return `€ ${Number(value ?? 0).toFixed(2)}`;
   }
 
+  /**
+   * Formats a backend date string for display.
+   *
+   * @param dateString Backend date string
+   * @returns Formatted date and time
+   */
   function formatDate(dateString: string): string {
     const date = new Date(dateString.replace(" ", "T"));
 
@@ -219,6 +319,12 @@ $(document).ready(function () {
     });
   }
 
+  /**
+   * Displays a page-level admin order message.
+   *
+   * @param message Message text
+   * @param type Bootstrap alert type
+   */
   function showMessage(message: string, type: "success" | "danger"): void {
     $("#order-message")
       .removeClass("alert-success alert-danger")
@@ -227,7 +333,15 @@ $(document).ready(function () {
       .show();
   }
 
-  function isAdminOrderErrorResponse(response: unknown): response is AdminOrderErrorResponse {
+  /**
+   * Checks whether a response contains a backend error.
+   *
+   * @param response Unknown response payload
+   * @returns True if the response is an admin order error response
+   */
+  function isAdminOrderErrorResponse(
+    response: unknown,
+  ): response is AdminOrderErrorResponse {
     return (
       typeof response === "object" &&
       response !== null &&
@@ -236,13 +350,18 @@ $(document).ready(function () {
     );
   }
 
+  /**
+   * Extracts and displays a backend error message from an AJAX error response.
+   *
+   * @param xhr jQuery AJAX error response
+   */
   function showBackendError(xhr: JQuery.jqXHR): void {
     let errorMessage = "An unexpected error occurred.";
 
     if (xhr.responseText) {
       try {
-        const response = JSON.parse(xhr.responseText);
-        errorMessage = response.error || errorMessage;
+        const response = JSON.parse(xhr.responseText) as BackendErrorResponse;
+        errorMessage = response.error ?? errorMessage;
       } catch {
         errorMessage = xhr.responseText;
       }

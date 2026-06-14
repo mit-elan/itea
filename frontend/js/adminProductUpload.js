@@ -1,101 +1,126 @@
 "use strict";
 /**
- * Admin product upload/edit page
- * Handles both new product creation and existing product editing
- * Determines mode based on URL parameter 'id'
+ * Handles the admin product upload and edit page.
+ * The page creates a new product or edits an existing product based on the URL id parameter.
  */
 $(document).ready(function () {
-    // Admin access only
-    requireRole("admin");
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get("id");
-    let existingFilePath = "";
-    if (!productId) {
-        $("#upload-edit-title").text("Upload New Product");
-        $("#upload-edit-button").text("Upload Product");
-    }
-    // Load categories dropdown on page init
-    $.ajax({
-        url: "/itea/backend/serviceHandler.php?handler=products&method=getCategories",
-        type: "GET",
-        dataType: "json",
-        success: function (categories) {
-            const $select = $("#category");
-            $select.empty();
-            categories.forEach((cat) => {
-                $select.append(`<option value="${cat.id}">${cat.name}</option>`);
-            });
-            // Load product data for editing after categories are populated
-            if (productId)
-                loadProduct();
-        },
+    requireRole("admin", function () {
+        initializeProductUploadPage();
     });
-    /**
-     * Loads product data from backend and populates form fields for editing
-     * Updates page title and button text to reflect edit mode
-     */
-    function loadProduct() {
+    function initializeProductUploadPage() {
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get("id");
+        let existingFilePath = "";
+        if (!productId) {
+            $("#upload-edit-title").text("Upload New Product");
+            $("#upload-edit-button").text("Upload Product");
+        }
+        loadCategories(productId, function () {
+            if (productId) {
+                loadProduct(productId);
+            }
+        });
+        $("#product-upload-form").on("submit", function (event) {
+            event.preventDefault();
+            handleProductFormSubmit(productId, existingFilePath, function (filePath) {
+                existingFilePath = filePath;
+            });
+        });
+    }
+    function loadCategories(productId, onLoaded) {
+        $.ajax({
+            url: "/itea/backend/serviceHandler.php?handler=products&method=getCategories",
+            type: "GET",
+            dataType: "json",
+            success: function (categories) {
+                const select = $("#category");
+                select.empty();
+                categories.forEach(function (category) {
+                    select.append($("<option>").val(category.id).text(category.name));
+                });
+                onLoaded();
+            },
+            error: function (xhr) {
+                showAdminProductUploadBackendError(xhr);
+            },
+        });
+    }
+    function loadProduct(productId) {
         $("#upload-edit-title").text("Edit Product");
         $("#upload-edit-button").text("Save Changes");
         $.ajax({
-            url: `/itea/backend/serviceHandler.php?handler=products&method=getById`,
+            url: "/itea/backend/serviceHandler.php?handler=products&method=getById",
             type: "POST",
             contentType: "application/json",
             dataType: "json",
             data: JSON.stringify({ id: Number(productId) }),
             success: function (product) {
                 var _a, _b;
-                if (!product || !product.id) {
-                    $("#product-upload-form").hide();
-                    $("#error-message")
-                        .text("Product not found. Return to product dashboard to edit a product.")
-                        .show();
-                    $("#upload-edit-button").prop("disabled", true);
+                if (isAdminProductUploadErrorResponse(product) || !("id" in product)) {
+                    showProductNotFound();
                     return;
                 }
-                // Store existing image path to keep if no new image is uploaded
-                existingFilePath = (_a = product.filePath) !== null && _a !== void 0 ? _a : "";
                 $("#name").val(product.name);
                 $("#description").val(product.description);
                 $("#price").val(String(product.price));
-                $("#rating").val(String((_b = product.rating) !== null && _b !== void 0 ? _b : ""));
+                $("#rating").val(String((_a = product.rating) !== null && _a !== void 0 ? _a : ""));
                 $("#category").val(String(product.categoryId));
+                $("#product-upload-form").data("existing-file-path", (_b = product.filePath) !== null && _b !== void 0 ? _b : "");
             },
-            error: showBackendError,
+            error: function (xhr) {
+                showAdminProductUploadBackendError(xhr);
+            },
         });
     }
-    $("#product-upload-form").on("submit", function (e) {
+    function handleProductFormSubmit(productId, existingFilePath, updateExistingFilePath) {
         var _a;
-        e.preventDefault();
+        hideProductUploadMessages();
+        const validationResult = validateProductForm(productId);
+        if (!validationResult.valid || !validationResult.product) {
+            return;
+        }
+        const imageFile = getSelectedImageFile();
+        if (imageFile) {
+            uploadProductImage(imageFile, function (filePath) {
+                if (!validationResult.product) {
+                    return;
+                }
+                const productPayload = Object.assign(Object.assign({}, validationResult.product), { filePath: filePath });
+                updateExistingFilePath(filePath);
+                submitProduct(productId, productPayload);
+            });
+            return;
+        }
+        const storedFilePath = String((_a = $("#product-upload-form").data("existing-file-path")) !== null && _a !== void 0 ? _a : "") ||
+            existingFilePath;
+        submitProduct(productId, Object.assign(Object.assign({}, validationResult.product), { filePath: storedFilePath }));
+    }
+    function validateProductForm(productId) {
         let hasError = false;
-        $("#field-error, #rating-error, #price-error, #database-error")
-            .stop(true, true)
-            .hide()
-            .text("");
-        const rating = parseFloat($("#rating").val());
-        const price = parseFloat($("#price").val());
-        const imageFile = (_a = $("#product-image")[0].files) === null || _a === void 0 ? void 0 : _a[0];
+        const rating = Number.parseFloat(getAdminProductUploadInputValue("#rating"));
+        const price = Number.parseFloat(getAdminProductUploadInputValue("#price"));
+        const imageFile = getSelectedImageFile();
         if (!productId && !imageFile) {
             $("#field-error").text("Please select a product image.").show();
             hasError = true;
         }
-        if (isNaN(rating) || rating <= 0 || rating > 5) {
+        if (Number.isNaN(rating) || rating <= 0 || rating > 5) {
             $("#rating-error")
                 .text("Please enter a valid rating between 0 and 5.")
                 .show();
             hasError = true;
         }
-        if (isNaN(price) || price <= 0) {
+        if (Number.isNaN(price) || price <= 0) {
             $("#price-error")
                 .text("Please enter a valid price greater than 0.")
                 .show();
             hasError = true;
         }
         const product = {
-            id: productId ? parseInt(productId) : 0,
-            categoryId: parseInt($("#category").val()),
-            name: $("#name").val().trim(),
-            description: $("#description").val().trim(),
+            id: productId ? Number.parseInt(productId, 10) : 0,
+            categoryId: Number.parseInt(getAdminProductUploadInputValue("#category"), 10),
+            name: getAdminProductUploadInputValue("#name").trim(),
+            description: getAdminProductUploadInputValue("#description").trim(),
             rating: rating,
             price: price,
         };
@@ -109,37 +134,40 @@ $(document).ready(function () {
                 .show();
             hasError = true;
         }
-        if (hasError)
-            return;
-        if (imageFile) {
-            // upload new image first, then create or update
-            const formData = new FormData();
-            formData.append("image", imageFile);
-            $.ajax({
-                url: "/itea/backend/serviceHandler.php?handler=products&method=uploadImage",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                dataType: "json",
-                success: function (imageResponse) {
-                    submitProduct(Object.assign(Object.assign({}, product), { filePath: imageResponse.filePath }));
-                },
-                error: showBackendError,
-            });
+        if (hasError) {
+            return { valid: false };
         }
-        else {
-            // edit mode, no new image — keep existing
-            submitProduct(Object.assign(Object.assign({}, product), { filePath: existingFilePath }));
-        }
-    });
-    /**
-     * Submits product data to backend (create or update based on productId)
-     * Shows success message and optionally resets form for new products
-     *
-     * @param payload Product data to submit (includes image file path)
-     */
-    function submitProduct(payload) {
+        return {
+            valid: true,
+            product: product,
+        };
+    }
+    function uploadProductImage(imageFile, onSuccess) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+        $.ajax({
+            url: "/itea/backend/serviceHandler.php?handler=products&method=uploadImage",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function (response) {
+                var _a;
+                if (response.error || !response.filePath) {
+                    $("#database-error")
+                        .text((_a = response.error) !== null && _a !== void 0 ? _a : "Image upload failed.")
+                        .show();
+                    return;
+                }
+                onSuccess(response.filePath);
+            },
+            error: function (xhr) {
+                showAdminProductUploadBackendError(xhr);
+            },
+        });
+    }
+    function submitProduct(productId, payload) {
         const method = productId ? "update" : "create";
         $.ajax({
             url: `/itea/backend/serviceHandler.php?handler=products&method=${method}`,
@@ -148,28 +176,69 @@ $(document).ready(function () {
             dataType: "json",
             data: JSON.stringify(payload),
             success: function (response) {
+                var _a;
+                if (response.error) {
+                    $("#database-error").text(response.error).show();
+                    return;
+                }
                 const action = productId ? "updated" : "created";
+                const productName = (_a = response.name) !== null && _a !== void 0 ? _a : payload.name;
                 const overviewLink = productId
                     ? ` <a href="/itea/frontend/sites/admin/productOverview.html">Back to product overview</a>`
                     : "";
                 $("#upload-success")
-                    .html(`Product "${response.name}" ${action} successfully!${overviewLink}`)
+                    .html(`Product "${productName}" ${action} successfully!${overviewLink}`)
                     .show();
                 if (!productId) {
                     $("#product-upload-form")[0].reset();
                     $("#description").css("height", "");
+                    $("#product-upload-form").removeData("existing-file-path");
                 }
             },
-            error: showBackendError,
+            error: function (xhr) {
+                showAdminProductUploadBackendError(xhr);
+            },
         });
     }
-    /**
-     * Parses backend error response and displays it
-     *
-     * @param xhr AJAX error response object
-     */
-    function showBackendError(xhr) {
-        const res = JSON.parse(xhr.responseText);
-        $("#database-error").text(res.error).show();
+    function showProductNotFound() {
+        $("#product-upload-form").hide();
+        $("#error-message")
+            .text("Product not found. Return to product dashboard to edit a product.")
+            .show();
+        $("#upload-edit-button").prop("disabled", true);
+    }
+    function getSelectedImageFile() {
+        var _a;
+        return (_a = $("#product-image")[0].files) === null || _a === void 0 ? void 0 : _a[0];
+    }
+    function getAdminProductUploadInputValue(selector) {
+        const value = $(selector).val();
+        return typeof value === "string" ? value : "";
+    }
+    function hideProductUploadMessages() {
+        $("#field-error, #rating-error, #price-error, #database-error")
+            .stop(true, true)
+            .hide()
+            .text("");
+    }
+    function isAdminProductUploadErrorResponse(response) {
+        return (typeof response === "object" &&
+            response !== null &&
+            "error" in response &&
+            typeof response.error === "string");
+    }
+    function showAdminProductUploadBackendError(xhr) {
+        var _a;
+        let errorMessage = "An unexpected error occurred.";
+        if (xhr.responseText) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMessage = (_a = response.error) !== null && _a !== void 0 ? _a : errorMessage;
+            }
+            catch (_b) {
+                errorMessage = xhr.responseText;
+            }
+        }
+        $("#database-error").text(errorMessage).show();
     }
 });

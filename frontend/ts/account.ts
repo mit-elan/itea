@@ -1,9 +1,21 @@
 /**
- * account.ts – Kundenkonto, Bestellhistorie, Rechnung
- * Sprint 2: SCRUM-62, SCRUM-63, SCRUM-64, SCRUM-65
+ * Handles customer account profile loading and profile updates.
  */
 
-// TODO Sprint 2: loadProfile(), updateProfile(), loadOrders(), printInvoice()
+interface AccountProfileResponse {
+  id: number;
+  salutation: string;
+  firstname: string;
+  lastname: string;
+  address: string;
+  zip: string;
+  city: string;
+  email: string;
+  username: string;
+  role: string;
+  active: boolean;
+  error?: string;
+}
 
 interface UpdateProfileRequest {
   firstname: string;
@@ -15,64 +27,66 @@ interface UpdateProfileRequest {
   password: string;
 }
 
+interface UpdateProfileResponse {
+  success?: boolean;
+  message?: string;
+  error?: string;
+}
+
 $(document).ready(function () {
   loadProfile();
+
   $("#account-form").on("submit", function (event) {
     event.preventDefault();
-
     updateProfile();
   });
 });
 
+/**
+ * Loads the current customer's profile data and fills the account form.
+ */
 function loadProfile(): void {
   $.ajax({
     url: "/itea/backend/serviceHandler.php?handler=users&method=getProfile",
     type: "GET",
     dataType: "json",
 
-    success: function (response) {
+    success: function (response: AccountProfileResponse) {
       if (response.error) {
         window.location.href = "/itea/frontend/sites/login.html";
-
         return;
       }
 
       $("#account-content").removeClass("d-none");
 
       $("#account-firstname").val(response.firstname);
-
       $("#account-lastname").val(response.lastname);
-
       $("#account-email").val(response.email);
-
       $("#account-address").val(response.address);
-
       $("#account-zip").val(response.zip);
-
       $("#account-city").val(response.city);
     },
 
     error: function () {
-      $("#account-error")
-        .removeClass("d-none")
-        .text("Failed to load account data.");
+      showAccountError("Failed to load account data.");
     },
   });
 }
 
+/**
+ * Sends the updated profile data to the backend.
+ */
 function updateProfile(): void {
-  $("#account-error").addClass("d-none").text("");
+  clearAccountMessages();
 
-  $("#account-success").addClass("d-none").text("");
-  
   const updatedUser: UpdateProfileRequest = {
-    firstname: $("#account-firstname").val() as string,
-    lastname: $("#account-lastname").val() as string,
-    email: $("#account-email").val() as string,
-    address: $("#account-address").val() as string,
-    zip: $("#account-zip").val() as string,
-    city: $("#account-city").val() as string,
-    password: $("#account-password").val() as string,
+    firstname: getInputValue("#account-firstname"),
+    lastname: getInputValue("#account-lastname"),
+    email: getInputValue("#account-email"),
+    address: getInputValue("#account-address"),
+    zip: getInputValue("#account-zip"),
+    city: getInputValue("#account-city"),
+    password: getInputValue("#account-password"),
   };
 
   $.ajax({
@@ -81,26 +95,52 @@ function updateProfile(): void {
     contentType: "application/json",
     dataType: "json",
     data: JSON.stringify(updatedUser),
-    success: function (response) {
-      if (response.error) {
-        $("#account-error").removeClass("d-none").text(response.error);
 
+    success: function (response: UpdateProfileResponse) {
+      if (response.error) {
+        showAccountError(response.error);
         return;
       }
 
       $("#account-success")
         .removeClass("d-none")
-        .text("Profile updated successfully.");
-
-      $("#account-error").addClass("d-none").text("");
+        .text(response.message ?? "Profile updated successfully.");
 
       $("#account-password").val("");
     },
 
     error: function () {
-      $("#account-error")
-        .removeClass("d-none")
-        .text("Failed to update profile.");
+      showAccountError("Failed to update profile.");
     },
   });
+}
+
+/**
+ * Reads an input value as a string.
+ *
+ * @param selector Input selector
+ * @returns Input value or an empty string
+ */
+function getInputValue(selector: string): string {
+  const value = $(selector).val();
+
+  return typeof value === "string" ? value : "";
+}
+
+/**
+ * Hides account feedback messages.
+ */
+function clearAccountMessages(): void {
+  $("#account-error").addClass("d-none").text("");
+  $("#account-success").addClass("d-none").text("");
+}
+
+/**
+ * Displays an account error message.
+ *
+ * @param message Error message to display
+ */
+function showAccountError(message: string): void {
+  $("#account-error").removeClass("d-none").text(message);
+  $("#account-success").addClass("d-none").text("");
 }

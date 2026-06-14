@@ -1,93 +1,291 @@
+/**
+ * Handles the admin product management page.
+ * Loads products and categories, displays product data in a table,
+ * and allows admins to delete products.
+ */
+
+interface AdminProductCategory {
+  id: number;
+  name: string;
+}
+
+interface AdminProductDeleteResponse {
+  success?: boolean;
+  message?: string;
+  error?: string;
+}
+
+interface AdminProductErrorResponse {
+  success?: false;
+  error: string;
+}
+
 $(function () {
-  // Admin access only - data loading will proceed if authorized
-  requireRole("admin");
-
-  const categoriesRequest = $.ajax({
-    url: "/itea/backend/serviceHandler.php?handler=products&method=getCategories",
-    type: "GET",
-    dataType: "json",
-  });
-
-  const productsRequest = $.ajax({
-    url: "/itea/backend/serviceHandler.php?handler=products&method=getAll",
-    type: "GET",
-    dataType: "json",
-  });
-
-  $.when(categoriesRequest, productsRequest).done(function (
-    categoriesResult: [{ id: number; name: string }[]],
-    productsResult: [Product[]],
-  ) {
-    const categories = categoriesResult[0];
-    const products = productsResult[0];
-
-    const categoryMap: { [id: number]: string } = {};
-    categories.forEach((cat) => (categoryMap[cat.id] = cat.name));
-
-    const $tbody = $("#product-table-body");
-    $tbody.empty();
-
-    if (products.length === 0) {
-      $tbody.append(
-        '<tr><td colspan="7" class="text-center py-4">No products found.</td></tr>',
-      );
-      return;
-    }
-
-    const template = document.getElementById(
-      "product-row-template",
-    ) as HTMLTemplateElement;
-
-    products.forEach((product) => {
-      const categoryName = categoryMap[product.categoryId] ?? "Unknown";
-      const rating = product.rating ? product.rating.toFixed(2) : "—";
-
-      const $row = $(
-        document.importNode(template.content, true)
-          .firstElementChild as HTMLElement,
-      );
-
-      $row
-        .find(".product-img")
-        .attr("src", `/itea/backend/productpictures/${product.filePath ?? ""}`)
-        .attr("alt", product.name);
-      $row.find(".product-name").text(product.name);
-      $row.find(".product-description").text(product.description);
-      $row.find(".product-price").text(`€ ${Number(product.price).toFixed(2)}`);
-      $row.find(".product-category").text(categoryName);
-      $row.find(".product-rating").text(rating);
-      $row
-        .find(".product-edit-btn")
-        .attr(
-          "href",
-          `/itea/frontend/sites/admin/productUpload.html?id=${product.id}`,
-        );
-      $row.find(".delete-product-btn").attr("data-id", String(product.id)).attr("data-name", product.name);
-
-      $tbody.append($row);
-    });
+  requireRole("admin", function () {
+    loadAdminProducts();
   });
 
   $("#product-table-body").on("click", ".delete-product-btn", function () {
-    const name = $(this).attr("data-name");
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+    const productId = Number($(this).data("id"));
+    const productName = String($(this).data("name") ?? "");
+    const row = $(this).closest("tr");
 
-    const id = parseInt($(this).attr("data-id") as string);
-    const $row = $(this).closest("tr");
+    deleteProduct(productId, productName, row);
+  });
+
+  /**
+   * Loads product and category data for the admin product table.
+   */
+  function loadAdminProducts(): void {
+    const categoriesRequest = $.ajax({
+      url: "/itea/backend/serviceHandler.php?handler=products&method=getCategories",
+      type: "GET",
+      dataType: "json",
+    });
+
+    const productsRequest = $.ajax({
+      url: "/itea/backend/serviceHandler.php?handler=products&method=getAll",
+      type: "GET",
+      dataType: "json",
+    });
+
+    $.when(categoriesRequest, productsRequest)
+      .done(function (
+        categoriesResult: [AdminProductCategory[] | AdminProductErrorResponse],
+        productsResult: [Product[] | AdminProductErrorResponse],
+      ) {
+        const categories = categoriesResult[0];
+        const products = productsResult[0];
+
+        if (isAdminProductErrorResponse(categories)) {
+          showAdminProductError(categories.error);
+          return;
+        }
+
+        if (isAdminProductErrorResponse(products)) {
+          showAdminProductError(products.error);
+          return;
+        }
+
+        renderProductTable(categories, products);
+      })
+      .fail(function (xhr: JQuery.jqXHR) {
+        showAdminProductError(getAdminProductBackendError(xhr));
+      });
+  }
+
+  /**
+   * Renders the product table with category names.
+   *
+   * @param categories Product categories
+   * @param products Products to display
+   */
+  function renderProductTable(
+    categories: AdminProductCategory[],
+    products: Product[],
+  ): void {
+    const categoryMap = createCategoryMap(categories);
+    const tableBody = $("#product-table-body");
+
+    tableBody.empty();
+
+    if (products.length === 0) {
+      tableBody.append(createEmptyProductRow());
+      return;
+    }
+
+    products.forEach(function (product: Product) {
+      tableBody.append(createProductRow(product, categoryMap));
+    });
+  }
+
+  /**
+   * Creates a lookup map from category ID to category name.
+   *
+   * @param categories Product categories
+   * @returns Category name map
+   */
+  function createCategoryMap(
+    categories: AdminProductCategory[],
+  ): Record<number, string> {
+    const categoryMap: Record<number, string> = {};
+
+    categories.forEach(function (category: AdminProductCategory) {
+      categoryMap[category.id] = category.name;
+    });
+
+    return categoryMap;
+  }
+
+  /**
+   * Creates one product table row from the product template.
+   *
+   * @param product Product data
+   * @param categoryMap Category name lookup map
+   * @returns Product table row
+   */
+  function createProductRow(
+    product: Product,
+    categoryMap: Record<number, string>,
+  ): JQuery<HTMLElement> {
+    const row = cloneAdminProductTemplate("product-row-template");
+    const categoryName = categoryMap[product.categoryId] ?? "Unknown";
+    const rating = product.rating ? product.rating.toFixed(2) : "—";
+
+    row
+      .find(".product-img")
+      .attr("src", `/itea/backend/productpictures/${product.filePath ?? ""}`)
+      .attr("alt", product.name);
+
+    row.find(".product-name").text(product.name);
+    row.find(".product-description").text(product.description);
+    row.find(".product-price").text(formatAdminProductCurrency(product.price));
+    row.find(".product-category").text(categoryName);
+    row.find(".product-rating").text(rating);
+
+    row
+      .find(".product-edit-btn")
+      .attr(
+        "href",
+        `/itea/frontend/sites/admin/productUpload.html?id=${product.id}`,
+      );
+
+    row.find(".delete-product-btn").data("id", product.id);
+    row.find(".delete-product-btn").data("name", product.name);
+
+    return row;
+  }
+
+  /**
+   * Creates an empty table row for the no-products state.
+   *
+   * @returns Empty state table row
+   */
+  function createEmptyProductRow(): JQuery<HTMLElement> {
+    return $("<tr>").append(
+      $("<td>")
+        .attr("colspan", "7")
+        .addClass("text-center py-4")
+        .text("No products found."),
+    );
+  }
+
+  /**
+   * Deletes a product after admin confirmation.
+   *
+   * @param productId Product identifier
+   * @param productName Product name for confirmation text
+   * @param row Product table row to remove after successful deletion
+   */
+  function deleteProduct(
+    productId: number,
+    productName: string,
+    row: JQuery<HTMLElement>,
+  ): void {
+    if (!productId) {
+      showAdminProductError("Missing product id.");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${productName}"?`)) {
+      return;
+    }
 
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=products&method=delete",
       type: "POST",
       contentType: "application/json",
       dataType: "json",
-      data: JSON.stringify({ id }),
-      success: function () {
-        $row.remove();
+      data: JSON.stringify({ id: productId }),
+
+      success: function (response: AdminProductDeleteResponse) {
+        if (response.error) {
+          showAdminProductError(response.error);
+          return;
+        }
+
+        row.remove();
       },
-      error: function (xhr) {
-        const res = JSON.parse(xhr.responseText);
-        alert(res.error);
+
+      error: function (xhr: JQuery.jqXHR) {
+        showAdminProductError(getAdminProductBackendError(xhr));
       },
     });
-  });
+  }
+
+  /**
+   * Clones a template element by ID.
+   *
+   * @param templateId Template element ID
+   * @returns Cloned template content
+   */
+  function cloneAdminProductTemplate(templateId: string): JQuery<HTMLElement> {
+    const template = document.getElementById(
+      templateId,
+    ) as HTMLTemplateElement | null;
+
+    if (!template || !template.content.firstElementChild) {
+      return $();
+    }
+
+    return $(template.content.firstElementChild.cloneNode(true) as HTMLElement);
+  }
+
+  /**
+   * Formats a numeric value as Euro currency.
+   *
+   * @param value Numeric value
+   * @returns Formatted currency string
+   */
+  function formatAdminProductCurrency(value: number | string | null): string {
+    return `€ ${Number(value ?? 0).toFixed(2)}`;
+  }
+
+  /**
+   * Checks whether a response contains a backend error.
+   *
+   * @param response Unknown response payload
+   * @returns True if the response contains an error message
+   */
+  function isAdminProductErrorResponse(
+    response: unknown,
+  ): response is AdminProductErrorResponse {
+    return (
+      typeof response === "object" &&
+      response !== null &&
+      "error" in response &&
+      typeof (response as AdminProductErrorResponse).error === "string"
+    );
+  }
+
+  /**
+   * Extracts a readable error message from an AJAX error response.
+   *
+   * @param xhr jQuery AJAX error response
+   * @returns Error message
+   */
+  function getAdminProductBackendError(xhr: JQuery.jqXHR): string {
+    const fallbackMessage = "An unexpected error occurred.";
+
+    if (!xhr.responseText) {
+      return fallbackMessage;
+    }
+
+    try {
+      const response = JSON.parse(xhr.responseText) as AdminProductErrorResponse;
+
+      return response.error ?? fallbackMessage;
+    } catch {
+      return xhr.responseText;
+    }
+  }
+
+  /**
+   * Displays an admin product error message.
+   *
+   * @param message Error message
+   */
+  function showAdminProductError(message: string): void {
+    alert(message);
+  }
 });
