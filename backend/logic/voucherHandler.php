@@ -8,6 +8,11 @@
  */
 class VoucherHandler
 {
+    private const HTTP_BAD_REQUEST = 400;
+    private const HTTP_UNAUTHORIZED = 401;
+    private const HTTP_FORBIDDEN = 403;
+    private const HTTP_NOT_FOUND = 404;
+
     private VoucherDataHandler $voucherDataHandler;
     private ProductDataHandler $productDataHandler;
 
@@ -26,11 +31,11 @@ class VoucherHandler
     /**
      * Handles voucher requests by routing to appropriate methods based on the requested method.
      *
-     * @param string $method The method name ('create', 'getAll', 'getByUserId', 'apply', 'addToProfile')
+     * @param string $method The method name (create, getAll, getByUserId, apply, addToProfile)
      * @param array $data Optional data array passed to the requested method
-     * @return array|null Result array containing response data or error information, or null if method is unknown
+     * @return array Result array containing response data or error information
      */
-    public function handle(string $method, array $data = []): ?array
+    public function handle(string $method, array $data = []): array
     {
         switch ($method) {
             case 'create':
@@ -44,8 +49,29 @@ class VoucherHandler
             case 'addToProfile':
                 return $this->addToProfile($data);
             default:
-                return null;
+                return $this->errorResponse(
+                    self::HTTP_NOT_FOUND,
+                    'Unknown voucher method'
+                );
         }
+    }
+
+    /**
+     * Creates a standardized error response and sets the matching HTTP status code.
+     *
+     * @param int $code HTTP status code
+     * @param string $message Error message for the API response
+     * @return array Error response
+     */
+    private function errorResponse(int $code, string $message): array
+    {
+        http_response_code($code);
+
+        return [
+            'code' => $code,
+            'success' => false,
+            'error' => $message
+        ];
     }
 
     /**
@@ -53,38 +79,57 @@ class VoucherHandler
      *
      * Restricted to admin users only. Validates that the value is positive and expiry date is in the future.
      *
-     * @param array $data Array containing 'value' (float) and 'validUntil' (date string) keys
+     * @param array $data Array containing value and validUntil
      * @return array Response array with success message and voucher code, or error details
      */
     private function create(array $data): array
     {
+        // Admin authorization check
         if (($_SESSION['role'] ?? '') !== 'admin') {
-            return ['code' => 403, 'error' => 'Unauthorized'];
+            return $this->errorResponse(
+                self::HTTP_FORBIDDEN,
+                'Unauthorized'
+            );
         }
 
+        // Generate random voucher code
         $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        $code  = '';
+        $code = '';
+
         for ($i = 0; $i < 5; $i++) {
             $code .= $chars[random_int(0, strlen($chars) - 1)];
         }
 
         $voucher = new Voucher([
-            'id'          => 0,
-            'code'        => $code,
-            'value'       => (float)($data['value'] ?? 0),
+            'id' => 0,
+            'code' => $code,
+            'value' => (float)($data['value'] ?? 0),
             'valid_until' => trim($data['validUntil'] ?? ''),
         ]);
 
+        // Validate all required fields are present
         if (empty($voucher->code) || $voucher->value <= 0 || empty($voucher->valid_until)) {
-            return ['code' => 400, 'error' => 'Missing required fields'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Missing required fields'
+            );
         }
 
+        // Validate expiry date is in the future
         if (new DateTime($voucher->valid_until) <= new DateTime()) {
-            return ['code' => 400, 'error' => 'Expiry date must be in the future'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Expiry date must be in the future'
+            );
         }
 
         $this->voucherDataHandler->createVoucher($voucher);
-        return ['message' => 'Voucher created successfully', 'voucherCode' => $voucher->code];
+
+        return [
+            'success' => true,
+            'message' => 'Voucher created successfully',
+            'voucherCode' => $voucher->code
+        ];
     }
 
     /**
@@ -96,8 +141,12 @@ class VoucherHandler
      */
     private function getAll(): array
     {
+        // Admin authorization check
         if (($_SESSION['role'] ?? '') !== 'admin') {
-            return ['code' => 403, 'error' => 'Unauthorized'];
+            return $this->errorResponse(
+                self::HTTP_FORBIDDEN,
+                'Unauthorized'
+            );
         }
 
         return array_map(
@@ -115,11 +164,17 @@ class VoucherHandler
      */
     private function getByUserId(): array
     {
+        // User authentication check
         if (!isset($_SESSION['user_id'])) {
-            return ['code' => 401, 'error' => 'Please log in to view your vouchers'];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'Please log in to view your vouchers'
+            );
         }
 
-        $vouchers = $this->voucherDataHandler->getVouchersByUserId($_SESSION['user_id']);
+        $vouchers = $this->voucherDataHandler->getVouchersByUserId(
+            (int)$_SESSION['user_id']
+        );
 
         return array_map(
             fn(Voucher $voucher) => $voucher->toArray(),
@@ -133,100 +188,173 @@ class VoucherHandler
      * Validates voucher code exists, is not already assigned to another user, has not been redeemed,
      * and has not expired before assignment.
      *
-     * @param array $data Array containing 'code' (string) key with the voucher code
+     * @param array $data Array containing code with the voucher code
      * @return array Success message with voucher code, or error details if validation fails
      */
     private function addToProfile(array $data): array
     {
+        // User authentication check
         if (!isset($_SESSION['user_id'])) {
-            return ['code' => 401, 'error' => 'Please log in to add a voucher to your profile'];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'Please log in to add a voucher to your profile'
+            );
         }
 
+        // Validate voucher code
         $code = trim($data['code'] ?? '');
+
         if (empty($code)) {
-            return ['code' => 400, 'error' => 'Missing voucher code'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Missing voucher code'
+            );
         }
 
         $voucher = $this->voucherDataHandler->getVoucherByCode($code);
+
         if (!$voucher) {
-            return ['code' => 404, 'error' => 'Voucher not found'];
+            return $this->errorResponse(
+                self::HTTP_NOT_FOUND,
+                'Voucher not found'
+            );
         }
 
         if ($voucher->user_id !== 0) {
-            return ['code' => 400, 'error' => 'Voucher is already in use'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Voucher is already in use'
+            );
         }
 
         if ($voucher->redeemed) {
-            return ['code' => 400, 'error' => 'Voucher has already been redeemed'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Voucher has already been redeemed'
+            );
         }
 
         if (new DateTime($voucher->valid_until) <= new DateTime()) {
-            return ['code' => 400, 'error' => 'Voucher has expired'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Voucher has expired'
+            );
         }
 
+        // Assign voucher to current user
         $this->voucherDataHandler->assignVoucherToUser(
             $voucher,
-            $_SESSION['user_id']
+            (int)$_SESSION['user_id']
         );
 
-        return ['message' => 'Voucher added to profile successfully', 'voucherCode' => $voucher->code];
+        return [
+            'success' => true,
+            'message' => 'Voucher added to profile successfully',
+            'voucherCode' => $voucher->code
+        ];
     }
 
     /**
      * Validates and applies a voucher to the user's cart during checkout.
      *
-     * Performs validation of voucher without redeeming it (redemption happens at order completion).
+     * Performs validation of voucher without redeeming it. Redemption happens at order completion.
      * Calculates discount amount and final order total. Discount cannot exceed cart total.
      *
-     * @param array $data Array containing 'code' (string) key with the voucher code
-     * @return array Array with 'discount' and 'finalAmount' keys if valid, or error response if validation fails
+     * @param array $data Array containing code with the voucher code
+     * @return array Array with discount and finalAmount if valid, or error response if validation fails
      */
     private function applyVoucher(array $data): array
     {
+        // User authentication check
         if (!isset($_SESSION['user_id'])) {
-            return ['code' => 401, 'error' => 'Please log in to apply a voucher'];
+            return $this->errorResponse(
+                self::HTTP_UNAUTHORIZED,
+                'Please log in to apply a voucher'
+            );
         }
 
+        // Validate voucher code
         $code = trim($data['code'] ?? '');
+
         if (empty($code)) {
-            return ['code' => 400, 'error' => 'Missing voucher code'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Missing voucher code'
+            );
         }
 
+        // Validate cart state
         $cart = $_SESSION['cart'] ?? [];
+
         if (empty($cart)) {
-            return ['code' => 400, 'error' => 'Cart is empty'];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Cart is empty'
+            );
         }
 
+        // Calculate current cart total based on product data
         $total = 0.0;
+
         foreach ($cart as $productId => $quantity) {
             $product = $this->productDataHandler->getProductById((int)$productId);
-            if (!$product) continue;
-            $total += (float)$product->price * $quantity;
+
+            if (!$product) {
+                continue;
+            }
+
+            $total += (float)$product->price * (int)$quantity;
+        }
+
+        if ($total <= 0) {
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Cart contains no valid products'
+            );
         }
 
         $voucher = $this->voucherDataHandler->getVoucherByCode($code);
+
         if (!$voucher) {
-            return ['code' => 404, 'error' => 'Voucher not found'];
-        }
-        if ($voucher->redeemed) {
-            return ['code' => 400, 'error' => 'Voucher has already been redeemed'];
-        }
-        if ($voucher->user_id !== 0 && $voucher->user_id !== (int)$_SESSION['user_id']) {
-            return ['code' => 403, 'error' => 'Voucher is already in use'];
-        }
-        if (new DateTime($voucher->valid_until) <= new DateTime()) {
-            return ['code' => 400, 'error' => 'Voucher has expired'];
+            return $this->errorResponse(
+                self::HTTP_NOT_FOUND,
+                'Voucher not found'
+            );
         }
 
+        if ($voucher->redeemed) {
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Voucher has already been redeemed'
+            );
+        }
+
+        if ($voucher->user_id !== 0 && $voucher->user_id !== (int)$_SESSION['user_id']) {
+            return $this->errorResponse(
+                self::HTTP_FORBIDDEN,
+                'Voucher is already in use'
+            );
+        }
+
+        if (new DateTime($voucher->valid_until) <= new DateTime()) {
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Voucher has expired'
+            );
+        }
+
+        // Calculate discount and final order amount
         $discount = $voucher->remaining_value;
         $finalAmount = $total - $discount;
+
         if ($finalAmount < 0) {
             $finalAmount = 0;
             $discount = $total;
         }
 
         return [
-            'discount'    => $discount,
+            'success' => true,
+            'discount' => $discount,
             'finalAmount' => $finalAmount,
         ];
     }
