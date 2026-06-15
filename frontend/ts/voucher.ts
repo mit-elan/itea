@@ -261,18 +261,12 @@ function isVoucherBackendErrorResponse(
   );
 }
 
+// Extracts error message from AJAX response, handling various response formats
 function getVoucherBackendError(xhr: JQuery.jqXHR): string {
-  const fallbackMessage = "An unexpected error occurred. Please try again.";
-
-  if (!xhr.responseText) {
-    return fallbackMessage;
-  }
-
+  const fallback = "An unexpected error occurred.";
   try {
-    const response = JSON.parse(xhr.responseText) as VoucherBackendErrorResponse;
-
-    return response.error ?? fallbackMessage;
+    return JSON.parse(xhr.responseText).error || fallback;
   } catch {
-    return xhr.responseText;
+    return xhr.responseText || fallback;
   }
 }

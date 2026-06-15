@@ -151,26 +151,26 @@ $(document).ready(function () {
     function renderOrderDetails(order, items) {
         const detailsElement = cloneAdminTemplate("order-details-template");
         // Fill order header
-        detailsElement.find(".order-detail-title").text(`Order #${order.id}`);
+        detailsElement.find(".order-detail-title").text("Order #" + order.id);
         detailsElement
             .find(".order-detail-customer")
-            .text(`${order.first_name} ${order.last_name} (${order.username})`);
+            .text(order.first_name + " " + order.last_name + " (" + order.username + ")");
         detailsElement.find(".order-detail-email").text(order.email);
         detailsElement
             .find(".order-detail-address")
-            .text(`${order.address}, ${order.zip} ${order.city}`);
+            .text(order.address + ", " + order.zip + " " + order.city);
         detailsElement.find(".order-detail-invoice").text(order.invoice_number);
         detailsElement.find(".order-detail-date").text(formatDate(order.date));
         detailsElement
             .find(".order-detail-total")
-            .text(`€ ${Number(order.total_price).toFixed(2)}`);
+            .text("€ " + Number(order.total_price).toFixed(2));
         // Fill order items
         const itemsBody = detailsElement.find(".order-detail-items-body");
         if (items.length === 0) {
             itemsBody.html(cloneAdminTemplate("order-detail-empty-row-template").html());
         }
         else {
-            items.forEach((item) => {
+            items.forEach(function (item) {
                 const itemRow = renderOrderDetailItem(item, order.id);
                 itemsBody.append(itemRow);
             });
@@ -185,8 +185,8 @@ $(document).ready(function () {
         row.find(".order-item-quantity").text(item.quantity);
         row
             .find(".order-item-unit-price")
-            .text(`€ ${Number(item.unit_price).toFixed(2)}`);
-        row.find(".order-item-total").text(`€ ${itemTotal.toFixed(2)}`);
+            .text("€ " + Number(item.unit_price).toFixed(2));
+        row.find(".order-item-total").text("€ " + itemTotal.toFixed(2));
         row
             .find(".remove-order-item-btn")
             .data("order-id", orderId)
@@ -201,12 +201,11 @@ $(document).ready(function () {
     }
     // Clones a template by ID and returns jQuery object
     function cloneAdminTemplate(templateId) {
-        var _a;
         const template = document.getElementById(templateId);
         if (!template || !(template instanceof HTMLTemplateElement)) {
             return $();
         }
-        const clone = (_a = template.content.firstElementChild) === null || _a === void 0 ? void 0 : _a.cloneNode(true);
+        const clone = template.content.firstElementChild.cloneNode(true);
         return clone ? $(clone) : $();
     }
 });
