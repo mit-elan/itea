@@ -59,7 +59,6 @@ class CartHandler
 
         return [
             'code' => $code,
-            'success' => false,
             'error' => $message
         ];
     }

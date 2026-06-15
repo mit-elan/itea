@@ -72,7 +72,6 @@ class UserHandler
 
         return [
             'code' => $code,
-            'success' => false,
             'error' => $message
         ];
     }
@@ -453,9 +452,5 @@ class UserHandler
                 'Database error occurred'
             );
         }
-
-        return [
-            'success' => true
-        ];
     }
 }

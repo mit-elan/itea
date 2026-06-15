@@ -136,6 +136,31 @@ function clearAccountMessages() {
     $("#account-success").addClass("d-none").text("");
 }
 /**
+ * Extracts error message from AJAX response, handling various response formats
+ * Priority: JSON error field > plain text response > fallback message
+ *
+ * @param xhr jQuery AJAX error response object
+ * @returns Formatted error message "Failed to update profile: error details" or fallback
+ */
+function getAccountError(xhr) {
+    const fallbackMessage = "Failed to update profile.";
+    if (!xhr.responseText) {
+        return fallbackMessage;
+    }
+    try {
+        const response = JSON.parse(xhr.responseText);
+        // If backend provided a specific error message, include it
+        if (response.error) {
+            return `Failed to update profile: ${response.error}`;
+        }
+        return fallbackMessage;
+    }
+    catch (_a) {
+        // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
+        return xhr.responseText;
+    }
+}
+/**
  * Displays an account error message.
  *
  * @param message Error message to display
