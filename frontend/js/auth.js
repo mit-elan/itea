@@ -197,6 +197,7 @@ function setupPasswordToggle() {
     });
 }
 // Validates card numbers using the Luhn algorithm (industry standard for credit/debit cards)
+// Checks: card length (13-19 digits) and sum validation (right-to-left, doubling every other digit)
 function luhnCheck(cardNumber) {
     const digits = cardNumber.replace(/[\s-]/g, "");
     // Card numbers must be 13-19 digits
