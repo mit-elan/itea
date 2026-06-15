@@ -452,5 +452,10 @@ class UserHandler
                 'Database error occurred'
             );
         }
+
+        return [
+            'success' => true,
+            'message' => 'Profile updated successfully'
+        ];
     }
 }

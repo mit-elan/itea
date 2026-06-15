@@ -141,7 +141,7 @@ $(document).ready(function () {
                 const response = JSON.parse(xhr.responseText);
                 errorMessage = response.error || errorMessage;
             }
-            catch {
+            catch (_a) {
                 errorMessage = xhr.responseText;
             }
         }
