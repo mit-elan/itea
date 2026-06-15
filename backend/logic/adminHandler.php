@@ -61,7 +61,6 @@ class AdminHandler
 
         return [
             'code' => $code,
-            'success' => false,
             'error' => $message
         ];
     }

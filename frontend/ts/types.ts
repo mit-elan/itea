@@ -154,13 +154,12 @@ interface AdminOrderOverview {
   username: string;
 }
 
+// Error responses from admin handlers (only contain error field, no success)
 interface AdminOrderErrorResponse {
-  success?: false;
   error: string;
 }
 
 interface AdminUserOrdersErrorResponse {
-  success?: false;
   error: string;
 }
 

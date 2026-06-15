@@ -45,7 +45,6 @@ try {
     if ($result === null) {
         response(400, [
             'code' => 400,
-            'success' => false,
             'error' => 'Unknown handler or method'
         ]);
         exit();
@@ -60,13 +59,11 @@ try {
 } catch (RuntimeException $e) {
     response(503, [
         'code' => 503,
-        'success' => false,
         'error' => $e->getMessage()
     ]);
 } catch (Throwable $e) {
     response(500, [
         'code' => 500,
-        'success' => false,
         'error' => 'Internal server error'
     ]);
 }
