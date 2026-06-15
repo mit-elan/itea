@@ -195,7 +195,8 @@ function getVoucherBackendError(xhr) {
     const fallback = "An unexpected error occurred.";
     try {
         return JSON.parse(xhr.responseText).error || fallback;
-    } catch {
+    }
+    catch (_a) {
         return xhr.responseText || fallback;
     }
 }
