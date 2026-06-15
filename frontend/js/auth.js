@@ -162,6 +162,8 @@ function handleRegisterSubmit() {
         },
     });
 }
+// Validates that all required user and payment fields are populated
+// Excludes fields that are auto-assigned (id, role, active)
 function getMissingRegistrationFields(user, paymentMethod) {
     const missingFields = [];
     Object.entries(user).forEach(([key, value]) => {
@@ -194,18 +196,22 @@ function setupPasswordToggle() {
         toggleButton.text("Show");
     });
 }
-// Luhn check for credit and debit card numbers
+// Validates card numbers using the Luhn algorithm (industry standard for credit/debit cards)
+// Checks: card length (13-19 digits) and sum validation (right-to-left, doubling every other digit)
 function luhnCheck(cardNumber) {
     const digits = cardNumber.replace(/[\s-]/g, "");
+    // Card numbers must be 13-19 digits
     if (!/^\d{13,19}$/.test(digits)) {
         return false;
     }
     let sum = 0;
     let shouldDouble = false;
+    // Iterate right-to-left, doubling every other digit from the right
     for (let i = digits.length - 1; i >= 0; i--) {
         let digit = parseInt(digits[i], 10);
         if (shouldDouble) {
             digit *= 2;
+            // If doubling results in > 9, subtract 9 (equivalent to summing the digits)
             if (digit > 9) {
                 digit -= 9;
             }
@@ -215,7 +221,8 @@ function luhnCheck(cardNumber) {
     }
     return sum % 10 === 0;
 }
-// Basic IBAN format check: 2 letters, 2 digits, followed by alphanumeric characters
+// Validates IBAN format: 2-letter country code + 2 check digits + account identifier
+// Does not perform checksum validation, only format validation
 function ibanCheck(iban) {
     const cleaned = iban.replace(/\s/g, "").toUpperCase();
     return /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(cleaned);
@@ -245,17 +252,22 @@ function requireRole(requiredRole, onAuthorized) {
         }
     });
 }
+// Shows/hides navigation elements based on login status and user role
 function updateNavigation(response) {
     var _a;
+    // Always visible links (products and cart)
     $("#products-link").show();
     $("#cart-link").show();
     $("#cart-count").text((_a = response.cartCount) !== null && _a !== void 0 ? _a : 0);
+    // Default state: show login link, hide role-specific links
     $("#login-link").show();
     $(".customer-link").hide();
     $(".admin-link").hide();
+    // Exit early if user is not logged in
     if (!response.loggedIn) {
         return;
     }
+    // User is logged in: hide login link and show role-specific content
     $("#login-link").hide();
     if (response.role === "customer") {
         $(".customer-link").show();
@@ -282,6 +294,8 @@ function showLoginMessage(message, type) {
         .text(message)
         .show();
 }
+// Extracts error message from AJAX response, handling various response formats
+// Priority: JSON error field > plain text response > fallback message
 function getAuthBackendError(xhr) {
     var _a;
     const fallbackMessage = "An unexpected error occurred.";
@@ -293,6 +307,7 @@ function getAuthBackendError(xhr) {
         return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
     }
     catch (_b) {
+        // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
         return xhr.responseText;
     }
 }
