@@ -30,8 +30,9 @@ function loadProfile() {
             $("#account-zip").val(response.zip);
             $("#account-city").val(response.city);
         },
-        error: function () {
-            showAccountError("Failed to load account data.");
+        error: function (xhr) {
+            const errorMessage = xhr.responseText || "Failed to load account data.";
+            showAccountError(errorMessage);
         },
     });
 }
@@ -49,6 +50,26 @@ function updateProfile() {
         city: getInputValue("#account-city"),
         password: getInputValue("#account-password"),
     };
+    // Validate all required fields are filled
+    const missingFields = [];
+    if (!updatedUser.firstname)
+        missingFields.push("First Name");
+    if (!updatedUser.lastname)
+        missingFields.push("Last Name");
+    if (!updatedUser.email)
+        missingFields.push("Email");
+    if (!updatedUser.address)
+        missingFields.push("Address");
+    if (!updatedUser.zip)
+        missingFields.push("ZIP");
+    if (!updatedUser.city)
+        missingFields.push("City");
+    if (!updatedUser.password)
+        missingFields.push("Password");
+    if (missingFields.length > 0) {
+        showAccountError(`Missing fields: ${missingFields.join(", ")}`);
+        return;
+    }
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=users&method=updateProfile",
         type: "POST",
@@ -66,8 +87,9 @@ function updateProfile() {
                 .text((_a = response.message) !== null && _a !== void 0 ? _a : "Profile updated successfully.");
             $("#account-password").val("");
         },
-        error: function () {
-            showAccountError("Failed to update profile.");
+        error: function (xhr) {
+            const errorMessage = getAccountError(xhr);
+            showAccountError(errorMessage);
         },
     });
 }
@@ -87,6 +109,31 @@ function getInputValue(selector) {
 function clearAccountMessages() {
     $("#account-error").addClass("d-none").text("");
     $("#account-success").addClass("d-none").text("");
+}
+/**
+ * Extracts error message from AJAX response, handling various response formats
+ * Priority: JSON error field > plain text response > fallback message
+ *
+ * @param xhr jQuery AJAX error response object
+ * @returns Formatted error message "Failed to update profile: error details" or fallback
+ */
+function getAccountError(xhr) {
+    const fallbackMessage = "Failed to update profile.";
+    if (!xhr.responseText) {
+        return fallbackMessage;
+    }
+    try {
+        const response = JSON.parse(xhr.responseText);
+        // If backend provided a specific error message, include it
+        if (response.error) {
+            return `Failed to update profile: ${response.error}`;
+        }
+        return fallbackMessage;
+    }
+    catch (_a) {
+        // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
+        return xhr.responseText;
+    }
 }
 /**
  * Displays an account error message.

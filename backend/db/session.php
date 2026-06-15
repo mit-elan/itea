@@ -3,10 +3,53 @@
 /**
  * Central session management.
  * This file is included by serviceHandler.php before request handling starts.
+ * Handles session initialization and auto-login via remember-me cookies.
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+// Restore user session from remember-me cookie if session is empty
+if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_token'])) {
+    require_once __DIR__ . '/userDataHandler.php';
+    require_once __DIR__ . '/cartDataHandler.php';
+
+    try {
+        $db = new DBaccess();
+        $userDataHandler = new UserDataHandler($db);
+        $userData = $userDataHandler->getUserByRememberToken($_COOKIE['remember_token']);
+
+        if ($userData) {
+            // Re-establish session for remembered user
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = $userData['id'];
+            $_SESSION['username'] = $userData['username'];
+            $_SESSION['role'] = $userData['role'];
+
+            // Merge guest cart with persisted cart (same logic as login method)
+            // This ensures products added as guest + products from previous sessions are preserved
+            $guestCart = $_SESSION['cart'] ?? [];
+            $cartDataHandler = new CartDataHandler($db);
+            $dbCart = [];
+
+            foreach ($cartDataHandler->loadCartFromDb($userData['id']) as $item) {
+                $dbCart[$item->product_id] = $item->quantity;
+            }
+
+            // Merge guest cart into persisted cart by accumulating quantities
+            foreach ($guestCart as $productId => $quantity) {
+                $dbCart[$productId] = ($dbCart[$productId] ?? 0) + $quantity;
+            }
+
+            $_SESSION['cart'] = $dbCart;
+        } else {
+            // Token is invalid - clear the cookie
+            setcookie('remember_token', '', time() - 3600, '/');
+        }
+    } catch (Exception $e) {
+        // Silently fail - remember-me is a convenience feature, not critical
+    }
 }
 
 /**
