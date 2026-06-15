@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/dbaccess.php';
 require_once __DIR__ . '/../models/user.class.php';
+//Just a comment to see if all works well now
 
 /**
  * Data access layer for admin operations.
