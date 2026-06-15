@@ -13,6 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Restore user session from remember-me cookie if session is empty
 if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_token'])) {
     require_once __DIR__ . '/userDataHandler.php';
+    require_once __DIR__ . '/cartDataHandler.php';
 
     try {
         $db = new DBaccess();
