@@ -414,7 +414,7 @@ class UserHandler
             );
         }
 
-        // Validate all required profile fields are filled
+        // Validate required fields before database update
         $requiredFields = ['firstname', 'lastname', 'email', 'address', 'zip', 'city'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
@@ -438,34 +438,18 @@ class UserHandler
                     'Failed to update profile'
                 );
             }
-
-            return [
-                'success' => true
-            ];
-        } catch (\mysqli_sql_exception $e) {
-            // Handle duplicate email constraint violation
-            // Allow if the email hasn't actually changed (user kept their current email)
-            if ($e->getCode() === 1062 && str_contains($e->getMessage(), 'email')) {
-                $currentEmail = $user->email ?? '';
-                $newEmail = trim($data['email'] ?? '');
-
-                // If email is the same as current, it's not a real duplicate - allow update
-                if (strtolower($currentEmail) === strtolower($newEmail)) {
-                    return [
-                        'success' => true
-                    ];
-                }
-
+        } catch (mysqli_sql_exception $e) {
+            // Handle duplicate email error
+            if ($e->getCode() === 1062) {
                 return $this->errorResponse(
                     self::HTTP_CONFLICT,
                     'Email address is already in use. Please choose a different email.'
                 );
             }
 
-            // Generic database error
             return $this->errorResponse(
                 self::HTTP_INTERNAL_SERVER_ERROR,
-                'Failed to update profile'
+                'Database error occurred'
             );
         }
     }

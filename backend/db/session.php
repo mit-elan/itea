@@ -13,7 +13,6 @@ if (session_status() === PHP_SESSION_NONE) {
 // Restore user session from remember-me cookie if session is empty
 if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_token'])) {
     require_once __DIR__ . '/userDataHandler.php';
-    require_once __DIR__ . '/cartDataHandler.php';
 
     try {
         $db = new DBaccess();
@@ -28,16 +27,14 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_token'])) {
             $_SESSION['role'] = $userData['role'];
 
             // Merge guest cart with persisted cart (same logic as login method)
-            // This ensures products added as guest + products from previous sessions are preserved
-            $guestCart = $_SESSION['cart'] ?? [];
             $cartDataHandler = new CartDataHandler($db);
+            $guestCart = $_SESSION['cart'] ?? [];
             $dbCart = [];
 
             foreach ($cartDataHandler->loadCartFromDb($userData['id']) as $item) {
                 $dbCart[$item->product_id] = $item->quantity;
             }
 
-            // Merge guest cart into persisted cart by accumulating quantities
             foreach ($guestCart as $productId => $quantity) {
                 $dbCart[$productId] = ($dbCart[$productId] ?? 0) + $quantity;
             }
