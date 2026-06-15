@@ -68,7 +68,6 @@ class OrderHandler
 
         return [
             'code' => $code,
-            'success' => false,
             'error' => $message
         ];
     }

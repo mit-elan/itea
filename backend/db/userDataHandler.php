@@ -134,6 +134,81 @@ class UserDataHandler
     }
 
     /**
+     * Saves a remember-me token for persistent login across browser sessions
+     *
+     * @param int $id User identifier
+     * @param string $token Unique token for remember-me functionality
+     * @return bool True if the token was saved successfully
+     */
+    public function saveRememberToken(int $id, string $token): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE user
+             SET remember_token = ?
+             WHERE id = ?"
+        );
+
+        $stmt->bind_param("si", $token, $id);
+
+        return $stmt->execute();
+    }
+
+    /**
+     * Retrieves a user by their remember-me token
+     *
+     * @param string $token Remember-me token
+     * @return array|null User data if found, null otherwise
+     */
+    public function getUserByRememberToken(string $token): ?array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT id,
+                    salutation,
+                    first_name,
+                    last_name,
+                    address,
+                    zip,
+                    city,
+                    email,
+                    username,
+                    password,
+                    role,
+                    active
+             FROM user
+             WHERE remember_token = ?
+             LIMIT 1"
+        );
+
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+
+        $user = $stmt
+            ->get_result()
+            ->fetch_assoc();
+
+        return $user ?: null;
+    }
+
+    /**
+     * Clears the remember-me token for a user (called on logout)
+     *
+     * @param int $id User identifier
+     * @return bool True if the token was cleared successfully
+     */
+    public function clearRememberToken(int $id): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE user
+             SET remember_token = NULL
+             WHERE id = ?"
+        );
+
+        $stmt->bind_param("i", $id);
+
+        return $stmt->execute();
+    }
+
+    /**
      * Creates a new customer user account.
      * The password is hashed before it is stored.
      *

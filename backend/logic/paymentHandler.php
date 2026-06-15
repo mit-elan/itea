@@ -54,7 +54,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_UNAUTHORIZED,
-                'success' => false,
                 'error' => 'Unauthorized'
             ];
         }
@@ -83,7 +82,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_UNAUTHORIZED,
-                'success' => false,
                 'error' => 'Unauthorized'
             ];
         }
@@ -98,7 +96,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_BAD_REQUEST,
-                'success' => false,
                 'error' => 'Missing payment method data'
             ];
         }
@@ -109,7 +106,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_BAD_REQUEST,
-                'success' => false,
                 'error' => 'Invalid payment type'
             ];
         }
@@ -127,7 +123,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_INTERNAL_SERVER_ERROR,
-                'success' => false,
                 'error' => 'Failed to save payment method'
             ];
         }
@@ -151,7 +146,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_UNAUTHORIZED,
-                'success' => false,
                 'error' => 'Unauthorized'
             ];
         }
@@ -164,7 +158,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_BAD_REQUEST,
-                'success' => false,
                 'error' => 'Invalid payment method ID'
             ];
         }
@@ -180,7 +173,6 @@ class PaymentHandler
 
             return [
                 'code' => self::HTTP_INTERNAL_SERVER_ERROR,
-                'success' => false,
                 'error' => 'Failed to delete payment method'
             ];
         }
@@ -201,7 +193,6 @@ class PaymentHandler
 
         return [
             'code' => self::HTTP_BAD_REQUEST,
-            'success' => false,
             'error' => 'Unknown payment method'
         ];
     }

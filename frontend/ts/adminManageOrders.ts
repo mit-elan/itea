@@ -98,111 +98,15 @@ $(document).ready(function () {
       }) {
         if (response.error) {
           showMessage(response.error, "danger");
-          $("#modal-order-details").html(
-            `<p class="text-danger">${response.error}</p>`
-          );
+          showOrderDetailsError(response.error);
           return;
         }
 
-        const order = response.order;
-        const items = response.items;
-
-        let itemsHtml = "";
-
-        if (items.length === 0) {
-          itemsHtml = `
-            <tr>
-              <td colspan="5" class="text-muted">
-                No visible products left in this order.
-              </td>
-            </tr>
-          `;
-        }
-
-        items.forEach(function (item: OrderItem) {
-          const itemTotal = Number(item.unit_price) * Number(item.quantity);
-
-          itemsHtml += `
-            <tr>
-              <td>${item.name}</td>
-              <td>${item.quantity}</td>
-              <td>€ ${Number(item.unit_price).toFixed(2)}</td>
-              <td>€ ${itemTotal.toFixed(2)}</td>
-              <td class="text-end">
-                <button
-                  class="btn btn-outline-danger btn-sm rounded-0 remove-order-item-btn"
-                  data-order-id="${order.id}"
-                  data-order-item-id="${item.id}"
-                >
-                  Remove product
-                </button>
-              </td>
-            </tr>
-          `;
-        });
-
-        const html = `
-          <div class="mb-4">
-            <h3 class="h5 mb-3">Order #${order.id}</h3>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <p class="mb-1">
-                  <strong>Customer:</strong>
-                  ${order.first_name} ${order.last_name} (${order.username})
-                </p>
-                <p class="mb-1">
-                  <strong>Email:</strong>
-                  ${order.email}
-                </p>
-                <p class="mb-0">
-                  <strong>Address:</strong>
-                  ${order.address}, ${order.zip} ${order.city}
-                </p>
-              </div>
-
-              <div class="col-md-6">
-                <p class="mb-1">
-                  <strong>Invoice:</strong>
-                  ${order.invoice_number}
-                </p>
-                <p class="mb-1">
-                  <strong>Date:</strong>
-                  ${formatDate(order.date)}
-                </p>
-                <p class="mb-0">
-                  <strong>Total:</strong>
-                  € ${Number(order.total_price).toFixed(2)}
-                </p>
-              </div>
-            </div>
-
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                  <tr>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
-                    <th class="text-end">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${itemsHtml}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-
-        $("#modal-order-details").html(html);
+        renderOrderDetails(response.order, response.items);
       },
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
-        $("#modal-order-details").html(
-          `<p class="text-danger">Order details could not be loaded.</p>`
-        );
+        showOrderDetailsError("Order details could not be loaded.");
       },
     });
   }
@@ -273,5 +177,75 @@ $(document).ready(function () {
     }
 
     showMessage(errorMessage, "danger");
+  }
+
+  // Renders order details using templates
+  function renderOrderDetails(order: OrderDetails, items: OrderItem[]): void {
+    const detailsElement = cloneAdminTemplate("order-details-template");
+
+    // Fill order header
+    detailsElement.find(".order-detail-title").text(`Order #${order.id}`);
+    detailsElement
+      .find(".order-detail-customer")
+      .text(`${order.first_name} ${order.last_name} (${order.username})`);
+    detailsElement.find(".order-detail-email").text(order.email);
+    detailsElement
+      .find(".order-detail-address")
+      .text(`${order.address}, ${order.zip} ${order.city}`);
+    detailsElement.find(".order-detail-invoice").text(order.invoice_number);
+    detailsElement.find(".order-detail-date").text(formatDate(order.date));
+    detailsElement
+      .find(".order-detail-total")
+      .text(`€ ${Number(order.total_price).toFixed(2)}`);
+
+    // Fill order items
+    const itemsBody = detailsElement.find(".order-detail-items-body");
+
+    if (items.length === 0) {
+      itemsBody.html(cloneAdminTemplate("order-detail-empty-row-template").html());
+    } else {
+      items.forEach((item) => {
+        const itemRow = renderOrderDetailItem(item, order.id);
+        itemsBody.append(itemRow);
+      });
+    }
+
+    $("#modal-order-details").html(detailsElement.html());
+  }
+
+  // Renders a single order item row
+  function renderOrderDetailItem(item: OrderItem, orderId: number): string {
+    const row = cloneAdminTemplate("order-detail-item-row-template");
+    const itemTotal = Number(item.unit_price) * Number(item.quantity);
+
+    row.find(".order-item-name").text(item.name);
+    row.find(".order-item-quantity").text(item.quantity);
+    row
+      .find(".order-item-unit-price")
+      .text(`€ ${Number(item.unit_price).toFixed(2)}`);
+    row.find(".order-item-total").text(`€ ${itemTotal.toFixed(2)}`);
+    row
+      .find(".remove-order-item-btn")
+      .data("order-id", orderId)
+      .data("order-item-id", item.id);
+
+    return row.html() || "";
+  }
+
+  // Displays error message in the order details modal
+  function showOrderDetailsError(message: string): void {
+    const errorElement = cloneAdminTemplate("order-details-error-template");
+    errorElement.find(".order-details-error-message").text(message);
+    $("#modal-order-details").html(errorElement.html());
+  }
+
+  // Clones a template by ID and returns jQuery object
+  function cloneAdminTemplate(templateId: string): JQuery {
+    const template = document.getElementById(templateId);
+    if (!template || !(template instanceof HTMLTemplateElement)) {
+      return $();
+    }
+    const clone = template.content.firstElementChild?.cloneNode(true);
+    return clone ? $(clone as HTMLElement) : $();
   }
 });
