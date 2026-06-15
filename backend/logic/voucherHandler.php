@@ -69,7 +69,6 @@ class VoucherHandler
 
         return [
             'code' => $code,
-            'success' => false,
             'error' => $message
         ];
     }

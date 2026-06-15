@@ -411,7 +411,6 @@ function getAuthBackendError(xhr: JQuery.jqXHR): string {
 
   try {
     const response = JSON.parse(xhr.responseText) as AuthBackendErrorResponse;
-
     return response.error ?? fallbackMessage;
   } catch {
     // If JSON parsing fails, return the raw response text (likely HTML or plain error message)

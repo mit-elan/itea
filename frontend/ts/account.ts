@@ -67,8 +67,9 @@ function loadProfile(): void {
       $("#account-city").val(response.city);
     },
 
-    error: function () {
-      showAccountError("Failed to load account data.");
+    error: function (xhr: JQuery.jqXHR) {
+      const errorMessage = xhr.responseText || "Failed to load account data.";
+      showAccountError(errorMessage);
     },
   });
 }
@@ -178,6 +179,35 @@ function getAccountError(xhr: JQuery.jqXHR): string {
 function clearAccountMessages(): void {
   $("#account-error").addClass("d-none").text("");
   $("#account-success").addClass("d-none").text("");
+}
+
+/**
+ * Extracts error message from AJAX response, handling various response formats
+ * Priority: JSON error field > plain text response > fallback message
+ *
+ * @param xhr jQuery AJAX error response object
+ * @returns Formatted error message "Failed to update profile: error details" or fallback
+ */
+function getAccountError(xhr: JQuery.jqXHR): string {
+  const fallbackMessage = "Failed to update profile.";
+
+  if (!xhr.responseText) {
+    return fallbackMessage;
+  }
+
+  try {
+    const response = JSON.parse(xhr.responseText) as UpdateProfileResponse;
+
+    // If backend provided a specific error message, include it
+    if (response.error) {
+      return `Failed to update profile: ${response.error}`;
+    }
+
+    return fallbackMessage;
+  } catch {
+    // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
+    return xhr.responseText;
+  }
 }
 
 /**
