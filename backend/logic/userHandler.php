@@ -127,15 +127,33 @@ class UserHandler
             );
         }
 
+        // Preserve guest cart BEFORE regenerating session (session_regenerate_id destroys old data)
+        $guestCart = $_SESSION['cart'] ?? [];
+
         // Store logged-in user data in the session
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user->id;
         $_SESSION['username'] = $user->username;
         $_SESSION['role'] = $user->role;
 
-        // Preserve guest cart before loading persisted cart
-        $guestCart = $_SESSION['cart'] ?? [];
+        // Handle remember-me functionality if requested
+        if (!empty($data['remember'])) {
+            $rememberToken = bin2hex(random_bytes(32));
+            $this->userDataHandler->saveRememberToken($user->id, $rememberToken);
 
+            // Set persistent cookie that survives browser closure (30 days)
+            setcookie(
+                'remember_token',
+                $rememberToken,
+                time() + (30 * 24 * 60 * 60),
+                '/',
+                '',
+                false,
+                true
+            );
+        }
+
+        // Load persisted cart from database
         $dbCart = [];
 
         foreach ($this->cartDataHandler->loadCartFromDb($user->id) as $item) {
@@ -160,11 +178,17 @@ class UserHandler
 
     /**
      * Logs out the current user and persists the session cart before destroying the session
+     * Also clears the remember-me token and cookie
      *
      * @return array Success response
      */
     private function logout(): array
     {
+        // Clear remember-me token from database if user is logged in
+        if (isset($_SESSION['user_id'])) {
+            $this->userDataHandler->clearRememberToken((int)$_SESSION['user_id']);
+        }
+
         // Persist cart to database before clearing the session
         if (isset($_SESSION['user_id']) && !empty($_SESSION['cart'])) {
             $userId = (int)$_SESSION['user_id'];
@@ -198,6 +222,17 @@ class UserHandler
                 $params['httponly']
             );
         }
+
+        // Clear remember-me cookie
+        setcookie(
+            'remember_token',
+            '',
+            time() - 3600,
+            '/',
+            '',
+            false,
+            true
+        );
 
         session_destroy();
 
@@ -380,16 +415,42 @@ class UserHandler
             );
         }
 
-        // Persist profile changes
-        $success = $this->userDataHandler->updateUser(
-            (int)$_SESSION['user_id'],
-            $data
-        );
+        // Validate required fields before database update
+        $requiredFields = ['firstname', 'lastname', 'email', 'address', 'zip', 'city'];
+        foreach ($requiredFields as $field) {
+            if (empty($data[$field])) {
+                return $this->errorResponse(
+                    self::HTTP_BAD_REQUEST,
+                    "Field '$field' is required"
+                );
+            }
+        }
 
-        if (!$success) {
+        // Persist profile changes
+        try {
+            $success = $this->userDataHandler->updateUser(
+                (int)$_SESSION['user_id'],
+                $data
+            );
+
+            if (!$success) {
+                return $this->errorResponse(
+                    self::HTTP_INTERNAL_SERVER_ERROR,
+                    'Failed to update profile'
+                );
+            }
+        } catch (mysqli_sql_exception $e) {
+            // Handle duplicate email error
+            if ($e->getCode() === 1062) {
+                return $this->errorResponse(
+                    self::HTTP_CONFLICT,
+                    'Email address is already in use. Please choose a different email.'
+                );
+            }
+
             return $this->errorResponse(
                 self::HTTP_INTERNAL_SERVER_ERROR,
-                'Failed to update profile'
+                'Database error occurred'
             );
         }
 
