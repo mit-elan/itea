@@ -36,6 +36,14 @@ function loadProfile() {
  * Sends the updated profile data to the backend.
  */
 function updateProfile() {
+    const form = $("#account-form")[0];
+
+    // Run HTML5 validation before proceeding
+    if (!form.checkValidity()) {
+        form.classList.add("was-validated");
+        return;
+    }
+
     clearAccountMessages();
     const updatedUser = {
         firstname: getInputValue("#account-firstname"),

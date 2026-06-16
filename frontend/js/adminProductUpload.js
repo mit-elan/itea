@@ -70,6 +70,14 @@ $(document).ready(function () {
     }
     function handleProductFormSubmit(productId, existingFilePath, updateExistingFilePath) {
         var _a;
+        const form = $("#product-upload-form")[0];
+
+        // Run HTML5 validation before proceeding
+        if (!form.checkValidity()) {
+            form.classList.add("was-validated");
+            return;
+        }
+
         hideProductUploadMessages();
         const validationResult = validateProductForm(productId);
         if (!validationResult.valid || !validationResult.product) {

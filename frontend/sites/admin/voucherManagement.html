@@ -31,7 +31,7 @@
         <div class="card-body p-4">
           <h5 class="fw-600 mb-4" style="letter-spacing: -0.02em;">Create New Voucher</h5>
 
-          <form id="create-voucher-form" class="row g-3 align-items-end">
+          <form id="create-voucher-form" class="row g-3 align-items-end" novalidate>
             <div class="col-md-4">
               <label class="form-label small fw-600 text-uppercase" for="voucher-value">
                 Amount (€)
@@ -43,6 +43,9 @@
                 class="form-control"
                 placeholder="0.00"
                 required>
+              <div class="invalid-feedback">
+                Please enter a valid voucher amount.
+              </div>
             </div>
 
             <div class="col-md-4">
@@ -54,6 +57,9 @@
                 id="voucher-valid-until"
                 class="form-control"
                 required>
+              <div class="invalid-feedback">
+                Please select an expiry date.
+              </div>
             </div>
 
             <div class="col-md-4">

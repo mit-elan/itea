@@ -79,6 +79,12 @@ function logout() {
 }
 function handleRegisterSubmit() {
     var _a;
+    const form = $("#register-form")[0];
+    // Run HTML5 validation before proceeding
+    if (!form.checkValidity()) {
+        form.classList.add("was-validated");
+        return;
+    }
     // Always clear old validation and backend messages first
     $("#password-error, #field-error, #database-error, #payment-error, #register-message")
         .stop(true, true)

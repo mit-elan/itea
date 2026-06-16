@@ -49,13 +49,13 @@
               Add Payment Method
             </h4>
 
-            <form id="payment-form">
+            <form id="payment-form" novalidate>
               <div class="mb-3">
                 <label class="form-label" for="payment-type">
                   Payment Type
                 </label>
 
-                <select id="payment-type" class="form-select">
+                <select id="payment-type" class="form-select" required>
                   <option value="0">
                     Credit Card
                   </option>
@@ -64,6 +64,9 @@
                     Bank Account
                   </option>
                 </select>
+                <div class="invalid-feedback">
+                  Please select a payment type.
+                </div>
               </div>
 
               <div class="mb-3">
@@ -74,7 +77,11 @@
                 <input
                   type="text"
                   id="payment-number"
-                  class="form-control">
+                  class="form-control"
+                  required>
+                <div class="invalid-feedback">
+                  Please enter a card number or IBAN.
+                </div>
               </div>
 
               <div class="mb-4">
@@ -86,7 +93,11 @@
                   type="text"
                   id="payment-label"
                   class="form-control"
-                  placeholder="e.g. Personal Visa">
+                  placeholder="e.g. Personal Visa"
+                  required>
+                <div class="invalid-feedback">
+                  Please enter a label for this payment method.
+                </div>
               </div>
 
               <button type="submit" class="btn btn-dark">

@@ -58,14 +58,18 @@ function createPaymentMethodCard(payment) {
 }
 function createPaymentMethod() {
     var _a, _b, _c;
+    const form = $("#payment-form")[0];
+
+    // Run HTML5 validation before proceeding
+    if (!form.checkValidity()) {
+        form.classList.add("was-validated");
+        return;
+    }
+
     $("#payment-error").addClass("d-none").text("");
     const paymentType = String((_a = $("#payment-type").val()) !== null && _a !== void 0 ? _a : "");
     const paymentNumber = String((_b = $("#payment-number").val()) !== null && _b !== void 0 ? _b : "").replace(/[\s-]/g, "");
     const paymentLabel = String((_c = $("#payment-label").val()) !== null && _c !== void 0 ? _c : "").trim();
-    if (!paymentLabel || !paymentNumber) {
-        showPaymentError("Please fill in all fields.");
-        return;
-    }
     // Validate card number or IBAN based on selected payment type
     if (paymentType === "0" && !luhnCheck(paymentNumber)) {
         showPaymentError("Invalid card number.");
