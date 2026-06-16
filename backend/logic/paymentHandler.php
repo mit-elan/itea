@@ -63,7 +63,6 @@ class PaymentHandler
         $rows = $this->paymentDataHandler->getPaymentMethodsByUserId($userId);
 
         return [
-            'success' => true,
             'paymentMethods' => $rows
         ];
     }
@@ -128,7 +127,7 @@ class PaymentHandler
         }
 
         return [
-            'success' => true
+            'message' => 'Payment method created successfully'
         ];
     }
 
@@ -178,7 +177,7 @@ class PaymentHandler
         }
 
         return [
-            'success' => true
+            'message' => 'Payment method deleted successfully'
         ];
     }
 

@@ -27,11 +27,7 @@ function fetchVouchers(role) {
             type: "GET",
             dataType: "json",
             success: function (response) {
-                if (isVoucherBackendErrorResponse(response)) {
-                    reject(response.error);
-                    return;
-                }
-                resolve(response);
+                resolve(response.vouchers);
             },
             error: function (xhr) {
                 reject(getVoucherBackendError(xhr));
@@ -114,12 +110,7 @@ function createVoucher(userRole) {
         dataType: "json",
         data: JSON.stringify({ value, validUntil }),
         success: function (response) {
-            var _a;
-            if (response.error) {
-                showVoucherError(response.error);
-                return;
-            }
-            showVoucherSuccess(`Voucher ${(_a = response.voucherCode) !== null && _a !== void 0 ? _a : ""} created successfully!`);
+            showVoucherSuccess(`Voucher ${response.voucherCode} created successfully!`);
             loadAndRenderVouchers(userRole);
         },
         // Try to read the backend error message. If no defined response is available, show generic error message.
@@ -143,12 +134,7 @@ function addVoucherToProfile(userRole) {
         dataType: "json",
         data: JSON.stringify({ code }),
         success: function (response) {
-            var _a;
-            if (response.error) {
-                showVoucherError(response.error);
-                return;
-            }
-            showVoucherSuccess(`Voucher ${(_a = response.voucherCode) !== null && _a !== void 0 ? _a : code} added to profile successfully!`);
+            showVoucherSuccess(`Voucher ${response.voucherCode} added to profile successfully!`);
             loadAndRenderVouchers(userRole);
         },
         error: function (xhr) {
@@ -184,19 +170,14 @@ function showVoucherError(message) {
 function showVoucherSuccess(message) {
     $("#voucher-success").text(message).removeClass("d-none");
 }
-function isVoucherBackendErrorResponse(response) {
-    return (typeof response === "object" &&
-        response !== null &&
-        "error" in response &&
-        typeof response.error === "string");
-}
-// Extracts error message from AJAX response, handling various response formats
 function getVoucherBackendError(xhr) {
-    const fallback = "An unexpected error occurred.";
+    var _a;
+    const fallbackMessage = "An unexpected error occurred.";
     try {
-        return JSON.parse(xhr.responseText).error || fallback;
+        const response = JSON.parse(xhr.responseText);
+        return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
     }
-    catch (_a) {
-        return xhr.responseText || fallback;
+    catch (_b) {
+        return fallbackMessage;
     }
 }

@@ -167,7 +167,6 @@ class UserHandler
         $_SESSION['cart'] = $dbCart;
 
         return [
-            'success' => true,
             'message' => 'Login successful',
             'userId' => $user->id,
             'username' => $user->username,
@@ -236,7 +235,6 @@ class UserHandler
         session_destroy();
 
         return [
-            'success' => true,
             'message' => 'Logout successful'
         ];
     }
@@ -298,7 +296,6 @@ class UserHandler
             }
 
             return [
-                'success' => true,
                 'message' => 'Registration successful'
             ];
         }
@@ -454,7 +451,6 @@ class UserHandler
         }
 
         return [
-            'success' => true,
             'message' => 'Profile updated successfully'
         ];
     }

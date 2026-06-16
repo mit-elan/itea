@@ -4,10 +4,6 @@
  * handles category/search filters and drag-and-drop cart interaction.
  */
 
-interface ProductsErrorResponse {
-  error?: string;
-}
-
 $(document).ready(function () {
   const categoryIdToName: Record<number, string> = {
     1: "black",
@@ -48,14 +44,8 @@ $(document).ready(function () {
       type: "GET",
       dataType: "json",
 
-      success: function (response: Product[] | ProductsErrorResponse) {
+      success: function (response: Product[]) {
         $("#no-products").hide();
-
-        if (isProductsErrorResponse(response)) {
-          console.error("Error loading products:", response.error);
-          $("#no-products").show();
-          return;
-        }
 
         if (!response || response.length === 0) {
           $("#product-list").empty();
@@ -240,17 +230,6 @@ $(document).ready(function () {
     return `€${Number(value ?? 0).toFixed(2)}`;
   }
 
-  function isProductsErrorResponse(
-    response: unknown,
-  ): response is ProductsErrorResponse {
-    return (
-      typeof response === "object" &&
-      response !== null &&
-      "error" in response &&
-      typeof (response as ProductsErrorResponse).error === "string"
-    );
-  }
-
   function getProductsBackendError(xhr: JQuery.jqXHR): string {
     const fallbackMessage = "Failed to load products.";
 
@@ -259,7 +238,7 @@ $(document).ready(function () {
     }
 
     try {
-      const response = JSON.parse(xhr.responseText) as ProductsErrorResponse;
+      const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
 
       return response.error ?? fallbackMessage;
     } catch {

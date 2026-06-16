@@ -42,10 +42,6 @@ $(document).ready(function () {
             type: "GET",
             dataType: "json",
             success: function (response) {
-                if (isAdminUserOrdersErrorResponse(response)) {
-                    showMessage(response.error, "danger");
-                    return;
-                }
                 response.forEach(function (user) {
                     $("#user-table-body").append(createUserRow(user));
                 });
@@ -107,13 +103,8 @@ $(document).ready(function () {
                 id: userId,
                 active: active,
             }),
-            success: function (response) {
-                var _a;
-                if (response.error) {
-                    showMessage(response.error, "danger");
-                    return;
-                }
-                showMessage((_a = response.message) !== null && _a !== void 0 ? _a : "User status updated successfully.", "success");
+            success: function () {
+                showMessage("User status updated successfully.", "success");
                 loadUsers();
             },
             error: function (xhr) {
@@ -140,11 +131,6 @@ $(document).ready(function () {
             type: "GET",
             dataType: "json",
             success: function (response) {
-                if (isAdminUserOrdersErrorResponse(response)) {
-                    showMessage(response.error, "danger");
-                    showModalError("#modal-user-orders", response.error);
-                    return;
-                }
                 if (response.length === 0) {
                     showUserOrdersEmpty(userName);
                     return;
@@ -196,11 +182,6 @@ $(document).ready(function () {
             type: "GET",
             dataType: "json",
             success: function (response) {
-                if (response.error) {
-                    showMessage(response.error, "danger");
-                    showModalError("#modal-order-details", response.error);
-                    return;
-                }
                 renderOrderDetails(response.order, response.items);
             },
             error: function (xhr) {
@@ -271,13 +252,8 @@ $(document).ready(function () {
                 orderId: orderId,
                 orderItemId: orderItemId,
             }),
-            success: function (response) {
-                var _a;
-                if (response.error) {
-                    showMessage(response.error, "danger");
-                    return;
-                }
-                showMessage((_a = response.message) !== null && _a !== void 0 ? _a : "Order item removed successfully.", "success");
+            success: function () {
+                showMessage("Order item removed successfully.", "success");
                 loadOrderDetails(orderId);
             },
             error: function (xhr) {
@@ -325,24 +301,15 @@ $(document).ready(function () {
             .text(message)
             .show();
     }
-    function isAdminUserOrdersErrorResponse(response) {
-        return (typeof response === "object" &&
-            response !== null &&
-            "error" in response &&
-            typeof response.error === "string");
-    }
     function showBackendError(xhr) {
         var _a;
-        let errorMessage = "An unexpected error occurred.";
-        if (xhr.responseText) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                errorMessage = (_a = response.error) !== null && _a !== void 0 ? _a : errorMessage;
-            }
-            catch (_b) {
-                errorMessage = xhr.responseText;
-            }
+        const fallbackMessage = "An unexpected error occurred.";
+        try {
+            const response = JSON.parse(xhr.responseText);
+            showMessage((_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage, "danger");
         }
-        showMessage(errorMessage, "danger");
+        catch (_b) {
+            showMessage(fallbackMessage, "danger");
+        }
     }
 });

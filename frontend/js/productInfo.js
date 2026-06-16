@@ -38,11 +38,6 @@ $(document).ready(function () {
             dataType: "json",
             data: JSON.stringify({ id: Number(selectedProductId) }),
             success: function (response) {
-                // Handle backend error or empty product response
-                if (isProductInfoErrorResponse(response) || !("id" in response)) {
-                    showProductNotFound();
-                    return;
-                }
                 renderProduct(response);
             },
             error: function (xhr) {
@@ -98,12 +93,6 @@ $(document).ready(function () {
     function showProductNotFound() {
         $("#product-details").hide();
         $("#no-tea-found").show();
-    }
-    function isProductInfoErrorResponse(response) {
-        return (typeof response === "object" &&
-            response !== null &&
-            "error" in response &&
-            typeof response.error === "string");
     }
     function getProductInfoBackendError(xhr) {
         var _a;

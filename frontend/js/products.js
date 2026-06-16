@@ -37,11 +37,6 @@ $(document).ready(function () {
             dataType: "json",
             success: function (response) {
                 $("#no-products").hide();
-                if (isProductsErrorResponse(response)) {
-                    console.error("Error loading products:", response.error);
-                    $("#no-products").show();
-                    return;
-                }
                 if (!response || response.length === 0) {
                     $("#product-list").empty();
                     $("#no-products").show();
@@ -180,12 +175,6 @@ $(document).ready(function () {
     }
     function formatProductsCurrency(value) {
         return `€${Number(value !== null && value !== void 0 ? value : 0).toFixed(2)}`;
-    }
-    function isProductsErrorResponse(response) {
-        return (typeof response === "object" &&
-            response !== null &&
-            "error" in response &&
-            typeof response.error === "string");
     }
     function getProductsBackendError(xhr) {
         var _a;

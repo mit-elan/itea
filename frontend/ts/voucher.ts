@@ -4,14 +4,13 @@
  * and handles voucher creation or voucher assignment to a customer profile.
  */
 
-interface VoucherActionResponse {
-  success?: boolean;
-  voucherCode?: string;
-  error?: string;
+interface VouchersResponse {
+  vouchers: Voucher[];
 }
 
-interface VoucherBackendErrorResponse {
-  error?: string;
+interface VoucherActionResponse {
+  message: string;
+  voucherCode: string;
 }
 
 $(function () {
@@ -41,13 +40,8 @@ function fetchVouchers(role: string): Promise<Voucher[]> {
       type: "GET",
       dataType: "json",
 
-      success: function (response: Voucher[] | VoucherBackendErrorResponse) {
-        if (isVoucherBackendErrorResponse(response)) {
-          reject(response.error);
-          return;
-        }
-
-        resolve(response);
+      success: function (response: VouchersResponse) {
+        resolve(response.vouchers);
       },
 
       error: function (xhr: JQuery.jqXHR) {
@@ -156,13 +150,8 @@ function createVoucher(userRole: string): void {
     data: JSON.stringify({ value, validUntil }),
 
     success: function (response: VoucherActionResponse) {
-      if (response.error) {
-        showVoucherError(response.error);
-        return;
-      }
-
       showVoucherSuccess(
-        `Voucher ${response.voucherCode ?? ""} created successfully!`,
+        `Voucher ${response.voucherCode} created successfully!`,
       );
 
       loadAndRenderVouchers(userRole);
@@ -193,13 +182,8 @@ function addVoucherToProfile(userRole: string): void {
     data: JSON.stringify({ code }),
 
     success: function (response: VoucherActionResponse) {
-      if (response.error) {
-        showVoucherError(response.error);
-        return;
-      }
-
       showVoucherSuccess(
-        `Voucher ${response.voucherCode ?? code} added to profile successfully!`,
+        `Voucher ${response.voucherCode} added to profile successfully!`,
       );
 
       loadAndRenderVouchers(userRole);
@@ -250,23 +234,13 @@ function showVoucherSuccess(message: string): void {
   $("#voucher-success").text(message).removeClass("d-none");
 }
 
-function isVoucherBackendErrorResponse(
-  response: unknown,
-): response is VoucherBackendErrorResponse {
-  return (
-    typeof response === "object" &&
-    response !== null &&
-    "error" in response &&
-    typeof (response as VoucherBackendErrorResponse).error === "string"
-  );
-}
-
-// Extracts error message from AJAX response, handling various response formats
 function getVoucherBackendError(xhr: JQuery.jqXHR): string {
-  const fallback = "An unexpected error occurred.";
+  const fallbackMessage = "An unexpected error occurred.";
   try {
-    return JSON.parse(xhr.responseText).error || fallback;
+    const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
+    return response.error ?? fallbackMessage;
   } catch {
-    return xhr.responseText || fallback;
+    return fallbackMessage;
   }
 }
+

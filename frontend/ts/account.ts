@@ -14,7 +14,6 @@ interface AccountProfileResponse {
   username: string;
   role: string;
   active: boolean;
-  error?: string;
 }
 
 interface UpdateProfileRequest {
@@ -28,9 +27,7 @@ interface UpdateProfileRequest {
 }
 
 interface UpdateProfileResponse {
-  success?: boolean;
-  message?: string;
-  error?: string;
+  message: string;
 }
 
 $(document).ready(function () {
@@ -52,11 +49,6 @@ function loadProfile(): void {
     dataType: "json",
 
     success: function (response: AccountProfileResponse) {
-      if (response.error) {
-        window.location.href = "/itea/frontend/sites/login.html";
-        return;
-      }
-
       $("#account-content").removeClass("d-none");
 
       $("#account-firstname").val(response.firstname);
@@ -113,14 +105,9 @@ function updateProfile(): void {
     data: JSON.stringify(updatedUser),
 
     success: function (response: UpdateProfileResponse) {
-      if (response.error) {
-        showAccountError(response.error);
-        return;
-      }
-
       $("#account-success")
         .removeClass("d-none")
-        .text(response.message ?? "Profile updated successfully.");
+        .text(response.message);
 
       $("#account-password").val("");
     },
@@ -145,11 +132,10 @@ function getInputValue(selector: string): string {
 }
 
 /**
- * Extracts error message from AJAX response, handling various response formats
- * Priority: JSON error field > plain text response > fallback message
+ * Extracts error message from backend API error response
  *
  * @param xhr jQuery AJAX error response object
- * @returns Formatted error message "Failed to update profile: error details" or fallback
+ * @returns Error message from backend or fallback message
  */
 function getAccountError(xhr: JQuery.jqXHR): string {
   const fallbackMessage = "Failed to update profile.";
@@ -159,17 +145,10 @@ function getAccountError(xhr: JQuery.jqXHR): string {
   }
 
   try {
-    const response = JSON.parse(xhr.responseText) as UpdateProfileResponse;
-
-    // If backend provided a specific error message, include it
-    if (response.error) {
-      return `Failed to update profile: ${response.error}`;
-    }
-
-    return fallbackMessage;
+    const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
+    return response.error ?? fallbackMessage;
   } catch {
-    // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
-    return xhr.responseText;
+    return fallbackMessage;
   }
 }
 

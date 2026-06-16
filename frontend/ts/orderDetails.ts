@@ -4,10 +4,6 @@
  * and generates the invoice PDF for download.
  */
 
-interface OrderDetailsBackendErrorResponse {
-  error?: string;
-}
-
 let currentOrder: OrderDetailsResponse | null = null;
 
 $(document).ready(function () {
@@ -43,21 +39,15 @@ function loadOrderDetails(): void {
     type: "GET",
     dataType: "json",
 
-    success: function (
-      response: OrderDetailsResponse | OrderDetailsErrorResponse,
-    ) {
-      if (isOrderDetailsErrorResponse(response)) {
-        showOrderDetailsError(response.error);
-        return;
-      }
-
+    success: function (response: OrderDetailsResponse) {
       currentOrder = response;
       renderOrderDetails(response);
     },
 
     error: function (xhr: JQuery.jqXHR) {
-      console.error("Error loading order details:", getOrderDetailsBackendError(xhr));
-      showOrderDetailsError("Failed to load order details.");
+      const errorMessage = getOrderDetailsBackendError(xhr);
+      console.error("Error loading order details:", errorMessage);
+      showOrderDetailsError(errorMessage);
     },
   });
 }
@@ -186,17 +176,6 @@ function createInvoiceVoucher(order: OrderDetailsOrder): JQuery<HTMLElement> {
   return voucher;
 }
 
-function isOrderDetailsErrorResponse(
-  response: unknown,
-): response is OrderDetailsErrorResponse {
-  return (
-    typeof response === "object" &&
-    response !== null &&
-    "error" in response &&
-    typeof (response as OrderDetailsErrorResponse).error === "string"
-  );
-}
-
 function cloneOrderDetailsTemplate(templateId: string): JQuery<HTMLElement> {
   const template = document.getElementById(
     templateId,
@@ -222,17 +201,10 @@ function showOrderDetailsError(message: string): void {
 function getOrderDetailsBackendError(xhr: JQuery.jqXHR): string {
   const fallbackMessage = "Failed to load order details.";
 
-  if (!xhr.responseText) {
-    return fallbackMessage;
-  }
-
   try {
-    const response = JSON.parse(
-      xhr.responseText,
-    ) as OrderDetailsBackendErrorResponse;
-
+    const response = JSON.parse(xhr.responseText) as { error?: string };
     return response.error ?? fallbackMessage;
   } catch {
-    return xhr.responseText;
+    return fallbackMessage;
   }
 }

@@ -118,7 +118,6 @@ class RequestHandler
 
         return [
             'code' => self::HTTP_NOT_FOUND,
-            'success' => false,
             'error' => "Unknown handler '$handler'"
         ];
     }

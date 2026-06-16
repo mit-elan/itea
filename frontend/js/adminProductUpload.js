@@ -56,10 +56,6 @@ $(document).ready(function () {
             data: JSON.stringify({ id: Number(productId) }),
             success: function (product) {
                 var _a, _b;
-                if (isAdminProductUploadErrorResponse(product) || !("id" in product)) {
-                    showProductNotFound();
-                    return;
-                }
                 $("#name").val(product.name);
                 $("#description").val(product.description);
                 $("#price").val(String(product.price));
@@ -153,13 +149,6 @@ $(document).ready(function () {
             contentType: false,
             dataType: "json",
             success: function (response) {
-                var _a;
-                if (response.error || !response.filePath) {
-                    $("#database-error")
-                        .text((_a = response.error) !== null && _a !== void 0 ? _a : "Image upload failed.")
-                        .show();
-                    return;
-                }
                 onSuccess(response.filePath);
             },
             error: function (xhr) {
@@ -177,10 +166,6 @@ $(document).ready(function () {
             data: JSON.stringify(payload),
             success: function (response) {
                 var _a;
-                if (response.error) {
-                    $("#database-error").text(response.error).show();
-                    return;
-                }
                 const action = productId ? "updated" : "created";
                 const productName = (_a = response.name) !== null && _a !== void 0 ? _a : payload.name;
                 const overviewLink = productId
@@ -200,13 +185,6 @@ $(document).ready(function () {
             },
         });
     }
-    function showProductNotFound() {
-        $("#product-upload-form").hide();
-        $("#error-message")
-            .text("Product not found. Return to product dashboard to edit a product.")
-            .show();
-        $("#upload-edit-button").prop("disabled", true);
-    }
     function getSelectedImageFile() {
         var _a;
         return (_a = $("#product-image")[0].files) === null || _a === void 0 ? void 0 : _a[0];
@@ -221,12 +199,6 @@ $(document).ready(function () {
             .hide()
             .text("");
     }
-    function isAdminProductUploadErrorResponse(response) {
-        return (typeof response === "object" &&
-            response !== null &&
-            "error" in response &&
-            typeof response.error === "string");
-    }
     function showAdminProductUploadBackendError(xhr) {
         var _a;
         let errorMessage = "An unexpected error occurred.";
@@ -236,7 +208,7 @@ $(document).ready(function () {
                 errorMessage = (_a = response.error) !== null && _a !== void 0 ? _a : errorMessage;
             }
             catch (_b) {
-                errorMessage = xhr.responseText;
+                errorMessage = errorMessage;
             }
         }
         $("#database-error").text(errorMessage).show();

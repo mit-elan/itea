@@ -33,14 +33,6 @@ $(function () {
             .done(function (categoriesResult, productsResult) {
             const categories = categoriesResult[0];
             const products = productsResult[0];
-            if (isAdminProductErrorResponse(categories)) {
-                showAdminProductError(categories.error);
-                return;
-            }
-            if (isAdminProductErrorResponse(products)) {
-                showAdminProductError(products.error);
-                return;
-            }
             renderProductTable(categories, products);
         })
             .fail(function (xhr) {
@@ -138,11 +130,7 @@ $(function () {
             contentType: "application/json",
             dataType: "json",
             data: JSON.stringify({ id: productId }),
-            success: function (response) {
-                if (response.error) {
-                    showAdminProductError(response.error);
-                    return;
-                }
+            success: function () {
                 row.remove();
             },
             error: function (xhr) {
@@ -171,18 +159,6 @@ $(function () {
      */
     function formatAdminProductCurrency(value) {
         return `€ ${Number(value !== null && value !== void 0 ? value : 0).toFixed(2)}`;
-    }
-    /**
-     * Checks whether a response contains a backend error.
-     *
-     * @param response Unknown response payload
-     * @returns True if the response contains an error message
-     */
-    function isAdminProductErrorResponse(response) {
-        return (typeof response === "object" &&
-            response !== null &&
-            "error" in response &&
-            typeof response.error === "string");
     }
     /**
      * Extracts a readable error message from an AJAX error response.

@@ -31,16 +31,13 @@ function loadOrderDetails() {
         type: "GET",
         dataType: "json",
         success: function (response) {
-            if (isOrderDetailsErrorResponse(response)) {
-                showOrderDetailsError(response.error);
-                return;
-            }
             currentOrder = response;
             renderOrderDetails(response);
         },
         error: function (xhr) {
-            console.error("Error loading order details:", getOrderDetailsBackendError(xhr));
-            showOrderDetailsError("Failed to load order details.");
+            const errorMessage = getOrderDetailsBackendError(xhr);
+            console.error("Error loading order details:", errorMessage);
+            showOrderDetailsError(errorMessage);
         },
     });
 }
@@ -136,12 +133,6 @@ function createInvoiceVoucher(order) {
         .text(formatOrderDetailsCurrency((_d = order.voucher_remaining_value) !== null && _d !== void 0 ? _d : 0));
     return voucher;
 }
-function isOrderDetailsErrorResponse(response) {
-    return (typeof response === "object" &&
-        response !== null &&
-        "error" in response &&
-        typeof response.error === "string");
-}
 function cloneOrderDetailsTemplate(templateId) {
     const template = document.getElementById(templateId);
     const templateElement = template === null || template === void 0 ? void 0 : template.content.firstElementChild;
@@ -159,14 +150,11 @@ function showOrderDetailsError(message) {
 function getOrderDetailsBackendError(xhr) {
     var _a;
     const fallbackMessage = "Failed to load order details.";
-    if (!xhr.responseText) {
-        return fallbackMessage;
-    }
     try {
         const response = JSON.parse(xhr.responseText);
         return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
     }
     catch (_b) {
-        return xhr.responseText;
+        return fallbackMessage;
     }
 }

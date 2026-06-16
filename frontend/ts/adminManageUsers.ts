@@ -4,27 +4,6 @@
  * and displays order history with order details.
  */
 
-interface AdminUserActionResponse {
-  success?: boolean;
-  message?: string;
-  error?: string;
-}
-
-interface AdminUserOrderDetailsResponse {
-  order: OrderDetails;
-  items: OrderItem[];
-  error?: string;
-}
-
-interface AdminUserBackendErrorResponse {
-  error?: string;
-}
-
-interface AdminUserOrdersErrorResponse {
-  success?: false;
-  error: string;
-}
-
 $(document).ready(function () {
   // Admin access only
   requireRole("admin", function () {
@@ -73,12 +52,7 @@ $(document).ready(function () {
       type: "GET",
       dataType: "json",
 
-      success: function (response: User[] | AdminUserOrdersErrorResponse) {
-        if (isAdminUserOrdersErrorResponse(response)) {
-          showMessage(response.error, "danger");
-          return;
-        }
-
+      success: function (response: User[]) {
         response.forEach(function (user: User) {
           $("#user-table-body").append(createUserRow(user));
         });
@@ -151,17 +125,8 @@ $(document).ready(function () {
         active: active,
       }),
 
-      success: function (response: AdminUserActionResponse) {
-        if (response.error) {
-          showMessage(response.error, "danger");
-          return;
-        }
-
-        showMessage(
-          response.message ?? "User status updated successfully.",
-          "success",
-        );
-
+      success: function () {
+        showMessage("User status updated successfully.", "success");
         loadUsers();
       },
 
@@ -194,23 +159,13 @@ $(document).ready(function () {
       type: "GET",
       dataType: "json",
 
-      success: function (
-        response: OrderSummary[] | AdminUserOrdersErrorResponse,
-      ) {
-        if (isAdminUserOrdersErrorResponse(response)) {
-          showMessage(response.error, "danger");
-          showModalError("#modal-user-orders", response.error);
-          return;
-        }
-
+      success: function (response: OrderSummary[]) {
         if (response.length === 0) {
           showUserOrdersEmpty(userName);
           return;
         }
-
         renderUserOrders(response);
       },
-
       error: function (xhr: JQuery.jqXHR) {
         showBackendError(xhr);
         showModalError("#modal-user-orders", "Orders could not be loaded.");
@@ -268,13 +223,10 @@ $(document).ready(function () {
       type: "GET",
       dataType: "json",
 
-      success: function (response: AdminUserOrderDetailsResponse) {
-        if (response.error) {
-          showMessage(response.error, "danger");
-          showModalError("#modal-order-details", response.error);
-          return;
-        }
-
+      success: function (response: {
+        order: OrderDetails;
+        items: OrderItem[];
+      }) {
         renderOrderDetails(response.order, response.items);
       },
 
@@ -365,17 +317,8 @@ $(document).ready(function () {
         orderItemId: orderItemId,
       }),
 
-      success: function (response: AdminUserActionResponse) {
-        if (response.error) {
-          showMessage(response.error, "danger");
-          return;
-        }
-
-        showMessage(
-          response.message ?? "Order item removed successfully.",
-          "success",
-        );
-
+      success: function () {
+        showMessage("Order item removed successfully.", "success");
         loadOrderDetails(orderId);
       },
 
@@ -441,32 +384,14 @@ $(document).ready(function () {
       .show();
   }
 
-  function isAdminUserOrdersErrorResponse(
-    response: unknown,
-  ): response is AdminUserOrdersErrorResponse {
-    return (
-      typeof response === "object" &&
-      response !== null &&
-      "error" in response &&
-      typeof (response as AdminUserOrdersErrorResponse).error === "string"
-    );
-  }
-
   function showBackendError(xhr: JQuery.jqXHR): void {
-    let errorMessage = "An unexpected error occurred.";
+    const fallbackMessage = "An unexpected error occurred.";
 
-    if (xhr.responseText) {
-      try {
-        const response = JSON.parse(
-          xhr.responseText,
-        ) as AdminUserBackendErrorResponse;
-
-        errorMessage = response.error ?? errorMessage;
-      } catch {
-        errorMessage = xhr.responseText;
-      }
+    try {
+      const response = JSON.parse(xhr.responseText) as { error?: string };
+      showMessage(response.error ?? fallbackMessage, "danger");
+    } catch {
+      showMessage(fallbackMessage, "danger");
     }
-
-    showMessage(errorMessage, "danger");
   }
 });

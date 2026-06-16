@@ -51,10 +51,6 @@ function handleLoginSubmit(form) {
             remember: remember,
         }),
         success: function (response) {
-            if (response.error) {
-                showLoginMessage(response.error, "danger");
-                return;
-            }
             showLoginMessage("Login successful!", "success");
             // Role and user ID are provided by the backend and stored in the session
             if (response.role === "admin") {
@@ -148,11 +144,7 @@ function handleRegisterSubmit() {
         contentType: "application/json",
         dataType: "json",
         data: JSON.stringify(Object.assign(Object.assign({}, newUser), newPaymentMethod)),
-        success: function (response) {
-            if (response.error) {
-                $("#database-error").text(response.error).show();
-                return;
-            }
+        success: function () {
             $("#password-error, #field-error, #database-error").text("").hide();
             $("#register-form")[0].reset();
             window.location.href = "/itea/frontend/sites/login.html?register=success";
@@ -294,8 +286,6 @@ function showLoginMessage(message, type) {
         .text(message)
         .show();
 }
-// Extracts error message from AJAX response, handling various response formats
-// Priority: JSON error field > plain text response > fallback message
 function getAuthBackendError(xhr) {
     var _a;
     const fallbackMessage = "An unexpected error occurred.";
@@ -307,7 +297,6 @@ function getAuthBackendError(xhr) {
         return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
     }
     catch (_b) {
-        // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
-        return xhr.responseText;
+        return fallbackMessage;
     }
 }

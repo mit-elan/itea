@@ -10,15 +10,6 @@ interface PaymentMethodRequest {
   paymentName: string;
 }
 
-interface PaymentBackendErrorResponse {
-  error?: string;
-}
-
-interface PaymentActionResponse {
-  success: boolean;
-  error?: string;
-}
-
 
 $(document).ready(function () {
   loadPaymentMethods();
@@ -44,16 +35,9 @@ function loadPaymentMethods(): void {
     type: "GET",
     dataType: "json",
 
-    success: function (
-      response: PaymentMethodsResponse | PaymentActionResponse,
-    ) {
+    success: function (response: PaymentMethodsResponse) {
       $("#payment-error").addClass("d-none").text("");
       $("#payment-list").empty();
-
-      if (isPaymentActionErrorResponse(response)) {
-        showPaymentError(response.error ?? "Failed to load payment methods.");
-        return;
-      }
 
       if (!response.paymentMethods || response.paymentMethods.length === 0) {
         $("#payment-list").append(
@@ -140,12 +124,7 @@ function createPaymentMethod(): void {
     data: JSON.stringify(paymentRequest),
     dataType: "json",
 
-    success: function (response: PaymentActionResponse) {
-      if (!response.success) {
-        showPaymentError(response.error ?? "Failed to create payment method.");
-        return;
-      }
-
+    success: function () {
       ($("#payment-form")[0] as HTMLFormElement).reset();
       loadPaymentMethods();
     },
@@ -168,12 +147,7 @@ function deletePaymentMethod(paymentId: number): void {
     dataType: "json",
     data: JSON.stringify({ paymentId: paymentId }),
 
-    success: function (response: PaymentActionResponse) {
-      if (!response.success) {
-        showPaymentError(response.error ?? "Failed to delete payment method.");
-        return;
-      }
-
+    success: function () {
       loadPaymentMethods();
     },
 
@@ -181,16 +155,6 @@ function deletePaymentMethod(paymentId: number): void {
       showPaymentError(getPaymentBackendError(xhr));
     },
   });
-}
-
-function isPaymentActionErrorResponse(
-  response: PaymentMethodsResponse | PaymentActionResponse,
-): response is PaymentActionResponse {
-  return (
-    "success" in response &&
-    response.success === false &&
-    typeof response.error === "string"
-  );
 }
 
 function clonePaymentTemplate(templateId: string): JQuery<HTMLElement> {
@@ -219,7 +183,7 @@ function getPaymentBackendError(xhr: JQuery.jqXHR): string {
   }
 
   try {
-    const response = JSON.parse(xhr.responseText) as PaymentBackendErrorResponse;
+    const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
 
     return response.error ?? fallbackMessage;
   } catch {
