@@ -151,7 +151,7 @@ function cloneOrderDetailsTemplate(templateId) {
     return $(templateElement.cloneNode(true));
 }
 function formatOrderDetailsCurrency(value) {
-    return `€ ${Number(value !== null && value !== void 0 ? value : 0).toFixed(2)}`;
+    return `€ ${Number(value).toFixed(2)}`;
 }
 function showOrderDetailsError(message) {
     $("#order-error").removeClass("d-none").text(message);
