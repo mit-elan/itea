@@ -70,14 +70,6 @@ $(document).ready(function () {
     }
     function handleProductFormSubmit(productId, existingFilePath, updateExistingFilePath) {
         var _a;
-        const form = $("#product-upload-form")[0];
-
-        // Run HTML5 validation before proceeding
-        if (!form.checkValidity()) {
-            form.classList.add("was-validated");
-            return;
-        }
-
         hideProductUploadMessages();
         const validationResult = validateProductForm(productId);
         if (!validationResult.valid || !validationResult.product) {
@@ -177,7 +169,7 @@ $(document).ready(function () {
                 const action = productId ? "updated" : "created";
                 const productName = (_a = response.name) !== null && _a !== void 0 ? _a : payload.name;
                 const overviewLink = productId
-                    ? ` <a href="/itea/frontend/sites/admin/productOverview.html">Back to product overview</a>`
+                    ? ` <a href="/itea/frontend/sites/admin/manageProducts.html">Back to product overview</a>`
                     : "";
                 $("#upload-success")
                     .html(`Product "${productName}" ${action} successfully!${overviewLink}`)
