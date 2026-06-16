@@ -44,13 +44,12 @@ $(document).ready(function () {
     });
     function applyVoucher(code) {
         $("#checkout-voucher-error").text("").addClass("d-none");
-        const cartAmount = parseFloat($("#subtotal-value").text().replace("€", ""));
         $.ajax({
             url: "/itea/backend/serviceHandler.php?handler=vouchers&method=apply",
             type: "POST",
             contentType: "application/json",
             dataType: "json",
-            data: JSON.stringify({ code, cartAmount }),
+            data: JSON.stringify({ code }),
             success: function (response) {
                 appliedVoucherCode = code;
                 $("#voucher-value").text(formatCheckoutDiscount(response.discount));
@@ -70,7 +69,7 @@ $(document).ready(function () {
             type: "GET",
             dataType: "json",
             success: function (response) {
-                renderCart(response.cartItems);
+                renderCart(response.cartItems, response.subtotal);
             },
             error: function (xhr) {
                 console.error("Error loading cart:", getCheckoutBackendError(xhr));
@@ -78,7 +77,7 @@ $(document).ready(function () {
             },
         });
     }
-    function renderCart(cartItems) {
+    function renderCart(cartItems, subtotal) {
         const cartContainer = $("#cart-items-container");
         cartContainer.empty();
         if (!cartItems || cartItems.length === 0) {
@@ -93,10 +92,8 @@ $(document).ready(function () {
             alert("Checkout item template could not be loaded.");
             return;
         }
-        let total = 0;
         cartItems.forEach(function (item) {
-            const subtotal = item.price * item.quantity;
-            total += subtotal;
+            const itemTotal = item.price * item.quantity;
             const cartItem = $(itemTemplateElement.cloneNode(true));
             cartItem
                 .find(".cart-item-image")
@@ -106,12 +103,12 @@ $(document).ready(function () {
             cartItem.find(".cart-item-quantity").text(`100g x ${item.quantity}`);
             cartItem
                 .find(".cart-item-subtotal")
-                .text(formatCheckoutCurrency(subtotal));
+                .text(formatCheckoutCurrency(itemTotal));
             cartContainer.append(cartItem);
         });
-        // Set subtotal and total after all cart items have been rendered
-        $("#subtotal-value").text(formatCheckoutCurrency(total));
-        $("#total-value").text(formatCheckoutCurrency(total));
+        // Set subtotal and total from backend calculation
+        $("#subtotal-value").text(formatCheckoutCurrency(subtotal));
+        $("#total-value").text(formatCheckoutCurrency(subtotal));
     }
     function loadPaymentMethods() {
         $.ajax({
