@@ -1,34 +1,49 @@
+<!-- Fixed top navigation bar with dynamic content based on authentication state -->
+<!-- IDs and classes are used by JavaScript to toggle visibility of login/authenticated/admin sections -->
 <nav class="navbar navbar-expand-lg site-navbar fixed-top">
     <div class="container">
+        <!-- Brand/Logo linking to homepage -->
         <a class="navbar-brand" href="/itea/frontend/index.html">iTEA</a>
 
+        <!-- Mobile toggle button: hidden on lg+ screens, accessible via ARIA attributes -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
             aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
+        <!-- Collapsible navigation content -->
         <div class="collapse navbar-collapse" id="mainNavbar">
+            <!-- Primary navigation links (left-aligned) -->
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="/itea/frontend/index.html">Home</a>
                 </li>
 
+                <!-- Products link with ID for potential JavaScript event handling -->
                 <li class="nav-item" id="products-link">
                     <a class="nav-link" href="/itea/frontend/sites/products.html">Products</a>
                 </li>
             </ul>
 
+            <!-- Right-aligned navigation: varies based on user authentication state -->
             <ul class="navbar-nav align-items-lg-center">
+                <!-- Login button: shown to unauthenticated users, hidden via JavaScript when user logs in -->
                 <li class="nav-item" id="login-link">
                     <a class="nav-link" href="/itea/frontend/sites/login.html">Login</a>
                 </li>
 
+                <!-- Account dropdown menu: visible only to authenticated customers -->
+                <!-- Initially hidden with display:none, toggled by JavaScript based on auth status -->
+                <!-- customer-link class used for targeting in authentication handler -->
                 <li class="nav-item dropdown customer-link" style="display:none;">
+                    <!-- Dropdown trigger with proper ARIA roles and attributes -->
                     <a class="nav-link dropdown-toggle account-toggle" href="#" id="accountDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         My Account
                     </a>
 
+                    <!-- Account management options (right-aligned dropdown) -->
+                    <!-- aria-labelledby ensures screen reader accessibility -->
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
                         <li>
                             <a class="dropdown-item" href="/itea/frontend/sites/account.html">My Profile</a>
@@ -42,15 +57,20 @@
                         <li>
                             <a class="dropdown-item" href="/itea/frontend/sites/vouchers.html">Vouchers</a>
                         </li>
+                        <!-- Visual separator before logout -->
                         <li>
                             <hr class="dropdown-divider">
                         </li>
+                        <!-- Logout trigger: JavaScript handler attached via ID in auth script -->
                         <li>
                             <a class="dropdown-item" href="#" id="logout-button">Logout</a>
                         </li>
                     </ul>
                 </li>
 
+                <!-- Shopping cart button with dynamic item count badge -->
+                <!-- Cart-count span updated via JavaScript when cart contents change -->
+                <!-- position-absolute badge positioned relative to parent button -->
                 <li class="nav-item ms-lg-3" id="cart-link">
                     <a class="btn btn-outline-light position-relative" href="/itea/frontend/sites/cart.html">
                         Cart
@@ -61,6 +81,9 @@
                     </a>
                 </li>
 
+                <!-- Admin logout button: visible only to admin users -->
+                <!-- Initially hidden with display:none, shown by JavaScript if user has admin role -->
+                <!-- admin-link class used for targeting in role-based navigation handler -->
                 <li class="nav-item admin-link" style="display:none;">
                     <a class="nav-link" href="#" id="admin-logout-button">Logout</a>
                 </li>

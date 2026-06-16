@@ -253,7 +253,7 @@ $(document).ready(function () {
         const action = productId ? "updated" : "created";
         const productName = response.name ?? payload.name;
         const overviewLink = productId
-          ? ` <a href="/itea/frontend/sites/admin/productOverview.html">Back to product overview</a>`
+          ? ` <a href="/itea/frontend/sites/admin/manageProducts.html">Back to product overview</a>`
           : "";
 
         $("#upload-success")

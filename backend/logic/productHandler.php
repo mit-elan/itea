@@ -70,7 +70,6 @@ class ProductHandler
 
         return [
             'code' => $code,
-            'success' => false,
             'error' => $message
         ];
     }

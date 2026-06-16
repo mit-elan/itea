@@ -48,19 +48,18 @@
                   type="file"
                   class="form-control"
                   id="product-image"
-                  accept="image/jpg,image/jpeg,image/png,image/webp"
-                  required>
+                  accept="image/jpg,image/jpeg,image/png,image/webp">
               </div>
 
               <div class="row mt-3">
                 <div class="col">
                   <label for="name" class="form-label mb-1">Name*</label>
-                  <input type="text" class="form-control" id="name" required>
+                  <input type="text" class="form-control" id="name">
                 </div>
 
                 <div class="col">
                   <label for="category" class="form-label mb-1">Category*</label>
-                  <select class="form-select" id="category" required></select>
+                  <select class="form-select" id="category"></select>
                 </div>
               </div>
 
@@ -73,15 +72,14 @@
                   id="description"
                   rows="1"
                   style="max-height: calc(3 * 1.5em + 1rem); overflow-y: auto; resize: none;"
-                  oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight, parseInt(this.style.maxHeight)) + 'px';"
-                  required></textarea>
+                  oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight, parseInt(this.style.maxHeight)) + 'px';"></textarea>
               </div>
 
               <div class="row mt-3">
                 <div class="col">
                   <label for="rating" class="form-label mb-1">Star-Rating*</label>
                   <div class="input-group">
-                    <input type="number" class="form-control" step="0.1" id="rating" required>
+                    <input type="number" class="form-control" step="0.1" id="rating">
                     <span class="input-group-text"> | 5 Stars</span>
                   </div>
                 </div>
@@ -89,7 +87,7 @@
                 <div class="col">
                   <label for="price" class="form-label mb-1">Price*</label>
                   <div class="input-group">
-                    <input type="number" class="form-control" step="0.01" id="price" required>
+                    <input type="number" class="form-control" step="0.01" id="price">
                     <span class="input-group-text">€ | 100g</span>
                   </div>
                 </div>

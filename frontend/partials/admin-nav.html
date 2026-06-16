@@ -1,35 +1,44 @@
+<!-- Fixed top navigation bar with accessibility features for admin dashboard -->
 <nav class="navbar navbar-expand-lg site-navbar fixed-top">
     <div class="container">
-        <!-- Brand -->
+        <!-- Brand/Logo linking to admin dashboard -->
         <a class="navbar-brand" href="/itea/frontend/sites/admin/dashboard.html">iTEA</a>
 
+        <!-- Mobile toggle button: collapsed on small screens, expanded on lg+ screens -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
             aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
+        <!-- Collapsible navbar content, hidden on mobile unless toggled -->
         <div class="collapse navbar-collapse" id="mainNavbar">
+            <!-- Main navigation links (left-aligned on large screens) -->
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="/itea/frontend/sites/admin/dashboard.html">Admin Dashboard</a>
                 </li>
             </ul>
 
+            <!-- User menu dropdown (right-aligned on large screens) -->
             <ul class="navbar-nav align-items-lg-center">
                 <li class="nav-item dropdown">
+                    <!-- Dropdown trigger with proper ARIA roles for accessibility -->
                     <a class="nav-link dropdown-toggle account-toggle" href="#" id="adminMenuDropdown" role="button"
                         data-bs-toggle="dropdown" aria-expanded="false">
                         Menu
                     </a>
+                    <!-- Admin action menu: dropdown-menu-end positions menu at right edge -->
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminMenuDropdown">
                         <li><a class="dropdown-item" href="/itea/frontend/sites/admin/productUpload.html">Upload Product</a></li>
                         <li><a class="dropdown-item" href="/itea/frontend/sites/admin/manageProducts.html">Edit Products</a></li>
                         <li><a class="dropdown-item" href="/itea/frontend/sites/admin/manageUsers.html">Manage Users</a></li>
                         <li><a class="dropdown-item" href="/itea/frontend/sites/admin/manageOrders.html">Manage Orders</a></li>
                         <li><a class="dropdown-item" href="/itea/frontend/sites/admin/voucherManagement.html">Manage Vouchers</a></li>
+                        <!-- Visual separator before logout action -->
                         <li>
                             <hr class="dropdown-divider">
                         </li>
+                        <!-- Logout trigger: JavaScript handler attached via ID in main script -->
                         <li><a class="dropdown-item" href="#" id="admin-logout-button">Logout</a></li>
                     </ul>
                 </li>

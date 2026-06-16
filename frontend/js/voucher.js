@@ -88,19 +88,15 @@ function renderVoucherStatusBadge(row, status) {
 }
 function createVoucher(userRole) {
     var _a, _b;
-    const form = $("#create-voucher-form")[0];
-
-    // Run HTML5 validation before proceeding
-    if (!form.checkValidity()) {
-        form.classList.add("was-validated");
-        return;
-    }
-
     clearVoucherMessages();
     const value = parseFloat(String((_a = $("#voucher-value").val()) !== null && _a !== void 0 ? _a : ""));
     const validUntil = String((_b = $("#voucher-valid-until").val()) !== null && _b !== void 0 ? _b : "");
     if (isNaN(value) || value <= 0) {
         showVoucherError("Please enter a valid voucher value greater than 0.");
+        return;
+    }
+    if (!validUntil) {
+        showVoucherError("Please select a valid expiration date.");
         return;
     }
     if (new Date(validUntil) <= new Date()) {
@@ -125,16 +121,12 @@ function createVoucher(userRole) {
 }
 function addVoucherToProfile(userRole) {
     var _a;
-    const form = $("#voucher-form")[0];
-
-    // Run HTML5 validation before proceeding
-    if (!form.checkValidity()) {
-        form.classList.add("was-validated");
-        return;
-    }
-
     clearVoucherMessages();
     const code = String((_a = $("#voucher-code").val()) !== null && _a !== void 0 ? _a : "").trim().toUpperCase();
+    if (!code) {
+        showVoucherError("Please enter a voucher code.");
+        return;
+    }
     $.ajax({
         url: "/itea/backend/serviceHandler.php?handler=vouchers&method=addToProfile",
         type: "POST",
