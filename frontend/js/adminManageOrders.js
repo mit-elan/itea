@@ -149,7 +149,12 @@ $(document).ready(function () {
     }
     // Renders order details using templates
     function renderOrderDetails(order, items) {
-        const detailsElement = cloneAdminTemplate("order-details-template");
+        const template = document.getElementById("order-details-template");
+        if (!template) {
+            showOrderDetailsError("Template not found.");
+            return;
+        }
+        const detailsElement = $(template.content.cloneNode(true)).find(".mb-4").first();
         // Fill order header
         detailsElement.find(".order-detail-title").text(`Order #${order.id}`);
         detailsElement
@@ -167,7 +172,7 @@ $(document).ready(function () {
         // Fill order items
         const itemsBody = detailsElement.find(".order-detail-items-body");
         if (items.length === 0) {
-            itemsBody.html(cloneAdminTemplate("order-detail-empty-row-template").html());
+            itemsBody.html("<tr><td colspan='5' class='text-center text-muted'>No items in this order</td></tr>");
         }
         else {
             items.forEach((item) => {
@@ -179,7 +184,11 @@ $(document).ready(function () {
     }
     // Renders a single order item row
     function renderOrderDetailItem(item, orderId) {
-        const row = cloneAdminTemplate("order-detail-item-row-template");
+        const template = document.getElementById("order-detail-item-row-template");
+        if (!template) {
+            return $();
+        }
+        const row = $(template.content.cloneNode(true)).find("tr").first();
         const itemTotal = Number(item.unit_price) * Number(item.quantity);
         row.find(".order-item-name").text(item.name);
         row.find(".order-item-quantity").text(item.quantity);
@@ -189,24 +198,12 @@ $(document).ready(function () {
         row.find(".order-item-total").text(`€ ${itemTotal.toFixed(2)}`);
         row
             .find(".remove-order-item-btn")
-            .data("order-id", orderId)
-            .data("order-item-id", item.id);
-        return row.html() || "";
+            .attr("data-order-id", String(orderId))
+            .attr("data-order-item-id", String(item.id));
+        return row;
     }
     // Displays error message in the order details modal
     function showOrderDetailsError(message) {
-        const errorElement = cloneAdminTemplate("order-details-error-template");
-        errorElement.find(".order-details-error-message").text(message);
-        $("#modal-order-details").html(errorElement.html());
-    }
-    // Clones a template by ID and returns jQuery object
-    function cloneAdminTemplate(templateId) {
-        var _a;
-        const template = document.getElementById(templateId);
-        if (!template || !(template instanceof HTMLTemplateElement)) {
-            return $();
-        }
-        const clone = (_a = template.content.firstElementChild) === null || _a === void 0 ? void 0 : _a.cloneNode(true);
-        return clone ? $(clone) : $();
+        $("#modal-order-details").html(`<div class="alert alert-danger mb-0"><strong>Error:</strong> ${message}</div>`);
     }
 });

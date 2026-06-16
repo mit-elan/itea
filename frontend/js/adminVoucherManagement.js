@@ -1,43 +1,38 @@
 "use strict";
 /**
- * User voucher page logic
- * Loads user's own vouchers and allows adding vouchers to their profile.
+ * Admin voucher management page logic
+ * Protects the admin voucher management page so only admin users can access it.
+ * Loads all vouchers, renders the voucher table, and handles voucher creation.
  */
-$(function () {
-    loadUserVouchers();
-    $("#create-voucher-form").on("submit", function (event) {
-        event.preventDefault();
-        createUserVoucher();
-    });
-    $("#voucher-form").on("submit", function (event) {
-        event.preventDefault();
-        addUserVoucherToProfile();
+$(document).ready(function () {
+    requireRole("admin", function () {
+        loadAndRenderVouchers();
+        $("#create-voucher-form").on("submit", function (event) {
+            event.preventDefault();
+            createVoucher();
+        });
     });
 });
-function loadUserVouchers() {
+function loadAndRenderVouchers() {
     $.ajax({
-        url: `/itea/backend/serviceHandler.php?handler=vouchers&method=getByUserId`,
+        url: `/itea/backend/serviceHandler.php?handler=vouchers&method=getAll`,
         type: "GET",
         dataType: "json",
         success: function (response) {
-            renderUserVoucherTable(response.vouchers);
+            renderVoucherTable(response.vouchers);
         },
         error: function (xhr) {
             console.error("Error loading vouchers:", xhr);
-            showUserVoucherError("Failed to load vouchers.");
+            showVoucherError("Failed to load vouchers.");
         },
     });
 }
-function renderUserVoucherTable(vouchers) {
+function renderVoucherTable(vouchers) {
     const tableBody = $("#voucher-table-body");
     tableBody.empty();
     if (vouchers.length === 0) {
-        $("#voucher-table-card").addClass("d-none");
-        $("#voucher-empty").removeClass("d-none");
         return;
     }
-    $("#voucher-empty").addClass("d-none");
-    $("#voucher-table-card").removeClass("d-none");
     vouchers.forEach(function (voucher) {
         const template = document.getElementById("voucher-row-template");
         const rowClone = $(template.content.cloneNode(true)).children();
@@ -64,21 +59,21 @@ function renderUserVoucherTable(vouchers) {
         tableBody.append(rowClone);
     });
 }
-function createUserVoucher() {
+function createVoucher() {
     var _a, _b;
-    clearUserVoucherMessages();
+    clearVoucherMessages();
     const value = parseFloat(String((_a = $("#voucher-value").val()) !== null && _a !== void 0 ? _a : ""));
     const validUntil = String((_b = $("#voucher-valid-until").val()) !== null && _b !== void 0 ? _b : "");
     if (isNaN(value) || value <= 0) {
-        showUserVoucherError("Please enter a valid voucher value greater than 0.");
+        showVoucherError("Please enter a valid voucher value greater than 0.");
         return;
     }
     if (!validUntil) {
-        showUserVoucherError("Please select a valid expiration date.");
+        showVoucherError("Please select a valid expiration date.");
         return;
     }
     if (new Date(validUntil) <= new Date()) {
-        showUserVoucherError("The expiry date must be in the future.");
+        showVoucherError("The expiry date must be in the future.");
         return;
     }
     $.ajax({
@@ -88,48 +83,26 @@ function createUserVoucher() {
         dataType: "json",
         data: JSON.stringify({ value, validUntil }),
         success: function (response) {
-            showUserVoucherSuccess(`Voucher ${response.voucherCode} created successfully!`);
-            loadUserVouchers();
+            showVoucherSuccess(`Voucher ${response.voucherCode} created successfully!`);
+            loadAndRenderVouchers();
+            $("#create-voucher-form")[0].reset();
         },
         error: function (xhr) {
-            showUserVoucherError(getUserErrorMessage(xhr));
+            showVoucherError(getErrorMessage(xhr));
         },
     });
 }
-function addUserVoucherToProfile() {
-    var _a;
-    clearUserVoucherMessages();
-    const code = String((_a = $("#voucher-code").val()) !== null && _a !== void 0 ? _a : "").trim().toUpperCase();
-    if (!code) {
-        showUserVoucherError("Please enter a voucher code.");
-        return;
-    }
-    $.ajax({
-        url: "/itea/backend/serviceHandler.php?handler=vouchers&method=addToProfile",
-        type: "POST",
-        contentType: "application/json",
-        dataType: "json",
-        data: JSON.stringify({ code }),
-        success: function (response) {
-            showUserVoucherSuccess(`Voucher ${response.voucherCode} added to profile successfully!`);
-            loadUserVouchers();
-        },
-        error: function (xhr) {
-            showUserVoucherError(getUserErrorMessage(xhr));
-        },
-    });
-}
-function clearUserVoucherMessages() {
+function clearVoucherMessages() {
     $("#voucher-error").text("").addClass("d-none");
     $("#voucher-success").text("").addClass("d-none");
 }
-function showUserVoucherError(message) {
+function showVoucherError(message) {
     $("#voucher-error").text(message).removeClass("d-none");
 }
-function showUserVoucherSuccess(message) {
+function showVoucherSuccess(message) {
     $("#voucher-success").text(message).removeClass("d-none");
 }
-function getUserErrorMessage(xhr) {
+function getErrorMessage(xhr) {
     var _a;
     try {
         const response = JSON.parse(xhr.responseText);
