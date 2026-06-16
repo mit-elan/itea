@@ -177,19 +177,19 @@ interface OrderDetailsOrder {
   city: string;
   email: string;
 
-  total_price: number | string | null;
-  initial_price?: number | string | null;
+  total_price: number;
+  initial_price?: number;
 
   voucher_code?: string | null;
-  voucher_discount?: number | string | null;
-  voucher_remaining_value?: number | string | null;
+  voucher_discount?: number | null;
+  voucher_remaining_value?: number | null;
 }
 
 interface OrderDetailsItem {
   file_path: string;
   name: string;
-  price: number | string;
-  quantity: number | string;
+  price: string;
+  quantity: string;
 }
 
 interface OrderDetailsResponse {

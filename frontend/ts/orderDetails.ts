@@ -4,42 +4,6 @@
  * and generates the invoice PDF for download.
  */
 
-
-interface OrderDetailsOrder {
-  id: number;
-  date: string;
-  invoice_number: string;
-
-  first_name: string;
-  last_name: string;
-  address: string;
-  zip: string;
-  city: string;
-  email: string;
-
-  total_price: number | string | null;
-  initial_price?: number | string | null;
-
-  voucher_code?: string | null;
-  voucher_discount?: number | string | null;
-  voucher_remaining_value?: number | string | null;
-}
-
-interface OrderDetailsItem {
-  file_path: string;
-  name: string;
-  price: number | string;
-  quantity: number | string;
-}
-
-interface OrderDetailsResponse {
-  order: OrderDetailsOrder;
-  items: OrderDetailsItem[];
-}
-
-interface OrderDetailsErrorResponse {
-  error: string;
-}
 interface OrderDetailsBackendErrorResponse {
   error?: string;
 }
@@ -247,8 +211,8 @@ function cloneOrderDetailsTemplate(templateId: string): JQuery<HTMLElement> {
   return $(templateElement.cloneNode(true) as HTMLElement);
 }
 
-function formatOrderDetailsCurrency(value: number | string | null): string {
-  return `€ ${Number(value ?? 0).toFixed(2)}`;
+function formatOrderDetailsCurrency(value: number | string): string {
+  return `€ ${Number(value).toFixed(2)}`;
 }
 
 function showOrderDetailsError(message: string): void {
