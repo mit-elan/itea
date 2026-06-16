@@ -115,6 +115,14 @@ function logout(): void {
 }
 
 function handleRegisterSubmit(): void {
+  const form = $("#register-form")[0] as HTMLFormElement;
+
+  // Run HTML5 validation before proceeding
+  if (!form.checkValidity()) {
+    form.classList.add("was-validated");
+    return;
+  }
+
   // Always clear old validation and backend messages first
   $(
     "#password-error, #field-error, #database-error, #payment-error, #register-message",

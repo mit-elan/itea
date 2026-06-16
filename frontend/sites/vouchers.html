@@ -47,7 +47,7 @@
               to your account and can be used during checkout.
             </p>
 
-            <form id="voucher-form">
+            <form id="voucher-form" novalidate>
               <div class="mb-4">
                 <label class="form-label" for="voucher-code">
                   Voucher Code
@@ -59,7 +59,11 @@
                   class="form-control"
                   placeholder="e.g. A1B2C"
                   maxlength="5"
-                  style="text-transform: uppercase; font-weight: 600;">
+                  style="text-transform: uppercase; font-weight: 600;"
+                  required>
+                <div class="invalid-feedback">
+                  Please enter a voucher code.
+                </div>
               </div>
 
               <button type="submit" class="btn btn-dark">
