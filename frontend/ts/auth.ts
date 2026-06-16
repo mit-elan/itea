@@ -3,12 +3,10 @@
  */
 
 interface LoginResponse {
-  success?: boolean;
-  error?: string;
   message?: string;
-  userId?: number;
-  role?: string;
-  username?: string;
+  userId: number;
+  role: string;
+  username: string;
 }
 
 interface LoginStatusResponse {
@@ -17,17 +15,6 @@ interface LoginStatusResponse {
   username?: string;
   userId: number | null;
   cartCount: number;
-  error?: string;
-}
-
-interface RegisterResponse {
-  success?: boolean;
-  error?: string;
-  message?: string;
-}
-
-interface AuthBackendErrorResponse {
-  error?: string;
 }
 
 $(document).ready(function () {
@@ -94,11 +81,6 @@ function handleLoginSubmit(form: HTMLFormElement): void {
     }),
 
     success: function (response: LoginResponse) {
-      if (response.error) {
-        showLoginMessage(response.error, "danger");
-        return;
-      }
-
       showLoginMessage("Login successful!", "success");
 
       // Role and user ID are provided by the backend and stored in the session
@@ -217,12 +199,7 @@ function handleRegisterSubmit(): void {
     dataType: "json",
     data: JSON.stringify({ ...newUser, ...newPaymentMethod }),
 
-    success: function (response: RegisterResponse) {
-      if (response.error) {
-        $("#database-error").text(response.error).show();
-        return;
-      }
-
+    success: function () {
       $("#password-error, #field-error, #database-error").text("").hide();
       ($("#register-form")[0] as HTMLFormElement).reset();
 
@@ -400,8 +377,6 @@ function showLoginMessage(message: string, type: "success" | "danger"): void {
     .show();
 }
 
-// Extracts error message from AJAX response, handling various response formats
-// Priority: JSON error field > plain text response > fallback message
 function getAuthBackendError(xhr: JQuery.jqXHR): string {
   const fallbackMessage = "An unexpected error occurred.";
 
@@ -410,10 +385,9 @@ function getAuthBackendError(xhr: JQuery.jqXHR): string {
   }
 
   try {
-    const response = JSON.parse(xhr.responseText) as AuthBackendErrorResponse;
+    const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
     return response.error ?? fallbackMessage;
   } catch {
-    // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
-    return xhr.responseText;
+    return fallbackMessage;
   }
 }

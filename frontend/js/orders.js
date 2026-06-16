@@ -14,10 +14,6 @@ function loadOrders() {
         dataType: "json",
         success: function (response) {
             clearOrdersView();
-            if (isOrdersErrorResponse(response)) {
-                window.location.href = "/itea/frontend/sites/login.html";
-                return;
-            }
             if (response.length === 0) {
                 $("#orders-empty").removeClass("d-none");
                 return;
@@ -51,12 +47,6 @@ function clearOrdersView() {
     $("#orders-empty").addClass("d-none");
     $("#orders-content").addClass("d-none");
     $("#orders-list").empty();
-}
-function isOrdersErrorResponse(response) {
-    return (typeof response === "object" &&
-        response !== null &&
-        "error" in response &&
-        typeof response.error === "string");
 }
 function cloneOrdersTemplate(templateId) {
     const template = document.getElementById(templateId);

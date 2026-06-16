@@ -99,13 +99,19 @@ class ProductHandler
         $id = (int)($data['id'] ?? 0);
 
         if ($id <= 0) {
-            return [];
+            return $this->errorResponse(
+                self::HTTP_BAD_REQUEST,
+                'Invalid product id'
+            );
         }
 
         $product = $this->productDataHandler->getProductById($id);
 
         if (!$product) {
-            return [];
+            return $this->errorResponse(
+                self::HTTP_NOT_FOUND,
+                'Product not found'
+            );
         }
 
         return $product->toArray();
@@ -184,7 +190,6 @@ class ProductHandler
         }
 
         return [
-            'success' => true,
             'filePath' => $filename
         ];
     }
@@ -241,7 +246,6 @@ class ProductHandler
         $this->productDataHandler->createProduct($product);
 
         return [
-            'success' => true,
             'message' => 'Product created successfully',
             'name' => $product->name
         ];
@@ -315,7 +319,6 @@ class ProductHandler
         $this->productDataHandler->updateProduct($product);
 
         return [
-            'success' => true,
             'message' => 'Product updated successfully',
             'name' => $product->name
         ];
@@ -365,7 +368,6 @@ class ProductHandler
         $this->productDataHandler->deleteProduct($id);
 
         return [
-            'success' => true,
             'message' => 'Product deleted successfully'
         ];
     }

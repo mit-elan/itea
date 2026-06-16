@@ -3,10 +3,6 @@
  * Loads and displays individual product information with cart integration.
  */
 
-interface ProductInfoErrorResponse {
-  error?: string;
-}
-
 $(document).ready(function () {
   // Extract product ID from URL search parameters
   const params = new URLSearchParams(window.location.search);
@@ -47,13 +43,7 @@ $(document).ready(function () {
       dataType: "json",
       data: JSON.stringify({ id: Number(selectedProductId) }),
 
-      success: function (response: Product | ProductInfoErrorResponse) {
-        // Handle backend error or empty product response
-        if (isProductInfoErrorResponse(response) || !("id" in response)) {
-          showProductNotFound();
-          return;
-        }
-
+      success: function (response: Product) {
         renderProduct(response);
       },
 
@@ -125,17 +115,6 @@ $(document).ready(function () {
     $("#no-tea-found").show();
   }
 
-  function isProductInfoErrorResponse(
-    response: unknown,
-  ): response is ProductInfoErrorResponse {
-    return (
-      typeof response === "object" &&
-      response !== null &&
-      "error" in response &&
-      typeof (response as ProductInfoErrorResponse).error === "string"
-    );
-  }
-
   function getProductInfoBackendError(xhr: JQuery.jqXHR): string {
     const fallbackMessage = "Failed to load product.";
 
@@ -144,7 +123,7 @@ $(document).ready(function () {
     }
 
     try {
-      const response = JSON.parse(xhr.responseText) as ProductInfoErrorResponse;
+      const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
 
       return response.error ?? fallbackMessage;
     } catch {

@@ -125,7 +125,6 @@ class VoucherHandler
         $this->voucherDataHandler->createVoucher($voucher);
 
         return [
-            'success' => true,
             'message' => 'Voucher created successfully',
             'voucherCode' => $voucher->code
         ];
@@ -148,10 +147,12 @@ class VoucherHandler
             );
         }
 
-        return array_map(
-            fn(Voucher $voucher) => $voucher->toArray(),
-            $this->voucherDataHandler->getVouchers()
-        );
+        return [
+            'vouchers' => array_map(
+                fn(Voucher $voucher) => $voucher->toArray(),
+                $this->voucherDataHandler->getVouchers()
+            )
+        ];
     }
 
     /**
@@ -175,10 +176,12 @@ class VoucherHandler
             (int)$_SESSION['user_id']
         );
 
-        return array_map(
-            fn(Voucher $voucher) => $voucher->toArray(),
-            $vouchers
-        );
+        return [
+            'vouchers' => array_map(
+                fn(Voucher $voucher) => $voucher->toArray(),
+                $vouchers
+            )
+        ];
     }
 
     /**
@@ -247,7 +250,6 @@ class VoucherHandler
         );
 
         return [
-            'success' => true,
             'message' => 'Voucher added to profile successfully',
             'voucherCode' => $voucher->code
         ];
@@ -352,7 +354,6 @@ class VoucherHandler
         }
 
         return [
-            'success' => true,
             'discount' => $discount,
             'finalAmount' => $finalAmount,
         ];

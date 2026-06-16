@@ -98,7 +98,6 @@ class CartHandler
             ($_SESSION['cart'][$cartItem->product_id] ?? 0) + $cartItem->quantity;
 
         return [
-            'success' => true,
             'cartCount' => array_sum($_SESSION['cart'])
         ];
     }
@@ -138,7 +137,6 @@ class CartHandler
         $_SESSION['cart'][$cartItem->product_id] = $cartItem->quantity;
 
         return [
-            'success' => true,
             'cartCount' => array_sum($_SESSION['cart'])
         ];
     }
@@ -154,7 +152,6 @@ class CartHandler
 
         if (empty($cart)) {
             return [
-                'success' => true,
                 'cartItems' => []
             ];
         }
@@ -180,7 +177,6 @@ class CartHandler
         }
 
         return [
-            'success' => true,
             'cartItems' => $cartItems
         ];
     }
@@ -206,7 +202,6 @@ class CartHandler
         unset($_SESSION['cart'][$productId]);
 
         return [
-            'success' => true,
             'cartCount' => array_sum($_SESSION['cart'] ?? [])
         ];
     }

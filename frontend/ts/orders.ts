@@ -4,14 +4,6 @@
  * and links each order to its detail page.
  */
 
-interface OrdersErrorResponse {
-  error: string;
-}
-
-interface OrdersBackendErrorResponse {
-  error?: string;
-}
-
 $(document).ready(function () {
   loadOrders();
 });
@@ -22,13 +14,8 @@ function loadOrders(): void {
     type: "GET",
     dataType: "json",
 
-    success: function (response: OrderSummary[] | OrdersErrorResponse) {
+    success: function (response: OrderSummary[]) {
       clearOrdersView();
-
-      if (isOrdersErrorResponse(response)) {
-        window.location.href = "/itea/frontend/sites/login.html";
-        return;
-      }
 
       if (response.length === 0) {
         $("#orders-empty").removeClass("d-none");
@@ -74,17 +61,6 @@ function clearOrdersView(): void {
   $("#orders-list").empty();
 }
 
-function isOrdersErrorResponse(
-  response: unknown,
-): response is OrdersErrorResponse {
-  return (
-    typeof response === "object" &&
-    response !== null &&
-    "error" in response &&
-    typeof (response as OrdersErrorResponse).error === "string"
-  );
-}
-
 function cloneOrdersTemplate(templateId: string): JQuery<HTMLElement> {
   const template = document.getElementById(
     templateId,
@@ -111,7 +87,7 @@ function getOrdersBackendError(xhr: JQuery.jqXHR): string {
   }
 
   try {
-    const response = JSON.parse(xhr.responseText) as OrdersBackendErrorResponse;
+    const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
 
     return response.error ?? fallbackMessage;
   } catch {

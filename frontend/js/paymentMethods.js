@@ -23,13 +23,8 @@ function loadPaymentMethods() {
         type: "GET",
         dataType: "json",
         success: function (response) {
-            var _a;
             $("#payment-error").addClass("d-none").text("");
             $("#payment-list").empty();
-            if (isPaymentActionErrorResponse(response)) {
-                showPaymentError((_a = response.error) !== null && _a !== void 0 ? _a : "Failed to load payment methods.");
-                return;
-            }
             if (!response.paymentMethods || response.paymentMethods.length === 0) {
                 $("#payment-list").append(clonePaymentTemplate("payment-empty-template"));
                 return;
@@ -91,12 +86,7 @@ function createPaymentMethod() {
         contentType: "application/json",
         data: JSON.stringify(paymentRequest),
         dataType: "json",
-        success: function (response) {
-            var _a;
-            if (!response.success) {
-                showPaymentError((_a = response.error) !== null && _a !== void 0 ? _a : "Failed to create payment method.");
-                return;
-            }
+        success: function () {
             $("#payment-form")[0].reset();
             loadPaymentMethods();
         },
@@ -115,23 +105,13 @@ function deletePaymentMethod(paymentId) {
         contentType: "application/json",
         dataType: "json",
         data: JSON.stringify({ paymentId: paymentId }),
-        success: function (response) {
-            var _a;
-            if (!response.success) {
-                showPaymentError((_a = response.error) !== null && _a !== void 0 ? _a : "Failed to delete payment method.");
-                return;
-            }
+        success: function () {
             loadPaymentMethods();
         },
         error: function (xhr) {
             showPaymentError(getPaymentBackendError(xhr));
         },
     });
-}
-function isPaymentActionErrorResponse(response) {
-    return ("success" in response &&
-        response.success === false &&
-        typeof response.error === "string");
 }
 function clonePaymentTemplate(templateId) {
     const template = document.getElementById(templateId);

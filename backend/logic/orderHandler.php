@@ -136,7 +136,6 @@ class OrderHandler
         $items = $this->orderDataHandler->getOrderItems($orderId);
 
         return [
-            'success' => true,
             'order' => $order->toArray(),
             'items' => $items
         ];
@@ -301,7 +300,6 @@ class OrderHandler
         $_SESSION['cart'] = [];
 
         return [
-            'success' => true,
             'orderId' => $result['orderId'],
             'invoiceNumber' => $result['invoiceNumber'],
         ];

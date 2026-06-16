@@ -18,10 +18,6 @@ function loadProfile() {
         type: "GET",
         dataType: "json",
         success: function (response) {
-            if (response.error) {
-                window.location.href = "/itea/frontend/sites/login.html";
-                return;
-            }
             $("#account-content").removeClass("d-none");
             $("#account-firstname").val(response.firstname);
             $("#account-lastname").val(response.lastname);
@@ -77,14 +73,9 @@ function updateProfile() {
         dataType: "json",
         data: JSON.stringify(updatedUser),
         success: function (response) {
-            var _a;
-            if (response.error) {
-                showAccountError(response.error);
-                return;
-            }
             $("#account-success")
                 .removeClass("d-none")
-                .text((_a = response.message) !== null && _a !== void 0 ? _a : "Profile updated successfully.");
+                .text(response.message);
             $("#account-password").val("");
         },
         error: function (xhr) {
@@ -104,28 +95,23 @@ function getInputValue(selector) {
     return typeof value === "string" ? value : "";
 }
 /**
- * Extracts error message from AJAX response, handling various response formats
- * Priority: JSON error field > plain text response > fallback message
+ * Extracts error message from backend API error response
  *
  * @param xhr jQuery AJAX error response object
- * @returns Formatted error message "Failed to update profile: error details" or fallback
+ * @returns Error message from backend or fallback message
  */
 function getAccountError(xhr) {
+    var _a;
     const fallbackMessage = "Failed to update profile.";
     if (!xhr.responseText) {
         return fallbackMessage;
     }
     try {
         const response = JSON.parse(xhr.responseText);
-        // If backend provided a specific error message, include it
-        if (response.error) {
-            return `Failed to update profile: ${response.error}`;
-        }
-        return fallbackMessage;
+        return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
     }
-    catch (_a) {
-        // If JSON parsing fails, return the raw response text (likely HTML or plain error message)
-        return xhr.responseText;
+    catch (_b) {
+        return fallbackMessage;
     }
 }
 /**

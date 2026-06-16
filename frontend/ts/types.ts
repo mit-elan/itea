@@ -22,13 +22,19 @@ interface Bootstrap {
 declare const bootstrap: Bootstrap;
 
 /* html2pdf */
-
 interface Html2PdfWorker {
   from(element: HTMLElement): Html2PdfWorker;
   save(filename?: string): void;
 }
 
 declare function html2pdf(): Html2PdfWorker;
+
+/* API Response types */
+
+interface ApiErrorResponse {
+  code: number;
+  error: string;
+}
 
 /* Authentication */
 
@@ -154,14 +160,6 @@ interface AdminOrderOverview {
   username: string;
 }
 
-// Error responses from admin handlers (only contain error field, no success)
-interface AdminOrderErrorResponse {
-  error: string;
-}
-
-interface AdminUserOrdersErrorResponse {
-  error: string;
-}
 
 /* Order details page models */
 
@@ -195,10 +193,6 @@ interface OrderDetailsItem {
 interface OrderDetailsResponse {
   order: OrderDetailsOrder;
   items: OrderDetailsItem[];
-}
-
-interface OrderDetailsErrorResponse {
-  error: string;
 }
 
 /* Voucher model */

@@ -52,12 +52,6 @@ $(document).ready(function () {
             dataType: "json",
             data: JSON.stringify({ code, cartAmount }),
             success: function (response) {
-                if (response.error) {
-                    $("#checkout-voucher-error")
-                        .text(response.error)
-                        .removeClass("d-none");
-                    return;
-                }
                 appliedVoucherCode = code;
                 $("#voucher-value").text(formatCheckoutDiscount(response.discount));
                 $("#voucher-row").removeClass("d-none").addClass("d-flex");
@@ -72,15 +66,10 @@ $(document).ready(function () {
     }
     function loadCart() {
         $.ajax({
-            url: "/itea/backend/serviceHandler.php?handler=cart&method=loadCart&userId=" +
-                userId,
+            url: "/itea/backend/serviceHandler.php?handler=cart&method=loadCart",
             type: "GET",
             dataType: "json",
             success: function (response) {
-                if (response.error) {
-                    alert("Failed to load cart: " + response.error);
-                    return;
-                }
                 renderCart(response.cartItems);
             },
             error: function (xhr) {
@@ -126,15 +115,10 @@ $(document).ready(function () {
     }
     function loadPaymentMethods() {
         $.ajax({
-            url: "/itea/backend/serviceHandler.php?handler=payment&method=getByUserId&userId=" +
-                userId,
+            url: "/itea/backend/serviceHandler.php?handler=payment&method=getByUserId",
             type: "GET",
             dataType: "json",
             success: function (response) {
-                if (response.error) {
-                    alert("Failed to load payment methods: " + response.error);
-                    return;
-                }
                 renderPaymentMethods(response.paymentMethods);
             },
             error: function (xhr) {
@@ -185,8 +169,8 @@ $(document).ready(function () {
             url: "/itea/backend/serviceHandler.php?handler=vouchers&method=getByUserId",
             type: "GET",
             dataType: "json",
-            success: function (vouchers) {
-                renderCheckoutVouchers(vouchers);
+            success: function (response) {
+                renderCheckoutVouchers(response.vouchers);
             },
             error: function (xhr) {
                 console.error("Error loading saved vouchers:", getCheckoutBackendError(xhr));
@@ -253,13 +237,6 @@ $(document).ready(function () {
                 appliedVoucherCode,
             }),
             success: function (response) {
-                var _a;
-                if (response.error || !response.orderId) {
-                    $("#checkout-order-error")
-                        .text((_a = response.error) !== null && _a !== void 0 ? _a : "Order could not be placed.")
-                        .removeClass("d-none");
-                    return;
-                }
                 window.location.href =
                     "/itea/frontend/sites/orderDetails.html?id=" +
                         response.orderId +
@@ -294,7 +271,7 @@ $(document).ready(function () {
             return (_a = response.error) !== null && _a !== void 0 ? _a : fallbackMessage;
         }
         catch (_b) {
-            return xhr.responseText;
+            return fallbackMessage;
         }
     }
 });

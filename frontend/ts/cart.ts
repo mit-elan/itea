@@ -4,19 +4,11 @@
  */
 
 interface CartActionResponse {
-  success?: boolean;
-  cartCount?: number;
-  error?: string;
+  cartCount: number;
 }
 
 interface CartLoadResponse {
-  success?: boolean;
   cartItems: Cart[];
-  error?: string;
-}
-
-interface CartBackendErrorResponse {
-  error?: string;
 }
 
 function addToCart(productId: number, quantity: number): void {
@@ -28,12 +20,7 @@ function addToCart(productId: number, quantity: number): void {
     data: JSON.stringify({ productId, quantity }),
 
     success: function (response: CartActionResponse) {
-      if (response.error) {
-        alert("Failed to add product to cart.");
-        return;
-      }
-
-      $("#cart-count").text(response.cartCount ?? 0);
+      $("#cart-count").text(response.cartCount);
     },
 
     error: function (xhr: JQuery.jqXHR) {
@@ -56,17 +43,7 @@ function addToCartViaDrag(
     data: JSON.stringify({ productId: productId, quantity: 1 }),
 
     success: function (response: CartActionResponse) {
-      if (response.error) {
-        console.error("Cart error:", response.error);
-
-        if (onError) {
-          onError();
-        }
-
-        return;
-      }
-
-      $("#cart-count").text(response.cartCount ?? 0);
+      $("#cart-count").text(response.cartCount);
 
       if (onSuccess) {
         onSuccess();
@@ -157,12 +134,7 @@ function updateCart(productId: number, quantity: number): void {
     data: JSON.stringify({ productId, quantity }),
 
     success: function (response: CartActionResponse) {
-      if (response.error) {
-        alert("Failed to update cart.");
-        return;
-      }
-
-      $("#cart-count").text(response.cartCount ?? 0);
+      $("#cart-count").text(response.cartCount);
 
       // Reload entire cart to sync subtotals and total price after quantity change
       loadCart();
@@ -182,11 +154,6 @@ function loadCart(): void {
     dataType: "json",
 
     success: function (response: CartLoadResponse) {
-      if (response.error) {
-        showCartError(response.error);
-        return;
-      }
-
       // Clear any previous errors on successful load
       $("#cart-error").hide().text("");
 
@@ -263,12 +230,7 @@ function removeFromCart(productId: number): void {
     data: JSON.stringify({ productId }),
 
     success: function (response: CartActionResponse) {
-      if (response.error) {
-        showCartError(response.error);
-        return;
-      }
-
-      $("#cart-count").text(response.cartCount ?? 0);
+      $("#cart-count").text(response.cartCount);
       loadCart();
     },
 
@@ -334,10 +296,9 @@ function getCartBackendError(xhr: JQuery.jqXHR): string {
   }
 
   try {
-    const response = JSON.parse(xhr.responseText) as CartBackendErrorResponse;
-
+    const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
     return response.error ?? fallbackMessage;
   } catch {
-    return xhr.responseText;
+    return fallbackMessage;
   }
 }

@@ -9,19 +9,11 @@ interface AdminProductUploadCategory {
 }
 
 interface AdminProductUploadImageResponse {
-  success?: boolean;
-  filePath?: string;
-  error?: string;
+  filePath: string;
 }
 
 interface AdminProductUploadSaveResponse {
-  success?: boolean;
   name?: string;
-  error?: string;
-}
-
-interface AdminProductUploadErrorResponse {
-  error?: string;
 }
 
 $(document).ready(function () {
@@ -92,12 +84,7 @@ $(document).ready(function () {
       dataType: "json",
       data: JSON.stringify({ id: Number(productId) }),
 
-      success: function (product: Product | AdminProductUploadErrorResponse) {
-        if (isAdminProductUploadErrorResponse(product) || !("id" in product)) {
-          showProductNotFound();
-          return;
-        }
-
+      success: function (product: Product) {
         $("#name").val(product.name);
         $("#description").val(product.description);
         $("#price").val(String(product.price));
@@ -243,13 +230,6 @@ $(document).ready(function () {
       dataType: "json",
 
       success: function (response: AdminProductUploadImageResponse) {
-        if (response.error || !response.filePath) {
-          $("#database-error")
-            .text(response.error ?? "Image upload failed.")
-            .show();
-          return;
-        }
-
         onSuccess(response.filePath);
       },
 
@@ -270,11 +250,6 @@ $(document).ready(function () {
       data: JSON.stringify(payload),
 
       success: function (response: AdminProductUploadSaveResponse) {
-        if (response.error) {
-          $("#database-error").text(response.error).show();
-          return;
-        }
-
         const action = productId ? "updated" : "created";
         const productName = response.name ?? payload.name;
         const overviewLink = productId
@@ -300,14 +275,6 @@ $(document).ready(function () {
     });
   }
 
-  function showProductNotFound(): void {
-    $("#product-upload-form").hide();
-    $("#error-message")
-      .text("Product not found. Return to product dashboard to edit a product.")
-      .show();
-    $("#upload-edit-button").prop("disabled", true);
-  }
-
   function getSelectedImageFile(): File | undefined {
     return ($("#product-image")[0] as HTMLInputElement).files?.[0];
   }
@@ -325,29 +292,15 @@ $(document).ready(function () {
       .text("");
   }
 
-  function isAdminProductUploadErrorResponse(
-    response: unknown,
-  ): response is AdminProductUploadErrorResponse {
-    return (
-      typeof response === "object" &&
-      response !== null &&
-      "error" in response &&
-      typeof (response as AdminProductUploadErrorResponse).error === "string"
-    );
-  }
-
   function showAdminProductUploadBackendError(xhr: JQuery.jqXHR): void {
     let errorMessage = "An unexpected error occurred.";
 
     if (xhr.responseText) {
       try {
-        const response = JSON.parse(
-          xhr.responseText,
-        ) as AdminProductUploadErrorResponse;
-
+        const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
         errorMessage = response.error ?? errorMessage;
       } catch {
-        errorMessage = xhr.responseText;
+        errorMessage = errorMessage;
       }
     }
 

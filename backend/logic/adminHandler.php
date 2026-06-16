@@ -171,7 +171,6 @@ class AdminHandler
         }
 
         return [
-            'success' => true,
             'message' => 'User status updated successfully'
         ];
     }
@@ -244,7 +243,6 @@ class AdminHandler
         $items = $this->adminDataHandler->getOrderItems($orderId);
 
         return [
-            'success' => true,
             'order' => $order,
             'items' => $items
         ];
@@ -305,7 +303,6 @@ class AdminHandler
         }
 
         return [
-            'success' => true,
             'message' => 'Order item removed successfully'
         ];
     }

@@ -9,17 +9,6 @@ interface AdminProductCategory {
   name: string;
 }
 
-interface AdminProductDeleteResponse {
-  success?: boolean;
-  message?: string;
-  error?: string;
-}
-
-interface AdminProductErrorResponse {
-  success?: false;
-  error: string;
-}
-
 $(function () {
   requireRole("admin", function () {
     loadAdminProducts();
@@ -51,21 +40,11 @@ $(function () {
 
     $.when(categoriesRequest, productsRequest)
       .done(function (
-        categoriesResult: [AdminProductCategory[] | AdminProductErrorResponse],
-        productsResult: [Product[] | AdminProductErrorResponse],
+        categoriesResult: [AdminProductCategory[]],
+        productsResult: [Product[]],
       ) {
         const categories = categoriesResult[0];
         const products = productsResult[0];
-
-        if (isAdminProductErrorResponse(categories)) {
-          showAdminProductError(categories.error);
-          return;
-        }
-
-        if (isAdminProductErrorResponse(products)) {
-          showAdminProductError(products.error);
-          return;
-        }
 
         renderProductTable(categories, products);
       })
@@ -198,12 +177,7 @@ $(function () {
       dataType: "json",
       data: JSON.stringify({ id: productId }),
 
-      success: function (response: AdminProductDeleteResponse) {
-        if (response.error) {
-          showAdminProductError(response.error);
-          return;
-        }
-
+      success: function () {
         row.remove();
       },
 
@@ -242,23 +216,6 @@ $(function () {
   }
 
   /**
-   * Checks whether a response contains a backend error.
-   *
-   * @param response Unknown response payload
-   * @returns True if the response contains an error message
-   */
-  function isAdminProductErrorResponse(
-    response: unknown,
-  ): response is AdminProductErrorResponse {
-    return (
-      typeof response === "object" &&
-      response !== null &&
-      "error" in response &&
-      typeof (response as AdminProductErrorResponse).error === "string"
-    );
-  }
-
-  /**
    * Extracts a readable error message from an AJAX error response.
    *
    * @param xhr jQuery AJAX error response
@@ -272,7 +229,7 @@ $(function () {
     }
 
     try {
-      const response = JSON.parse(xhr.responseText) as AdminProductErrorResponse;
+      const response = JSON.parse(xhr.responseText) as ApiErrorResponse;
 
       return response.error ?? fallbackMessage;
     } catch {
