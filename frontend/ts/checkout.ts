@@ -13,6 +13,7 @@ interface CheckoutPaymentMethodResponse {
 
 interface CheckoutCartResponse {
   cartItems: Cart[];
+  subtotal: number;
 }
 
 interface CheckoutPaymentMethodsResponse {
@@ -85,16 +86,12 @@ $(document).ready(function () {
   function applyVoucher(code: string): void {
     $("#checkout-voucher-error").text("").addClass("d-none");
 
-    const cartAmount = parseFloat(
-      $("#subtotal-value").text().replace("€", ""),
-    );
-
     $.ajax({
       url: "/itea/backend/serviceHandler.php?handler=vouchers&method=apply",
       type: "POST",
       contentType: "application/json",
       dataType: "json",
-      data: JSON.stringify({ code, cartAmount }),
+      data: JSON.stringify({ code }),
 
       success: function (response: CheckoutVoucherApplyResponse) {
         appliedVoucherCode = code;
@@ -119,7 +116,7 @@ $(document).ready(function () {
       dataType: "json",
 
       success: function (response: CheckoutCartResponse) {
-        renderCart(response.cartItems);
+        renderCart(response.cartItems, response.subtotal);
       },
 
       error: function (xhr: JQuery.jqXHR) {
@@ -129,7 +126,7 @@ $(document).ready(function () {
     });
   }
 
-  function renderCart(cartItems: Cart[]): void {
+  function renderCart(cartItems: Cart[], subtotal: number): void {
     const cartContainer = $("#cart-items-container");
     cartContainer.empty();
 
@@ -153,11 +150,8 @@ $(document).ready(function () {
       return;
     }
 
-    let total = 0;
-
     cartItems.forEach(function (item: Cart) {
-      const subtotal = item.price * item.quantity;
-      total += subtotal;
+      const itemTotal = item.price * item.quantity;
 
       const cartItem = $(itemTemplateElement.cloneNode(true) as HTMLElement);
 
@@ -170,14 +164,14 @@ $(document).ready(function () {
       cartItem.find(".cart-item-quantity").text(`100g x ${item.quantity}`);
       cartItem
         .find(".cart-item-subtotal")
-        .text(formatCheckoutCurrency(subtotal));
+        .text(formatCheckoutCurrency(itemTotal));
 
       cartContainer.append(cartItem);
     });
 
-    // Set subtotal and total after all cart items have been rendered
-    $("#subtotal-value").text(formatCheckoutCurrency(total));
-    $("#total-value").text(formatCheckoutCurrency(total));
+    // Set subtotal and total from backend calculation
+    $("#subtotal-value").text(formatCheckoutCurrency(subtotal));
+    $("#total-value").text(formatCheckoutCurrency(subtotal));
   }
 
   function loadPaymentMethods(): void {

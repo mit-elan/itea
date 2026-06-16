@@ -152,12 +152,14 @@ class CartHandler
 
         if (empty($cart)) {
             return [
-                'cartItems' => []
+                'cartItems' => [],
+                'subtotal' => 0.0
             ];
         }
 
         // Enrich session cart with current product data such as price, name, and file path
         $cartItems = [];
+        $subtotal = 0.0;
 
         foreach ($cart as $productId => $quantity) {
             $product = $this->productDataHandler->getProductById((int)$productId);
@@ -166,6 +168,9 @@ class CartHandler
             if (!$product) {
                 continue;
             }
+
+            $itemTotal = (float)$product->price * (int)$quantity;
+            $subtotal += $itemTotal;
 
             $cartItems[] = [
                 'id' => $product->id,
@@ -177,7 +182,8 @@ class CartHandler
         }
 
         return [
-            'cartItems' => $cartItems
+            'cartItems' => $cartItems,
+            'subtotal' => round($subtotal, 2)
         ];
     }
 
